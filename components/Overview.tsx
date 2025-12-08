@@ -11,7 +11,7 @@ const Overview = ({ video }: OverviewProps) => {
             {/* What you'll learn */}
             <div>
                 <h2 className="font-bold text-lg sm:text-xl md:text-2xl mb-3">
-                    What you'll learn
+                    What you&apos;ll learn
                 </h2>
                 <ul className="list-disc list-inside space-y-2 text-sm sm:text-base md:text-lg text-gray-700">
                     {video.topics?.map((topic, idx) => (

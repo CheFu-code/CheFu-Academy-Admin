@@ -37,7 +37,7 @@ import { Timestamp } from "firebase/firestore";
 import { Loader, PlusIcon, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { ControllerRenderProps, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 const UploadVideoPage = ({}) => {
@@ -66,7 +66,7 @@ const UploadVideoPage = ({}) => {
         fileType: "image",
     });
 
-    const addTopic = (field: any) => {
+    const addTopic = (field: ControllerRenderProps<Video, "topics">) => {
         const topic = newTopic.trim();
         if (topic && !field.value.includes(topic)) {
             field.onChange([...(field.value || []), topic]);
