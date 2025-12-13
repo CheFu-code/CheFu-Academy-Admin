@@ -3,10 +3,9 @@ import {
     AccordionContent,
     AccordionItem,
     AccordionTrigger,
-} from "@/components/ui/accordion";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import Link from "next/link";
+} from '@/components/ui/accordion';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const Support = () => {
     const currentYear = new Date().getFullYear();
@@ -15,8 +14,8 @@ const Support = () => {
         <div className="max-w-3xl mx-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
             <h1 className="text-2xl sm:text-3xl font-bold">Support</h1>
             <p className="text-sm sm:text-base text-muted-foreground">
-                We&apos;re here to help. Find answers to common questions or reach
-                out to us directly.
+                We&apos;re here to help. Find answers to common questions or
+                reach out to us directly.
             </p>
 
             <ScrollArea className="h-[400px] sm:h-[600px] border rounded-md p-3 sm:p-4 scrollbar-none">
@@ -52,9 +51,9 @@ const Support = () => {
                                     <AccordionContent>
                                         <p className="text-xs sm:text-sm text-muted-foreground">
                                             Navigate to your billing settings
-                                            and select &quot;Upgrade.&quot; You can add a
-                                            new card or update existing
-                                            information.
+                                            and select &quot;Upgrade.&quot; You
+                                            can add a new card or update
+                                            existing information.
                                         </p>
                                     </AccordionContent>
                                 </AccordionItem>
@@ -65,12 +64,12 @@ const Support = () => {
                                     </AccordionTrigger>
                                     <AccordionContent>
                                         <p className="text-xs sm:text-sm text-muted-foreground">
-                                            You don&apos;t need to manually cancel
-                                            your subscription. Your access will
-                                            continue until the end of your
-                                            current billing period. After that,
-                                            your account will be downgraded to
-                                            the free plan.
+                                            You don&apos;t need to manually
+                                            cancel your subscription. Your
+                                            access will continue until the end
+                                            of your current billing period.
+                                            After that, your account will be
+                                            downgraded to the free plan.
                                         </p>
                                     </AccordionContent>
                                 </AccordionItem>
@@ -106,7 +105,7 @@ const Support = () => {
                             </p>
                             <ul className="list-disc ml-5 space-y-1 text-xs sm:text-sm text-muted-foreground">
                                 <li>
-                                    Email:{" "}
+                                    Email:{' '}
                                     <a
                                         className="text-blue-600"
                                         href="mailto:chefu.inc@gmail.com"
@@ -116,19 +115,16 @@ const Support = () => {
                                 </li>
                                 <li>Phone: +27 (60) 603-1205</li>
                                 <li>
-                                    Live chat: Available<li>
-                                        Live chat: Available{" "}
-                                        <a
-                                            href="https://play.google.com/store/apps/details?id=com.chefu.academy"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="text-blue-600 hover:underline"
-                                        >
-                                            in-app
-                                        </a>{" "}
-                                        during business hours
-                                    </li>
-
+                                    Live chat is available{' '}
+                                    <a
+                                        href="https://play.google.com/store/apps/details?id=com.chefu.academy"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-blue-600 hover:underline"
+                                    >
+                                        in-app
+                                    </a>{' '}
+                                    during business hours.
                                 </li>
                             </ul>
                         </CardContent>

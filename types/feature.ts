@@ -1,5 +1,5 @@
 export interface featureProps {
     title: string;
     description: string;
-    icon: string;
+    icon: React.ElementType;
 }

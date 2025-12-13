@@ -1,32 +1,32 @@
-"use client";
+'use client';
 
-import { buttonVariants } from "@/components/ui/button";
-import { ThemeToggle } from "@/components/ui/themeToggle";
-import { auth, db } from "@/lib/firebase";
-import { User } from "@/types/user";
-import { onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
-import Image from "next/image";
-import Link from "next/link";
-import { useEffect, useState } from "react";
-import UserDropdown from "./UserDropdown";
+import { buttonVariants } from '@/components/ui/button';
+import { ThemeToggle } from '@/components/ui/themeToggle';
+import { auth, db } from '@/lib/firebase';
+import { User } from '@/types/user';
+import { onAuthStateChanged } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import UserDropdown from './UserDropdown';
 
 const navigationItems = [
     {
-        name: "Home",
-        href: "/",
+        name: 'Home',
+        href: '/',
     },
     {
-        name: "Courses",
-        href: "/courses",
+        name: 'Courses',
+        href: '/courses',
     },
     {
-        name: "Dashboard",
-        href: "/dashboard",
+        name: 'Dashboard',
+        href: '/dashboard',
     },
     {
-        name: "About",
-        href: "/about",
+        name: 'About',
+        href: '/about',
     },
 ];
 
@@ -37,13 +37,13 @@ export default function Navbar() {
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
             if (firebaseUser && firebaseUser.email) {
-                const docRef = doc(db, "users", firebaseUser.email);
+                const docRef = doc(db, 'users', firebaseUser.email);
                 const docSnap = await getDoc(docRef);
                 if (docSnap.exists()) setUser(docSnap.data() as User);
                 else
                     setUser({
                         email: firebaseUser.email,
-                        fullname: "",
+                        fullname: '',
                     } as User); // fallback
             } else {
                 setUser(null);
@@ -54,7 +54,6 @@ export default function Navbar() {
         return () => unsubscribe();
     }, []);
 
-    console.log("User in Navbar:", user);
     return (
         <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur-[backdrop-filter]:bg-background/60 ">
             <div className="container flex min-h-16 items-center mx-auto px-4 md:px-6 lg:px-8">
@@ -90,8 +89,8 @@ export default function Navbar() {
                             </Link>
                         ) : (
                             <Link
-                                href="/login"
-                                className={buttonVariants({ size: "sm" })}
+                                href="/courses"
+                                className={buttonVariants({ size: 'sm' })}
                             >
                                 Login
                             </Link>
