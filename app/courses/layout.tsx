@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { AppSidebar } from "@/components/app-sidebar";
-import { SiteHeader } from "@/components/site-header";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { useAuthUser } from "@/hooks/useAuthUser";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { AppSidebar } from '@/components/app-sidebar';
+import { SiteHeader } from '@/components/site-header';
+import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
+import { useAuthUser } from '@/hooks/useAuthUser';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
-export const iframeHeight = "800px";
+export const iframeHeight = '800px';
 
-export const description = "A sidebar with a header and a search form.";
+export const description = 'A sidebar with a header and a search form.';
 
 export default function Page({ children }: { children: React.ReactNode }) {
     const { user, loading } = useAuthUser();
@@ -17,9 +17,9 @@ export default function Page({ children }: { children: React.ReactNode }) {
 
     useEffect(() => {
         if (!loading && !user) {
-            router.replace("/login");
+            router.replace('/login');
         }
-    }, [loading, user]);
+    }, [loading, user, router]);
 
     return (
         <div className="[--header-height:calc(--spacing(14))]">

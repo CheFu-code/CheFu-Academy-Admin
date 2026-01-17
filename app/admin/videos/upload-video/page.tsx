@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import Uploader from "@/components/file-uploader/Uploader";
-import { Button } from "@/components/ui/button";
+import Uploader from '@/components/file-uploader/Uploader';
+import { Button } from '@/components/ui/button';
 import {
     Card,
     CardContent,
     CardDescription,
     CardHeader,
     CardTitle,
-} from "@/components/ui/card";
+} from '@/components/ui/card';
 import {
     Form,
     FormControl,
@@ -16,42 +16,42 @@ import {
     FormItem,
     FormLabel,
     FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import {
     levelOptions,
     VideoCategoryValues,
     VisibilityOptions,
-} from "@/constants/Options";
-import { uploadFile, uploadVideo } from "@/services/videoService";
-import { UploaderState, Video } from "@/types/video";
-import { Timestamp } from "firebase/firestore";
-import { Loader, PlusIcon, X } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { ControllerRenderProps, useForm } from "react-hook-form";
-import { toast } from "sonner";
+} from '@/constants/Options';
+import { uploadFile, uploadVideo } from '@/services/videoService';
+import { UploaderState, Video } from '@/types/video';
+import { Timestamp } from 'firebase/firestore';
+import { Loader, PlusIcon, X } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { ControllerRenderProps, useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 
 const UploadVideoPage = ({}) => {
     const router = useRouter();
-    const [newTopic, setNewTopic] = useState("");
-    const [videoUri, setVideoUri] = useState("");
-    const [thumbnailUri, setThumbnailUri] = useState("");
-    const [title, setTitle] = useState("");
-    const [description, setDescription] = useState("");
-    const [category, setCategory] = useState("");
-    const [visibility, setVisibility] = useState<"public" | "private">(
-        "public"
+    const [newTopic, setNewTopic] = useState('');
+    const [videoUri, setVideoUri] = useState('');
+    const [thumbnailUri, setThumbnailUri] = useState('');
+    const [title, setTitle] = useState('');
+    const [description, setDescription] = useState('');
+    const [category, setCategory] = useState('');
+    const [visibility, setVisibility] = useState<'public' | 'private'>(
+        'public',
     );
-    const [level, setLevel] = useState<"advance" | "beginner">("beginner");
+    const [level, setLevel] = useState<'advance' | 'beginner'>('beginner');
     const [loading, setLoading] = useState(false);
     const [duration, setDuration] = useState(0);
     const [views, setViews] = useState(0);
@@ -63,30 +63,30 @@ const UploadVideoPage = ({}) => {
         progress: 0,
         isDeleting: false,
         error: false,
-        fileType: "image",
+        fileType: 'image',
     });
 
-    const addTopic = (field: ControllerRenderProps<Video, "topics">) => {
+    const addTopic = (field: ControllerRenderProps<Video, 'topics'>) => {
         const topic = newTopic.trim();
         if (topic && !field.value.includes(topic)) {
             field.onChange([...(field.value || []), topic]);
-            setNewTopic("");
+            setNewTopic('');
         }
     };
 
     const form = useForm<Video>({
         defaultValues: {
-            title: "",
-            instructorCompany:"",
-            instructorName:"",
-            description: "",
-            videoURL: "",
-            thumbnailURL: "",
-            uploadedBy: "",
+            title: '',
+            instructorCompany: '',
+            instructorName: '',
+            description: '',
+            videoURL: '',
+            thumbnailURL: '',
+            uploadedBy: '',
             uploadedAt: Timestamp.now(),
-            category: "",
-            visibility: "public",
-            level: "beginner",
+            category: '',
+            visibility: 'public',
+            level: 'beginner',
             duration: 0,
             views: 0,
             topics: [],
@@ -109,7 +109,7 @@ const UploadVideoPage = ({}) => {
             !values.visibility ||
             !values.level
         ) {
-            toast.error("Please fill all required fields!");
+            toast.error('Please fill all required fields!');
             setLoading(false);
             return;
         }
@@ -118,22 +118,22 @@ const UploadVideoPage = ({}) => {
             let videoURL = values.videoURL;
             let thumbnailURL = values.thumbnailURL;
 
-            if (fileState.fileType === "image" && fileState.file) {
+            if (fileState.fileType === 'image' && fileState.file) {
                 const uploadedThumbnailURL = await uploadFile(
                     fileState.file,
-                    `thumbnails/${Date.now()}-${fileState.file.name}`
+                    `thumbnails/${Date.now()}-${fileState.file.name}`,
                 );
                 thumbnailURL = uploadedThumbnailURL;
-                form.setValue("thumbnailURL", uploadedThumbnailURL);
+                form.setValue('thumbnailURL', uploadedThumbnailURL);
             }
 
-            if (fileState.fileType === "video" && fileState.file) {
+            if (fileState.fileType === 'video' && fileState.file) {
                 const uploadedVideoURL = await uploadFile(
                     fileState.file,
-                    `videos/${Date.now()}-${fileState.file.name}`
+                    `videos/${Date.now()}-${fileState.file.name}`,
                 );
                 videoURL = uploadedVideoURL;
-                form.setValue("videoURL", uploadedVideoURL);
+                form.setValue('videoURL', uploadedVideoURL);
             }
 
             await uploadVideo(
@@ -145,17 +145,17 @@ const UploadVideoPage = ({}) => {
                 thumbnailURL,
                 values.category,
                 values.visibility,
-                values.level as "beginner" | "advance",
+                values.level as 'beginner' | 'advance',
                 duration,
                 0,
-                values.topics
+                values.topics,
             );
 
-            toast.success("Video uploaded successfully!");
-            router.replace("/admin/videos");
+            toast.success('Video uploaded successfully!');
+            router.replace('/admin/videos');
         } catch (err) {
             console.error(err);
-            toast.error("Upload failed!");
+            toast.error('Upload failed!');
         } finally {
             setLoading(false);
         }
@@ -180,7 +180,7 @@ const UploadVideoPage = ({}) => {
                             <FormField
                                 control={form.control}
                                 name="title"
-                                rules={{ required: "Title is required" }}
+                                rules={{ required: 'Title is required' }}
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Title</FormLabel>
@@ -198,10 +198,14 @@ const UploadVideoPage = ({}) => {
                             <FormField
                                 control={form.control}
                                 name="instructorCompany"
-                                rules={{ required: "Instructor company is required" }}
+                                rules={{
+                                    required: 'Instructor company is required',
+                                }}
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Instructor Company</FormLabel>
+                                        <FormLabel>
+                                            Instructor Company
+                                        </FormLabel>
                                         <FormControl>
                                             <Input
                                                 placeholder="Instructor company..."
@@ -215,7 +219,9 @@ const UploadVideoPage = ({}) => {
                             <FormField
                                 control={form.control}
                                 name="instructorName"
-                                rules={{ required: "Instructor name is required" }}
+                                rules={{
+                                    required: 'Instructor name is required',
+                                }}
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Instructor Name</FormLabel>
@@ -233,7 +239,7 @@ const UploadVideoPage = ({}) => {
                             <FormField
                                 control={form.control}
                                 name="description"
-                                rules={{ required: "Description is required" }}
+                                rules={{ required: 'Description is required' }}
                                 render={({ field }) => (
                                     <FormItem className="w-full">
                                         <FormLabel>Description</FormLabel>
@@ -252,7 +258,7 @@ const UploadVideoPage = ({}) => {
                             <FormField
                                 control={form.control}
                                 name="thumbnailURL"
-                                rules={{ required: "Thumbnail is required" }}
+                                rules={{ required: 'Thumbnail is required' }}
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Thumbnail Image</FormLabel>
@@ -261,7 +267,7 @@ const UploadVideoPage = ({}) => {
                                                 type="image"
                                                 onFileSelect={(
                                                     fileUrl: string,
-                                                    _file: File
+                                                    _file: File,
                                                 ) => {
                                                     field.onChange(fileUrl);
                                                     setThumbnailUri(fileUrl);
@@ -276,7 +282,7 @@ const UploadVideoPage = ({}) => {
                             <FormField
                                 control={form.control}
                                 name="videoURL"
-                                rules={{ required: "Video is required" }}
+                                rules={{ required: 'Video is required' }}
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Video</FormLabel>
@@ -286,13 +292,13 @@ const UploadVideoPage = ({}) => {
                                                 onFileSelect={(
                                                     fileUrl: string,
                                                     _file: File,
-                                                    fileDuration?: number
+                                                    fileDuration?: number,
                                                 ) => {
                                                     field.onChange(fileUrl);
                                                     setVideoUri(fileUrl);
                                                     if (fileDuration)
                                                         setDuration(
-                                                            fileDuration
+                                                            fileDuration,
                                                         );
                                                 }}
                                             />
@@ -305,7 +311,7 @@ const UploadVideoPage = ({}) => {
                                 <FormField
                                     control={form.control}
                                     name="category"
-                                    rules={{ required: "Category is required" }}
+                                    rules={{ required: 'Category is required' }}
                                     render={({ field }) => (
                                         <FormItem className="w-full">
                                             <FormLabel>Category</FormLabel>
@@ -327,7 +333,7 @@ const UploadVideoPage = ({}) => {
                                                             >
                                                                 {category}
                                                             </SelectItem>
-                                                        )
+                                                        ),
                                                     )}
                                                 </SelectContent>
                                             </Select>
@@ -340,7 +346,7 @@ const UploadVideoPage = ({}) => {
                                     control={form.control}
                                     name="visibility"
                                     rules={{
-                                        required: "Visibility is required",
+                                        required: 'Visibility is required',
                                     }}
                                     render={({ field }) => (
                                         <FormItem className="w-full">
@@ -365,7 +371,7 @@ const UploadVideoPage = ({}) => {
                                                             >
                                                                 {visibility}
                                                             </SelectItem>
-                                                        )
+                                                        ),
                                                     )}
                                                 </SelectContent>
                                             </Select>
@@ -376,7 +382,7 @@ const UploadVideoPage = ({}) => {
                                 <FormField
                                     control={form.control}
                                     name="level"
-                                    rules={{ required: "Level is required" }}
+                                    rules={{ required: 'Level is required' }}
                                     render={({ field }) => (
                                         <FormItem className="w-full">
                                             <FormLabel>Level</FormLabel>
@@ -398,7 +404,7 @@ const UploadVideoPage = ({}) => {
                                                             >
                                                                 {level}
                                                             </SelectItem>
-                                                        )
+                                                        ),
                                                     )}
                                                 </SelectContent>
                                             </Select>
@@ -414,7 +420,7 @@ const UploadVideoPage = ({}) => {
                                 rules={{
                                     validate: (value) =>
                                         value.length > 0 ||
-                                        "At least one topic is required",
+                                        'At least one topic is required',
                                 }}
                                 render={({ field }) => (
                                     <FormItem className="w-full">
@@ -427,11 +433,11 @@ const UploadVideoPage = ({}) => {
                                                     value={newTopic}
                                                     onChange={(e) =>
                                                         setNewTopic(
-                                                            e.target.value
+                                                            e.target.value,
                                                         )
                                                     }
                                                     onKeyDown={(e) =>
-                                                        e.key === "Enter" &&
+                                                        e.key === 'Enter' &&
                                                         (e.preventDefault(),
                                                         addTopic(field))
                                                     }
@@ -439,6 +445,7 @@ const UploadVideoPage = ({}) => {
                                             </FormControl>
                                             {newTopic.trim() && (
                                                 <Button
+                                                    className="cursor-pointer"
                                                     type="button"
                                                     onClick={() =>
                                                         addTopic(field)
@@ -454,7 +461,7 @@ const UploadVideoPage = ({}) => {
                                                 (t: string, i: number) => (
                                                     <span
                                                         key={i}
-                                                        className="px-2 py-1 rounded bg-gray-600 text-sm flex items-center"
+                                                        className="px-2 py-1.5 rounded-lg bg-gray-600 text-sm flex items-center"
                                                     >
                                                         {t}
                                                         <button
@@ -465,18 +472,18 @@ const UploadVideoPage = ({}) => {
                                                                     field.value.filter(
                                                                         (
                                                                             _: string,
-                                                                            idx: number
+                                                                            idx: number,
                                                                         ) =>
                                                                             idx !==
-                                                                            i
-                                                                    )
+                                                                            i,
+                                                                    ),
                                                                 )
                                                             }
                                                         >
                                                             <X className="size-4" />
                                                         </button>
                                                     </span>
-                                                )
+                                                ),
                                             )}
                                         </div>
 
@@ -486,7 +493,7 @@ const UploadVideoPage = ({}) => {
                             />
 
                             <Button type="submit" disabled={loading}>
-                                {loading ? "Uploading..." : "Upload Video"}{" "}
+                                {loading ? 'Uploading...' : 'Upload Video'}{' '}
                                 {loading ? (
                                     <Loader className="animate-spin" />
                                 ) : (

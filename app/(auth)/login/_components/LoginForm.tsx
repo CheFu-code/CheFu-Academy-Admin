@@ -1,30 +1,26 @@
-"use client";
+'use client';
 
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 import {
     Card,
     CardContent,
     CardDescription,
     CardHeader,
     CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { auth } from "@/lib/firebase";
-import {
-    GoogleAuthProvider,
-    signInWithEmailAndPassword,
-    signInWithPopup,
-} from "firebase/auth";
-import { Loader } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
-import { FcGoogle } from "react-icons/fc";
-import { toast } from "sonner";
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { auth } from '@/lib/firebase';
+import { GoogleAuthProvider, signInWithEmailAndPassword } from 'firebase/auth';
+import { Loader } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useState, useTransition } from 'react';
+import { FcGoogle } from 'react-icons/fc';
+import { toast } from 'sonner';
 
 export default function LoginForm() {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
     const [emailPending, startEmailTransition] = useTransition();
     const [googlePending, startGoogleTransition] = useTransition();
     const router = useRouter();
@@ -34,22 +30,15 @@ export default function LoginForm() {
             try {
                 const provider = new GoogleAuthProvider();
 
-                // OPTIONAL: set the web client ID explicitly (if needed)
                 provider.setCustomParameters({
-                    client_id:
-                        "441077080510-376i017sckjqhff8mf491f4erskpmp3d.apps.googleusercontent.com",
+                    client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
                 });
 
-                const result = await signInWithPopup(auth, provider);
-
-                // You can get user info if needed
-                const user = result.user;
-
-                toast.success("Login successful!");
-                router.replace("/courses"); // redirect after login
+                toast.success('Login successful!');
+                router.replace('/'); // redirect after login
             } catch (error: unknown) {
                 if (error instanceof Error) {
-                    console.error("Google login failed:", error);
+                    console.error('Google login failed:', error);
 
                     // Some Firebase auth errors come as objects with `code`
                     const firebaseError = error as {
@@ -57,22 +46,22 @@ export default function LoginForm() {
                         message?: string;
                     };
 
-                    if (firebaseError.code === "auth/popup-closed-by-user") {
-                        toast.error("Login cancelled by user.");
+                    if (firebaseError.code === 'auth/popup-closed-by-user') {
+                        toast.error('Login cancelled by user.');
                     } else if (
-                        firebaseError.code === "auth/invalid-credential"
+                        firebaseError.code === 'auth/invalid-credential'
                     ) {
                         toast.error(
-                            "Invalid credentials. Check your Google OAuth setup."
+                            'Invalid credentials. Check your Google OAuth setup.',
                         );
                     } else {
                         toast.error(
-                            "Google login failed. Please try again later."
+                            'Google login failed. Please try again later.',
                         );
                     }
                 } else {
-                    console.error("Unknown error during Google login:", error);
-                    toast.error("Unexpected error occurred. Please try again.");
+                    console.error('Unknown error during Google login:', error);
+                    toast.error('Unexpected error occurred. Please try again.');
                 }
             }
         });
@@ -82,11 +71,11 @@ export default function LoginForm() {
         startEmailTransition(async () => {
             try {
                 await signInWithEmailAndPassword(auth, email, password);
-                router.replace("/courses");
-                toast.success("Login successful!");
+                router.replace('/');
+                toast.success('Login successful!');
             } catch (error) {
-                toast.error("Login failed. Please try again later.");
-                console.error("Email login failed:", error);
+                toast.error('Login failed. Please try again later.');
+                console.error('Email login failed:', error);
             }
         });
     };
@@ -106,6 +95,7 @@ export default function LoginForm() {
                         disabled={googlePending}
                         onClick={handleGoogle}
                         variant="outline"
+                        className='cursor-pointer'
                     >
                         {googlePending ? (
                             <>
@@ -133,7 +123,7 @@ export default function LoginForm() {
                         <Input
                             id="email"
                             type="email"
-                            placeholder="me@example.com"
+                            placeholder="email@example.com"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                         />
@@ -151,6 +141,7 @@ export default function LoginForm() {
                     <Button
                         disabled={emailPending || !email || !password}
                         onClick={handleEmailLogin}
+                        className="cursor-pointer"
                     >
                         {emailPending ? (
                             <>
@@ -158,7 +149,7 @@ export default function LoginForm() {
                                 <span>Loading...</span>
                             </>
                         ) : (
-                            "Continue"
+                            'Continue'
                         )}
                     </Button>
                 </div>

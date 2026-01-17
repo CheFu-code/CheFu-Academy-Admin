@@ -262,7 +262,7 @@ const Terms = () => {
 
                     {/* Footer Note */}
                     <p className="text-xs text-center text-muted-foreground mt-4">
-                        © {new Date().getFullYear()} CheFu Inc. All rights
+                        © {new Date().getFullYear()} CheFu Academy. All rights
                         reserved. Using this platform indicates agreement with
                         these Terms of Service.
                     </p>

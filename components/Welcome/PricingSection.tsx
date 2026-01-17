@@ -1,40 +1,13 @@
 'use client';
 
-import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-
-const plans = [
-    {
-        name: 'Free',
-        price: '0',
-        features: [
-            'Access to basic courses',
-            'Community support',
-            'Limited progress tracking',
-        ],
-    },
-    {
-        name: 'Pro',
-        price: '14.99',
-        features: [
-            'All courses included',
-            'Advanced progress tracking',
-            'Personalized learning paths',
-        ],
-    },
-    {
-        name: 'Premium',
-        price: '29.99',
-        features: [
-            'Everything in Pro',
-            '1-on-1 mentorship',
-            'Priority support',
-            'Certificates of completion',
-        ],
-    },
-];
+import { Card } from '@/components/ui/card';
+import { plans } from '@/constants/Data';
+import { useRouter } from 'next/navigation';
 
 const PricingSection = () => {
+    const router = useRouter();
+
     return (
         <section className="py-20  text-center">
             <h2 className="text-4xl font-bold mb-8">Choose Your Plan</h2>
@@ -50,7 +23,23 @@ const PricingSection = () => {
                                 <li key={j}>• {feature}</li>
                             ))}
                         </ul>
-                        <Button className="mt-auto">Get Started</Button>
+                        <Button
+                            onClick={() => {
+                                if (
+                                    plan.price === '0' ||
+                                    plan.name === 'Free'
+                                ) {
+                                    router.push('/courses');
+                                } else {
+                                    router.push(
+                                        `/upgrade?price=${plan.price}&plan=${plan.name}`,
+                                    );
+                                }
+                            }}
+                            className="mt-auto cursor-pointer"
+                        >
+                            Get Started
+                        </Button>
                     </Card>
                 ))}
             </div>

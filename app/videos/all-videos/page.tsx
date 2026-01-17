@@ -1,10 +1,11 @@
-"use client";
+'use client';
 
-import Loading from "@/components/Loading";
-import { fetchVideos } from "@/services/videoService";
-import { Video } from "@/types/video";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import Loading from '@/components/Loading';
+import { fetchVideos } from '@/services/videoService';
+import { Video } from '@/types/video';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 const AllVideos = () => {
     const [videos, setVideos] = useState<Video[]>([]);
@@ -20,7 +21,7 @@ const AllVideos = () => {
             const fetched = await fetchVideos();
             setVideos(fetched);
         } catch (err) {
-            console.error("Failed to fetch videos:", err);
+            console.error('Failed to fetch videos:', err);
         } finally {
             setLoading(false);
         }
@@ -48,7 +49,7 @@ const AllVideos = () => {
                     >
                         {/* Thumbnail with description overlay */}
                         <div className="relative w-full aspect-video">
-                            <img
+                            <Image
                                 src={video.thumbnailURL}
                                 alt={video.title}
                                 className="w-full h-full object-contain bg-gray-500/70 rounded-t-lg"
@@ -68,18 +69,21 @@ const AllVideos = () => {
                                 {video.title}
                             </h2>
                             <p className="text-sm sm:text-base text-gray-500">
-                                Level:{" "}
-                                {video.level.charAt(0).toUpperCase() + video.level.slice(1)}
+                                Level:{' '}
+                                {video.level.charAt(0).toUpperCase() +
+                                    video.level.slice(1)}
                             </p>
                             <p className="text-sm sm:text-base text-gray-500">
-                                Duration: {Math.floor(video.duration / 60)}m{" "}
+                                Duration: {Math.floor(video.duration / 60)}m{' '}
                                 {video.duration % 60}s
                             </p>
                         </div>
                     </div>
                 ))
             ) : (
-                <p className="flex items-center justify-center h-full">No videos available.</p>
+                <p className="flex items-center justify-center h-full">
+                    No videos available.
+                </p>
             )}
         </div>
     );

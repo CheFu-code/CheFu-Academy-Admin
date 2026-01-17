@@ -3,9 +3,9 @@ import {
     AccordionContent,
     AccordionItem,
     AccordionTrigger,
-} from "@/components/ui/accordion";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
+} from '@/components/ui/accordion';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const PrivacyPolicy = () => {
     const currentYear = new Date().getFullYear();
@@ -53,6 +53,33 @@ const PrivacyPolicy = () => {
                                         Usage data (how you use our platform).
                                     </li>
                                     <li>Cookies and tracking technologies.</li>
+                                </ul>
+                            </AccordionContent>
+                        </AccordionItem>
+
+                        <AccordionItem value="rights">
+                            <AccordionTrigger>Your Rights</AccordionTrigger>
+                            <AccordionContent>
+                                <ul className="list-disc ml-5 space-y-1 text-sm text-muted-foreground">
+                                    <li>
+                                        <span className="font-semibold">
+                                            Access
+                                        </span>
+                                        : Request a copy of your data
+                                    </li>
+                                    <li>
+                                        <span className="font-semibold">
+                                            Correction
+                                        </span>
+                                        : Update your data
+                                    </li>
+                                    <li>
+                                        <span className="font-semibold">
+                                            Deletion
+                                        </span>
+                                        : Delete your account/data (subject to
+                                        legal retention)
+                                    </li>
                                 </ul>
                             </AccordionContent>
                         </AccordionItem>
@@ -117,6 +144,27 @@ const PrivacyPolicy = () => {
                             </AccordionContent>
                         </AccordionItem>
 
+                        <AccordionItem value="marketing">
+                            <AccordionTrigger>
+                                Marketing Communications
+                            </AccordionTrigger>
+                            <AccordionContent>
+                                <ul className="list-disc ml-5 space-y-1 text-sm text-muted-foreground">
+                                    <li>
+                                        We&apos;ll send updates with opt-out
+                                        option
+                                    </li>
+                                    <li>
+                                        You can manage{' '}
+                                        <a className='text-primary' href="/settings/account">
+                                            email preferences
+                                        </a>{' '}
+                                        in settings
+                                    </li>
+                                </ul>
+                            </AccordionContent>
+                        </AccordionItem>
+
                         {/* Cookies */}
                         <AccordionItem value="cookies">
                             <AccordionTrigger>
@@ -127,6 +175,18 @@ const PrivacyPolicy = () => {
                                     We use cookies and similar technologies to
                                     enhance your experience, analyze usage, and
                                     provide personalized content.
+                                </p>
+                            </AccordionContent>
+                        </AccordionItem>
+
+                        <AccordionItem value="links">
+                            <AccordionTrigger>
+                                Links to Other Sites
+                            </AccordionTrigger>
+                            <AccordionContent>
+                                <p className="text-sm text-muted-foreground">
+                                    CheFu Academy may link to external sites. We
+                                    are not responsible for their policies.
                                 </p>
                             </AccordionContent>
                         </AccordionItem>
@@ -169,10 +229,10 @@ const PrivacyPolicy = () => {
                                 </p>
                                 <ul className="list-disc ml-5 space-y-1 text-sm text-muted-foreground">
                                     <li>Email: chefu.inc@gmail.com</li>
-                                    <li>Phone: +27 (60) 603-1205</li>
+                                    <li>Phone: +27 (60) 603 - 1205</li>
                                     <li>
-                                        Address: 145 CheFu&apos;s Street, Dinga,
-                                        South Africa
+                                        Address: 145 CheFu Street, Dinga,
+                                        Limpopo, South Africa
                                     </li>
                                 </ul>
                             </AccordionContent>
@@ -182,7 +242,7 @@ const PrivacyPolicy = () => {
             </ScrollArea>
 
             <p className="text-sm text-muted-foreground text-center">
-                © {currentYear} CheFu Inc. All rights reserved.
+                © {currentYear} CheFu Academy. All rights reserved.
             </p>
         </div>
     );

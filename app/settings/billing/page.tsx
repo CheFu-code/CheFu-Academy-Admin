@@ -1,11 +1,9 @@
 "use client";
 
-import { useAuthUser } from "@/hooks/useAuthUser";
 import BillingHistory from "../_components/BillingHistory";
 import CurrentPlan from "../_components/CurrentPlan";
 
 const BillingPage = () => {
-    const { user } = useAuthUser();
 
     return (
         <div className="p-4 sm:p-6 max-w-3xl mx-auto space-y-4 sm:space-y-6">

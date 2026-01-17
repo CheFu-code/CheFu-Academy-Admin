@@ -1,6 +1,6 @@
 // app/types/course.ts
 
-import { Timestamp } from "firebase/firestore";
+import { Timestamp } from 'firebase/firestore';
 
 export interface Flashcard {
     front: string;
@@ -45,10 +45,16 @@ export interface Course {
     qa: QA[];
     quiz: Quiz[];
     completedChapter?: string[];
-
 }
 
 export interface CourseProgressProps {
     courseList: Course[];
     enroll?: boolean;
+}
+
+export interface AddCourseProp {
+    topic: string;
+    setTopic: React.Dispatch<React.SetStateAction<string>>;
+    selectedTopics: string[];
+    setSelectedTopics: React.Dispatch<React.SetStateAction<string[]>>;
 }

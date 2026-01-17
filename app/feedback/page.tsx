@@ -138,7 +138,7 @@ const Feedback = () => {
             </Card>
 
             <p className="text-xs sm:text-sm text-muted-foreground text-center">
-                © {currentYear} CheFu Inc. All right reserved.
+                © {currentYear} CheFu Academy. All right reserved.
             </p>
         </div>
     );

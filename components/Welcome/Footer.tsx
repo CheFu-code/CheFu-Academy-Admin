@@ -40,12 +40,15 @@ const Footer = () => {
                             </Link>
                         </li>
                         <li>
-                            <Link href="/about" className="hover:text-white">
+                            <Link href="about" className="hover:text-white">
                                 About Us
                             </Link>
                         </li>
                         <li>
-                            <Link href="/contact" className="hover:text-white">
+                            <Link
+                                href="mailto:chefu.inc@gmail.com"
+                                className="hover:text-white"
+                            >
                                 Contact
                             </Link>
                         </li>
@@ -94,17 +97,17 @@ const Footer = () => {
                             href="https://www.facebook.com/CheFu.Inc"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="hover:text-white"
+                            className="hover:text-blue-500"
                         >
                             <FaFacebookF size={20} />
                         </a>
-                        <a href="#" className="hover:text-white">
+                        <a href="#" className="hover:text-primary">
                             <FaTwitter size={20} />
                         </a>
-                        <a href="#" className="hover:text-white">
+                        <a href="#" className="hover:text-indigo-500">
                             <FaLinkedinIn size={20} />
                         </a>
-                        <a href="#" className="hover:text-white">
+                        <a href="#" className="hover:text-pink-600">
                             <FaInstagram size={20} />
                         </a>
                     </div>
