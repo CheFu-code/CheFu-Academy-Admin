@@ -3,39 +3,14 @@
 import { buttonVariants } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ui/themeToggle';
 import { navigationItems } from '@/constants/Data';
-import { auth, db } from '@/lib/firebase';
-import { User } from '@/types/user';
-import { onAuthStateChanged } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import { useAuthUser } from '@/hooks/useAuthUser';
 import { Loader } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
 import UserDropdown from './UserDropdown';
 
 export default function Navbar() {
-    const [user, setUser] = useState<User | null>(null);
-    const [loading, setLoading] = useState(true); // <-- track loading
-
-    useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-            if (firebaseUser && firebaseUser.email) {
-                const docRef = doc(db, 'users', firebaseUser.email);
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) setUser(docSnap.data() as User);
-                else
-                    setUser({
-                        email: firebaseUser.email,
-                        fullname: '',
-                    } as User); // fallback
-            } else {
-                setUser(null);
-            }
-            setLoading(false); // finished checking auth
-        });
-
-        return () => unsubscribe();
-    }, []);
+    const { user, loading } = useAuthUser();
 
     return (
         <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur-[backdrop-filter]:bg-background/60 ">

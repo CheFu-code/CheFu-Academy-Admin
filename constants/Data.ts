@@ -109,7 +109,7 @@ export const navigationItems = [
         href: '/videos/all-videos',
     },
     {
-        name: 'About',
-        href: '/about',
+        name: 'Documentation',
+        href: '/documentation',
     },
 ];

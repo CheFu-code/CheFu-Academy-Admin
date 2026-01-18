@@ -10,11 +10,12 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useAuthUser } from '@/hooks/useAuthUser';
 import { auth } from '@/lib/firebase';
 import { GoogleAuthProvider, signInWithEmailAndPassword } from 'firebase/auth';
 import { Loader } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { FcGoogle } from 'react-icons/fc';
 import { toast } from 'sonner';
 
@@ -24,6 +25,13 @@ export default function LoginForm() {
     const [emailPending, startEmailTransition] = useTransition();
     const [googlePending, startGoogleTransition] = useTransition();
     const router = useRouter();
+    const { user, loading } = useAuthUser();
+
+    useEffect(() => {
+        if (!loading && user) {
+            router.replace('/');
+        }
+    }, [loading, user, router]);
 
     const handleGoogle = async () => {
         startGoogleTransition(async () => {
@@ -35,7 +43,6 @@ export default function LoginForm() {
                 });
 
                 toast.success('Login successful!');
-                router.replace('/'); // redirect after login
             } catch (error: unknown) {
                 if (error instanceof Error) {
                     console.error('Google login failed:', error);
@@ -71,7 +78,6 @@ export default function LoginForm() {
         startEmailTransition(async () => {
             try {
                 await signInWithEmailAndPassword(auth, email, password);
-                router.replace('/');
                 toast.success('Login successful!');
             } catch (error) {
                 toast.error('Login failed. Please try again later.');
@@ -88,72 +94,73 @@ export default function LoginForm() {
                     Login to access your courses and continue learning.
                 </CardDescription>
             </CardHeader>
-
-            <CardContent className="flex flex-col gap-4">
-                <div className="flex flex-row justify-center gap-4">
-                    <Button
-                        disabled={googlePending}
-                        onClick={handleGoogle}
-                        variant="outline"
-                        className='cursor-pointer'
-                    >
-                        {googlePending ? (
-                            <>
-                                <Loader className="size-4 animate-spin" />
-                                <span>Loading...</span>
-                            </>
-                        ) : (
-                            <>
-                                <FcGoogle className="size-4" />
-                                <span>Sign in with Google</span>
-                            </>
-                        )}
-                    </Button>
-                </div>
-
-                <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
-                    <span className="relative z-10 bg-card px-2 text-muted-foreground">
-                        Or continue with
-                    </span>
-                </div>
-
-                <div className="grid gap-3">
-                    <div className="grid gap-2">
-                        <Label htmlFor="email">Email</Label>
-                        <Input
-                            id="email"
-                            type="email"
-                            placeholder="email@example.com"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                        />
+            <form onSubmit={handleEmailLogin}>
+                <CardContent className="flex flex-col gap-4">
+                    <div className="flex flex-row justify-center gap-4">
+                        <Button
+                            disabled={googlePending}
+                            onClick={handleGoogle}
+                            variant="outline"
+                            className="cursor-pointer"
+                        >
+                            {googlePending ? (
+                                <>
+                                    <Loader className="size-4 animate-spin" />
+                                    <span>Loading...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <FcGoogle className="size-4" />
+                                    <span>Sign in with Google</span>
+                                </>
+                            )}
+                        </Button>
                     </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="password">Password</Label>
-                        <Input
-                            id="password"
-                            type="password"
-                            placeholder="********"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                        />
+
+                    <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
+                        <span className="relative z-10 bg-card px-2 text-muted-foreground">
+                            Or continue with
+                        </span>
                     </div>
-                    <Button
-                        disabled={emailPending || !email || !password}
-                        onClick={handleEmailLogin}
-                        className="cursor-pointer"
-                    >
-                        {emailPending ? (
-                            <>
-                                <Loader className="size-4 animate-spin" />
-                                <span>Loading...</span>
-                            </>
-                        ) : (
-                            'Continue'
-                        )}
-                    </Button>
-                </div>
-            </CardContent>
+
+                    <div className="grid gap-3">
+                        <div className="grid gap-2">
+                            <Label htmlFor="email">Email</Label>
+                            <Input
+                                id="email"
+                                type="email"
+                                placeholder="email@example.com"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                            />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="password">Password</Label>
+                            <Input
+                                id="password"
+                                type="password"
+                                placeholder="********"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                            />
+                        </div>
+                        <Button
+                            disabled={emailPending || !email || !password}
+                            onClick={handleEmailLogin}
+                            className="cursor-pointer"
+                        >
+                            {emailPending ? (
+                                <>
+                                    <Loader className="size-4 animate-spin" />
+                                    <span>Loading...</span>
+                                </>
+                            ) : (
+                                'Continue'
+                            )}
+                        </Button>
+                    </div>
+                </CardContent>
+            </form>
         </Card>
     );
 }

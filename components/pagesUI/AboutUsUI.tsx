@@ -5,7 +5,7 @@ import { Separator } from '../ui/separator';
 
 const AboutUsUI = () => {
     return (
-        <main id='about' className="min-h-screen bg-background text-foreground">
+        <main id="about" className="min-h-screen bg-background text-foreground">
             <section className="max-w-6xl mx-auto px-6 pt-24 pb-20 text-center">
                 <Badge variant={'outline'} className="mb-4">
                     About Us
@@ -37,7 +37,7 @@ const AboutUsUI = () => {
                     <CardHeader>
                         <CardTitle>Our Vision</CardTitle>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="text-muted-foreground leading-relaxed">
                         We envision a future where technology is accessible,
                         secure, and for people ― not against them.
                     </CardContent>
