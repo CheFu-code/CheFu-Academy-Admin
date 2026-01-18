@@ -1,13 +1,10 @@
 'use client';
 
-import { buttonVariants } from '@/components/ui/button';
-import { ThemeToggle } from '@/components/ui/themeToggle';
-import { navigationItems } from '@/constants/Data';
 import { useAuthUser } from '@/hooks/useAuthUser';
-import { Loader } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import UserDropdown from './UserDropdown';
+import DesktopMenu from './DesktopMenu';
+import MobileMenu from './MobileMenu';
 
 export default function Navbar() {
     const { user, loading } = useAuthUser();
@@ -29,44 +26,9 @@ export default function Navbar() {
                     <span className="font-bold">CheFu Academy</span>
                 </Link>
 
-                <nav className="hidden md:flex md:flex-1 md:items-center md:justify-between">
-                    {loading ? (
-                        <Loader className="size-4 animate-spin" />
-                    ) : (
-                        <div className="items-center space-x-4 ">
-                            {navigationItems.map((item) => (
-                                <Link
-                                    key={item.name}
-                                    href={item.href}
-                                    className="text-sm font-medium transition-colors hover:text-primary"
-                                >
-                                    {item.name}
-                                </Link>
-                            ))}
-                        </div>
-                    )}
-
-                    <div className="flex items-center space-x-4 justify-end">
-                        <ThemeToggle />
-                        {loading ? (
-                            <Loader className="size-4 animate-spin" />
-                        ) : user ? (
-                            <Link
-                                href="/"
-                                className="text-sm font-medium transition-colors hover:text-primary"
-                            >
-                                <UserDropdown user={user} />
-                            </Link>
-                        ) : (
-                            <Link
-                                href="/login"
-                                className={buttonVariants({ size: 'sm' })}
-                            >
-                                Login
-                            </Link>
-                        )}
-                    </div>
-                </nav>
+                {/* Mobile Menu */}
+                <MobileMenu user={user} loading={loading} />
+                <DesktopMenu user={user} loading={loading} />
             </div>
         </header>
     );
