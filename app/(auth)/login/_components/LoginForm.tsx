@@ -20,12 +20,12 @@ import { FcGoogle } from 'react-icons/fc';
 import { toast } from 'sonner';
 
 export default function LoginForm() {
+    const router = useRouter();
+    const { user, loading } = useAuthUser();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [emailPending, startEmailTransition] = useTransition();
     const [googlePending, startGoogleTransition] = useTransition();
-    const router = useRouter();
-    const { user, loading } = useAuthUser();
 
     useEffect(() => {
         if (!loading && user) {
@@ -145,7 +145,9 @@ export default function LoginForm() {
                             />
                         </div>
                         <Button
-                            disabled={emailPending || !email || !password}
+                            disabled={
+                                emailPending || !email || !password || loading
+                            }
                             onClick={handleEmailLogin}
                             className="cursor-pointer"
                         >

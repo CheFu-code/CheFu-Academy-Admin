@@ -48,7 +48,9 @@ export default function Navbar() {
 
                     <div className="flex items-center space-x-4 justify-end">
                         <ThemeToggle />
-                        {user ? (
+                        {loading ? (
+                            <Loader className="size-4 animate-spin" />
+                        ) : user ? (
                             <Link
                                 href="/"
                                 className="text-sm font-medium transition-colors hover:text-primary"
