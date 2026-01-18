@@ -1,7 +1,4 @@
-'use client';
-
 import { ChevronRight, type LucideIcon } from 'lucide-react';
-
 import {
     Collapsible,
     CollapsibleContent,
@@ -11,7 +8,6 @@ import {
     SidebarGroup,
     SidebarGroupLabel,
     SidebarMenu,
-    SidebarMenuAction,
     SidebarMenuButton,
     SidebarMenuItem,
     SidebarMenuSub,
@@ -27,40 +23,36 @@ export function NavMain({
         url: string;
         icon: LucideIcon;
         isActive?: boolean;
-        items?: {
-            title: string;
-            url: string;
-        }[];
+        items?: { title: string; url: string }[];
     }[];
 }) {
     return (
         <SidebarGroup>
             <SidebarGroupLabel>Study Center</SidebarGroupLabel>
             <SidebarMenu>
-                {items.map((item) => (
-                    <Collapsible
-                        key={item.title}
-                        asChild
-                        defaultOpen={item.isActive}
-                    >
-                        <SidebarMenuItem>
-                            <SidebarMenuButton asChild tooltip={item.title}>
-                                <a href={item.url}>
-                                    <item.icon />
-                                    <span>{item.title}</span>
-                                    
-                                </a>
-                            </SidebarMenuButton>
-                            {item.items?.length ? (
-                                <>
-                                    <CollapsibleTrigger asChild>
-                                        <SidebarMenuAction className="data-[state=open]:rotate-90">
-                                            <ChevronRight />
-                                            <span className="sr-only">
-                                                Toggle
-                                            </span>
-                                        </SidebarMenuAction>
-                                    </CollapsibleTrigger>
+                {items.map((item) => {
+                    const hasSubItems = !!item.items?.length;
+
+                    return (
+                        <Collapsible
+                            key={item.title}
+                            defaultOpen={item.isActive}
+                        >
+                            <SidebarMenuItem>
+                                {/* Trigger handles collapse */}
+                                <CollapsibleTrigger asChild className='cursor-pointer'>
+                                    <SidebarMenuButton className="flex justify-between items-center w-full">
+                                        <div className="flex items-center gap-2">
+                                            <item.icon size={18} />
+                                            <span>{item.title}</span>
+                                        </div>
+                                        {hasSubItems && (
+                                            <ChevronRight className="transition-transform data-[state=open]:rotate-90" />
+                                        )}
+                                    </SidebarMenuButton>
+                                </CollapsibleTrigger>
+
+                                {hasSubItems && (
                                     <CollapsibleContent>
                                         <SidebarMenuSub>
                                             {item.items?.map((subItem) => (
@@ -71,20 +63,27 @@ export function NavMain({
                                                         asChild
                                                     >
                                                         <a href={subItem.url}>
-                                                            <span>
-                                                                {subItem.title}
-                                                            </span>
+                                                            {subItem.title}
                                                         </a>
                                                     </SidebarMenuSubButton>
                                                 </SidebarMenuSubItem>
                                             ))}
                                         </SidebarMenuSub>
                                     </CollapsibleContent>
-                                </>
-                            ) : null}
-                        </SidebarMenuItem>
-                    </Collapsible>
-                ))}
+                                )}
+
+                                {/* If no subitems, render normal link */}
+                                {!hasSubItems && (
+                                    <a
+                                        href={item.url}
+                                        className="absolute inset-0"
+                                        aria-hidden="true"
+                                    />
+                                )}
+                            </SidebarMenuItem>
+                        </Collapsible>
+                    );
+                })}
             </SidebarMenu>
         </SidebarGroup>
     );
