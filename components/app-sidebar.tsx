@@ -17,7 +17,6 @@ import {
 } from "@/components/ui/sidebar";
 import { useAuthUser } from "@/hooks/useAuthUser";
 import Image from "next/image";
-import RealAppBanner from "./RealAppBanner";
 
 const data = {
     navMain: [
@@ -94,7 +93,7 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-    const { user, loading } = useAuthUser();
+    const { user } = useAuthUser();
     return (
         <Sidebar
             className="top-(--header-height) h-[calc(100svh-var(--header-height))]!"
@@ -128,7 +127,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </SidebarHeader>
             <SidebarContent>
                 <NavMain items={data.navMain} />
-                <RealAppBanner className="mt-50 sm:mt-50 md:mt-50 lg:mt-50" />
                 <NavSecondary items={data.navSecondary} className="mt-auto" />
             </SidebarContent>
 
