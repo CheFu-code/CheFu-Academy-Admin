@@ -1,18 +1,10 @@
-'use client';
+import { Suspense } from 'react';
+import UpgradeClient from './UpgradeClient';
 
-import UpgradeUI from '@/components/pagesUI/UpgradeUI';
-import { useSearchParams } from 'next/navigation';
-
-const Upgrade = () => {
-    const searchParams = useSearchParams();
-    const price = searchParams.get('price');
-    const plan = searchParams.get('plan');
-    if (!price || !plan) return;
+export default function UpgradePage() {
     return (
-        <div>
-            <UpgradeUI price={price} plan={plan} />
-        </div>
+        <Suspense fallback={null}>
+            <UpgradeClient />
+        </Suspense>
     );
-};
-
-export default Upgrade;
+}

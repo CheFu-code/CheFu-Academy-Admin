@@ -4,9 +4,9 @@ import { Input } from '@/components/ui/input';
 import { Send, User } from 'lucide-react';
 import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 
-const Chat = () => {
+const ChatContent = () => {
     const searchParams = useSearchParams();
     const initialMessage = searchParams.get('message');
     const [input, setInput] = useState('');
@@ -100,4 +100,11 @@ const Chat = () => {
     );
 };
 
+const Chat = () => {
+    return (
+        <Suspense fallback={<div>Loading chat...</div>}>
+            <ChatContent />
+        </Suspense>
+    );
+};
 export default Chat;
