@@ -53,7 +53,7 @@ export const testimonials = [
         role: 'Student',
         message:
             'The personalized learning paths helped me focus on exactly what I needed. Highly recommended!',
-        avatar: '/avatars/brian.jpg',
+        avatar: '/avatar.jpg',
     },
     {
         name: 'Catherine Lee',

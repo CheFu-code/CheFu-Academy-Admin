@@ -50,6 +50,7 @@ const AllVideos = () => {
                         {/* Thumbnail with description overlay */}
                         <div className="relative w-full aspect-video">
                             <Image
+                                fill
                                 src={video.thumbnailURL}
                                 alt={video.title}
                                 className="w-full h-full object-contain bg-gray-500/70 rounded-t-lg"
