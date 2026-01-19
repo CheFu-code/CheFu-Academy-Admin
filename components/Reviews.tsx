@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from "react";
-import { UserReviews, Video } from "@/types/video";
-import { DeleteIcon, Pencil, PlusIcon, Star, Trash2 } from "lucide-react";
-import { toast } from "sonner";
-import { auth, db } from "@/lib/firebase";
-import { useAuthUser } from "@/hooks/useAuthUser";
+import React, { useEffect, useState } from 'react';
+import { UserReviews, Video } from '@/types/video';
+import { DeleteIcon, Pencil, PlusIcon, Star, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { auth, db } from '@/lib/firebase';
+import { useAuthUser } from '@/hooks/useAuthUser';
 import {
     addDoc,
     collection,
@@ -15,7 +15,9 @@ import {
     QueryDocumentSnapshot,
     serverTimestamp,
     updateDoc,
-} from "firebase/firestore";
+} from 'firebase/firestore';
+import { Button } from './ui/button';
+import Image from 'next/image';
 
 type ReviewsProps = {
     video: Video;
@@ -25,7 +27,7 @@ const Reviews = ({ video }: ReviewsProps) => {
     const [reviews, setReviews] = useState<UserReviews[]>([]);
     const [loading, setLoading] = useState(false);
     const [rating, setRating] = useState(0);
-    const [reviewText, setReviewText] = useState("");
+    const [reviewText, setReviewText] = useState('');
     const [addReviewModal, setAddReviewModal] = useState(false);
     const [editingReviewId, setEditingReviewId] = useState<string | null>(null);
     const [editReviewModal, setEditReviewModal] = useState(false);
@@ -40,8 +42,8 @@ const Reviews = ({ video }: ReviewsProps) => {
     useEffect(() => {
         if (!video || !video.id) return;
 
-        const reviewsRef = collection(db, "videos", video.id, "reviews");
-        const q = query(reviewsRef, orderBy("createdAt", "desc"));
+        const reviewsRef = collection(db, 'videos', video.id, 'reviews');
+        const q = query(reviewsRef, orderBy('createdAt', 'desc'));
 
         const unsub = onSnapshot(q, (snapshot) => {
             const data = snapshot.docs.map((doc: QueryDocumentSnapshot) => ({
@@ -55,35 +57,41 @@ const Reviews = ({ video }: ReviewsProps) => {
     }, [video]);
 
     const handleSubmitReview = async () => {
-        if (!video?.id) return toast.warning("Invalid video");
+        if (!video?.id) return toast.warning('Invalid video');
         if (!user?.uid || !user?.fullname)
             return toast.warning("You're not logged in properly");
-        if (hasReviewed()) return toast.warning("You already reviewed this video");
-        if (rating === 0) return toast.warning("Please select a rating");
-        if (reviewText.trim() === "")
-            return toast.warning("Please write a review...");
+        if (hasReviewed())
+            return toast.warning('You already reviewed this video');
+        if (rating === 0) return toast.warning('Please select a rating');
+        if (reviewText.trim() === '')
+            return toast.warning('Please write a review...');
 
         setLoading(true);
         try {
-            const reviewsCollection = collection(db, "videos", video.id, "reviews");
+            const reviewsCollection = collection(
+                db,
+                'videos',
+                video.id,
+                'reviews',
+            );
             await addDoc(reviewsCollection, {
                 userId: user.uid,
                 username: user.fullname,
-                email: user.email || "",
-                avatar: user.profilePicture || "",
+                email: user.email || '',
+                avatar: user.profilePicture || '',
                 rating,
                 comment: reviewText.trim(),
                 videoId: video.id,
                 createdAt: serverTimestamp(),
             });
 
-            setReviewText("");
+            setReviewText('');
             setRating(0);
             setAddReviewModal(false);
-            toast.success("Review submitted!");
+            toast.success('Review submitted!');
         } catch (err) {
-            console.error("Error submitting review:", err);
-            toast.error("Failed to submit review");
+            console.error('Error submitting review:', err);
+            toast.error('Failed to submit review');
         } finally {
             setLoading(false);
         }
@@ -92,26 +100,25 @@ const Reviews = ({ video }: ReviewsProps) => {
     const handleEditReview = async () => {
         if (!video || !editingReviewId) return;
         if (user?.uid !== auth.currentUser?.uid) {
-            toast.warning("You can only edit your own reviews");
+            toast.warning('You can only edit your own reviews');
             return;
         }
         setLoading(true);
 
         if (rating === 0) {
-            toast.warning("Please select a rating");
+            toast.warning('Please select a rating');
             setLoading(false);
             return;
         }
-        if (reviewText.trim() === "") {
-            toast.warning("Please write a review");
+        if (reviewText.trim() === '') {
+            toast.warning('Please write a review');
             setLoading(false);
             return;
         }
 
         try {
-
             if (!video.id) {
-                toast.warning("Invalid video ID for update.");
+                toast.warning('Invalid video ID for update.');
                 setLoading(false);
                 return;
             }
@@ -123,10 +130,10 @@ const Reviews = ({ video }: ReviewsProps) => {
 
             const reviewRef = doc(
                 db,
-                "videos",
+                'videos',
                 video.id,
-                "reviews",
-                editingReviewId
+                'reviews',
+                editingReviewId,
             );
             await updateDoc(reviewRef, updatedReview);
 
@@ -135,20 +142,20 @@ const Reviews = ({ video }: ReviewsProps) => {
                 prev.map((rev) =>
                     rev.id === editingReviewId
                         ? { ...rev, ...updatedReview }
-                        : rev
-                )
+                        : rev,
+                ),
             );
 
             // reset state
             setEditingReviewId(null);
-            setReviewText("");
+            setReviewText('');
             setRating(0);
             setEditReviewModal(false);
 
-            toast.success("Review updated successfully");
+            toast.success('Review updated successfully');
         } catch (error) {
-            console.error("Error updating review: ", error);
-            toast.error("Failed to update review");
+            console.error('Error updating review: ', error);
+            toast.error('Failed to update review');
         } finally {
             setLoading(false);
         }
@@ -156,7 +163,7 @@ const Reviews = ({ video }: ReviewsProps) => {
 
     const handleDeleteReview = async () => {
         if (!video || !video.id) {
-            toast.warning("Invalid video");
+            toast.warning('Invalid video');
             return;
         }
         if (!user?.uid) {
@@ -164,27 +171,35 @@ const Reviews = ({ video }: ReviewsProps) => {
             return;
         }
         if (!editingReviewId) {
-            toast.warning("No review selected");
+            toast.warning('No review selected');
             return;
         }
 
         setLoading(true);
         try {
-            const reviewRef = doc(db, "videos", video.id, "reviews", editingReviewId);
+            const reviewRef = doc(
+                db,
+                'videos',
+                video.id,
+                'reviews',
+                editingReviewId,
+            );
 
             await deleteDoc(reviewRef);
 
             // update local state
-            setReviews((prev) => prev.filter((rev) => rev.id !== editingReviewId));
+            setReviews((prev) =>
+                prev.filter((rev) => rev.id !== editingReviewId),
+            );
 
             // reset state
             setEditingReviewId(null);
             setDeleteReviewModal(false);
 
-            toast.success("Review deleted successfully");
+            toast.success('Review deleted successfully');
         } catch (error) {
-            console.error("Error deleting review:", error);
-            toast.error("Failed to delete review");
+            console.error('Error deleting review:', error);
+            toast.error('Failed to delete review');
         } finally {
             setLoading(false);
         }
@@ -204,25 +219,23 @@ const Reviews = ({ video }: ReviewsProps) => {
                         <span className="text-sm sm:text-base md:text-lg font-medium">
                             {reviews.length > 0
                                 ? (
-                                    reviews.reduce((acc, r) => acc + r.rating, 0) /
-                                    reviews.length
-                                ).toFixed(1)
-                                : "0.0"}
+                                      reviews.reduce(
+                                          (acc, r) => acc + r.rating,
+                                          0,
+                                      ) / reviews.length
+                                  ).toFixed(1)
+                                : '0.0'}
                         </span>
                     </div>
 
-                    <button
+                    <Button
                         onClick={() => {
-                            if (hasReviewed()) {
-                                return toast.warning("You already reviewed this video");
-                            } else {
-                                setAddReviewModal(true);
-                            }
+                            setAddReviewModal(true);
                         }}
-                        className="flex items-center gap-1 bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm md:text-base px-3 py-1.5 rounded-lg transition"
+                        className=" bg-green-600 hover:bg-green-700  cursor-pointer"
                     >
-                        <PlusIcon className="h-4 w-4" /> Add Review
-                    </button>
+                        <PlusIcon className="size-4" /> Add Review
+                    </Button>
                 </div>
             </div>
 
@@ -239,18 +252,27 @@ const Reviews = ({ video }: ReviewsProps) => {
                             className="bg-gray-200/50 p-3 rounded-lg shadow-sm flex flex-col gap-1"
                         >
                             <div className="flex flex-row items-start gap-3">
-                                <img
+                                <Image
+                                    width={10}
+                                    height={10}
                                     src={rev.avatar}
                                     alt={rev.username}
                                     className="h-10 w-10 rounded-full object-cover"
                                 />
 
                                 <div className="flex-1 flex justify-between items-center">
-                                    <p className="font-semibold">{rev.username}</p>
+                                    <p className="font-semibold">
+                                        {rev.username}
+                                    </p>
                                     <div className="flex flex-col items-center gap-1">
                                         <div className="flex items-center gap-1 text-yellow-500">
-                                            {Array.from({ length: rev.rating }).map((_, i) => (
-                                                <Star key={i} className="h-4 w-4 fill-yellow-500" />
+                                            {Array.from({
+                                                length: rev.rating,
+                                            }).map((_, i) => (
+                                                <Star
+                                                    key={i}
+                                                    className="h-4 w-4 fill-yellow-500"
+                                                />
                                             ))}
                                         </div>
                                         {user?.uid === rev.userId && (
@@ -258,17 +280,27 @@ const Reviews = ({ video }: ReviewsProps) => {
                                                 <Pencil
                                                     className="h-4 w-4 cursor-pointer"
                                                     onClick={() => {
-                                                        setEditingReviewId(rev.id);
-                                                        setReviewText(rev.comment);
+                                                        setEditingReviewId(
+                                                            rev.id,
+                                                        );
+                                                        setReviewText(
+                                                            rev.comment,
+                                                        );
                                                         setRating(rev.rating);
-                                                        setEditReviewModal(true);
+                                                        setEditReviewModal(
+                                                            true,
+                                                        );
                                                     }}
                                                 />
                                                 <Trash2
                                                     className="h-4 w-4 text-red-500 cursor-pointer"
                                                     onClick={() => {
-                                                        setEditingReviewId(rev.id);
-                                                        setDeleteReviewModal(true);
+                                                        setEditingReviewId(
+                                                            rev.id,
+                                                        );
+                                                        setDeleteReviewModal(
+                                                            true,
+                                                        );
                                                     }}
                                                 />
                                             </div>
@@ -277,7 +309,9 @@ const Reviews = ({ video }: ReviewsProps) => {
                                 </div>
                             </div>
 
-                            <p className="text-sm sm:text-base mt-1">{rev.comment}</p>
+                            <p className="text-sm sm:text-base mt-1">
+                                {rev.comment}
+                            </p>
                         </div>
                     ))}
                 </div>
@@ -287,14 +321,19 @@ const Reviews = ({ video }: ReviewsProps) => {
             {editReviewModal && (
                 <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
                     <div className="bg-white p-6 rounded-lg w-full max-w-md">
-                        <h3 className="text-lg text-black font-bold mb-4">Edit Your Review</h3>
+                        <h3 className="text-lg text-black font-bold mb-4">
+                            Edit Your Review
+                        </h3>
 
                         <div className="flex gap-1 mb-3">
                             {Array.from({ length: 5 }).map((_, i) => (
                                 <Star
                                     key={i}
-                                    className={`h-6 w-6 cursor-pointer ${rating > i ? "text-yellow-500 fill-yellow-500" : "text-gray-500"
-                                        }`}
+                                    className={`h-6 w-6 cursor-pointer ${
+                                        rating > i
+                                            ? 'text-yellow-500 fill-yellow-500'
+                                            : 'text-gray-500'
+                                    }`}
                                     onClick={() => setRating(i + 1)}
                                 />
                             ))}
@@ -314,7 +353,7 @@ const Reviews = ({ video }: ReviewsProps) => {
                                 onClick={() => {
                                     setEditReviewModal(false);
                                     setEditingReviewId(null);
-                                    setReviewText("");
+                                    setReviewText('');
                                     setRating(0);
                                 }}
                                 className="px-3 py-1 bg-gray-300 text-black rounded-md"
@@ -326,7 +365,7 @@ const Reviews = ({ video }: ReviewsProps) => {
                                 disabled={loading}
                                 className="px-3 py-1 cursor-pointer bg-green-600 text-white rounded-md disabled:opacity-50"
                             >
-                                {loading ? "Updating..." : "Update"}
+                                {loading ? 'Updating...' : 'Update'}
                             </button>
                         </div>
                     </div>
@@ -337,10 +376,12 @@ const Reviews = ({ video }: ReviewsProps) => {
             {deleteReviewModal && (
                 <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
                     <div className="bg-white p-6 rounded-lg w-full max-w-sm">
-                        <h3 className="text-lg font-bold text-black mb-4">Delete Review</h3>
+                        <h3 className="text-lg font-bold text-black mb-4">
+                            Delete Review
+                        </h3>
                         <p className="text-sm sm:text-base mb-4 text-black">
-                            Are you sure you want to delete this review? This action cannot be
-                            undone.
+                            Are you sure you want to delete this review? This
+                            action cannot be undone.
                         </p>
                         <div className="flex justify-end gap-2">
                             <button
@@ -358,7 +399,7 @@ const Reviews = ({ video }: ReviewsProps) => {
                                 disabled={loading}
                                 className="px-3 py-1 bg-red-600 text-white rounded-md disabled:opacity-50"
                             >
-                                {loading ? "Deleting..." : "Delete"}
+                                {loading ? 'Deleting...' : 'Delete'}
                             </button>
                         </div>
                     </div>
@@ -377,10 +418,11 @@ const Reviews = ({ video }: ReviewsProps) => {
                             {Array.from({ length: 5 }).map((_, i) => (
                                 <Star
                                     key={i}
-                                    className={`h-6 w-6 cursor-pointer ${rating > i
-                                        ? "text-yellow-500 fill-yellow-500"
-                                        : "text-gray-500"
-                                        }`}
+                                    className={`h-6 w-6 cursor-pointer ${
+                                        rating > i
+                                            ? 'text-yellow-500 fill-yellow-500'
+                                            : 'text-gray-500'
+                                    }`}
                                     onClick={() => setRating(i + 1)}
                                 />
                             ))}
@@ -395,20 +437,23 @@ const Reviews = ({ video }: ReviewsProps) => {
                         />
 
                         <div className="flex justify-end gap-2">
-                            <button
+                            <Button
+                                variant={'destructive'}
                                 disabled={loading}
                                 onClick={() => setAddReviewModal(false)}
-                                className="px-3 py-1 bg-gray-300 text-black rounded-md"
+                                className="cursor-pointer"
                             >
                                 Cancel
-                            </button>
-                            <button
+                            </Button>
+                            <Button
                                 onClick={handleSubmitReview}
-                                disabled={loading}
-                                className="px-3 py-1 bg-green-600 text-white rounded-md disabled:opacity-50"
+                                disabled={
+                                    loading || !reviewText.trim() || !rating
+                                }
+                                className="px-3 py-1 bg-green-600 cursor-pointer disabled:opacity-50"
                             >
-                                {loading ? "Submitting..." : "Submit"}
-                            </button>
+                                {loading ? 'Submitting...' : 'Submit'}
+                            </Button>
                         </div>
                     </div>
                 </div>

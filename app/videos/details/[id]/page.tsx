@@ -28,6 +28,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const VideoDetailsPage = () => {
     const params = useParams();
@@ -197,36 +198,31 @@ const VideoDetailsPage = () => {
                 </div>
 
                 {/* Tabs */}
-                <div className="flex flex-col gap-4">
-                    <div className="flex justify-between bg-gray-400/50 gap-4 rounded-2xl px-2 py-0.5 items-center">
-                        <p
-                            onClick={() => setActiveTab('overview')}
-                            className={`text-sm sm:text-base md:text-lg cursor-pointer transition px-3 py-1 rounded-lg ${
-                                activeTab === 'overview'
-                                    ? 'bg-green-600 text-white border-2 border-green-700'
-                                    : 'hover:text-green-600'
-                            }`}
+                <Tabs defaultValue="overview" className="flex flex-col gap-4">
+                    {/* Tab headers */}
+                    <TabsList className="bg-gray-400/50 rounded-2xl p-1 gap-1">
+                        <TabsTrigger
+                            value="overview"
+                            className="px-3 py-1 cursor-pointer rounded-lg text-sm sm:text-base md:text-lg"
                         >
                             Overview
-                        </p>
-                        <p
-                            onClick={() => setActiveTab('reviews')}
-                            className={`text-sm sm:text-base md:text-lg cursor-pointer transition px-3 py-1 rounded-lg ${
-                                activeTab === 'reviews'
-                                    ? 'bg-green-600 text-white border-2 border-green-700'
-                                    : 'hover:text-green-600'
-                            }`}
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="reviews"
+                            className="px-3 py-1 cursor-pointer rounded-lg text-sm sm:text-base md:text-lg"
                         >
                             Reviews
-                        </p>
-                    </div>
+                        </TabsTrigger>
+                    </TabsList>
 
-                    {/* Tab Content */}
-                    <div className="mt-4">
-                        {activeTab === 'overview' && <Overview video={video} />}
-                        {activeTab === 'reviews' && <Reviews video={video} />}
-                    </div>
-                </div>
+                    {/* Tab content */}
+                    <TabsContent value="overview" className="mt-4">
+                        <Overview video={video} />
+                    </TabsContent>
+                    <TabsContent value="reviews" className="mt-4">
+                        <Reviews video={video} />
+                    </TabsContent>
+                </Tabs>
             </div>
         </div>
     );
