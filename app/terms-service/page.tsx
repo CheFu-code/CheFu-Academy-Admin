@@ -1,17 +1,27 @@
+'use client';
+
 import {
     Accordion,
     AccordionContent,
     AccordionItem,
     AccordionTrigger,
-} from "@/components/ui/accordion";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { FaExclamationCircle } from "react-icons/fa";
+} from '@/components/ui/accordion';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { useRouter } from 'next/navigation';
+import { FaExclamationCircle } from 'react-icons/fa';
 
 const Terms = () => {
+    const router = useRouter();
+
     return (
         <div className="max-w-5xl mx-auto p-6 space-y-8">
-            <h1 className="text-4xl font-extrabold">Terms of Service</h1>
+            <h1
+                onClick={() => router.push('/courses')}
+                className="text-4xl font-extrabold cursor-pointer"
+            >
+                Terms of Service
+            </h1>
             <p className="text-muted-foreground text-sm">
                 Last updated: September 3, 2025
             </p>
@@ -239,7 +249,7 @@ const Terms = () => {
                                 </p>
                                 <ul className="list-disc ml-5 space-y-1 text-sm text-muted-foreground">
                                     <li>
-                                        Email:{" "}
+                                        Email:{' '}
                                         <a
                                             href="mailto:chefu.inc@gmail.com"
                                             className="underline text-blue-500"

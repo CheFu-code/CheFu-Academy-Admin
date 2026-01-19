@@ -15,27 +15,39 @@ const Account = () => {
     return (
         <div className="container mx-auto max-w-4xl p-4 sm:p-6">
             {/* Header */}
-            <div className="flex items-center space-x-3 sm:space-x-4 mb-4 sm:mb-6">
-                <Avatar className="h-10 w-10 sm:h-16 sm:w-16">
-                    <AvatarImage src={user?.profilePicture} alt="User" />
-                    <AvatarFallback>
-                        {user?.fullname?.[0] || 'CA'}
-                    </AvatarFallback>
-                </Avatar>
+            <div className="flex items-center space-x-3 sm:space-x-4 mb-2 sm:mb-4">
+                <div className="flex flex-col items-start space-y-1 sm:space-y-2 w-full min-w-0">
+                    <div className="flex flex-row items-center">
+                        <Avatar className="h-10 w-10 sm:h-16 sm:w-16 mr-2">
+                            <AvatarImage
+                                src={user?.profilePicture}
+                                alt="User"
+                            />
+                            <AvatarFallback>
+                                {user?.fullname?.[0] || 'CA'}
+                            </AvatarFallback>
+                        </Avatar>
 
-                <div className="flex flex-col">
-                    {loading ? (
-                        <Loader className="animate-spin size-4" />
-                    ) : (
-                        <h1 className="text-base sm:text-2xl font-bold">
-                            <button className="cursor-pointer">
-                                {user?.fullname || 'Unknown'}{' '}
-                            </button>
-                        </h1>
+                        <div className="flex flex-col">
+                            {loading ? (
+                                <Loader className="animate-spin size-4" />
+                            ) : (
+                                <h1 className="text-base sm:text-2xl font-bold">
+                                    <button className="cursor-pointer">
+                                        {user?.fullname || 'Unknown'}{' '}
+                                    </button>
+                                </h1>
+                            )}
+                            <p className="text-xs sm:text-sm text-muted-foreground">
+                                {user?.roles[0] || 'anonymous'} at CheFu Academy
+                            </p>
+                        </div>
+                    </div>
+                    {user?.bio && (
+                        <p className="text-muted-foreground truncate w-full">
+                            {user?.bio}
+                        </p>
                     )}
-                    <p className="text-xs sm:text-sm text-muted-foreground">
-                        {user?.roles[0] || 'anonymous'} at CheFu Academy
-                    </p>
                 </div>
             </div>
 

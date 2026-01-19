@@ -1,3 +1,4 @@
+'use client';
 import {
     Accordion,
     AccordionContent,
@@ -6,15 +7,22 @@ import {
 } from '@/components/ui/accordion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useRouter } from 'next/navigation';
 
 const PrivacyPolicy = () => {
+    const router = useRouter();
     const currentYear = new Date().getFullYear();
 
     return (
         <div className="max-w-4xl mx-auto p-6 space-y-6">
-            <h1 className="text-3xl font-bold">Privacy Policy</h1>
+            <h1
+                onClick={() => router.push('/courses')}
+                className="text-3xl font-bold cursor-pointer"
+            >
+                Privacy Policy
+            </h1>
             <p className="text-muted-foreground text-sm">
-                Last updated: September 3, 2025
+                Last updated: January 18, 2026
             </p>
 
             <ScrollArea className="h-[600px] border rounded-md p-4">
@@ -156,7 +164,10 @@ const PrivacyPolicy = () => {
                                     </li>
                                     <li>
                                         You can manage{' '}
-                                        <a className='text-primary' href="/settings/account">
+                                        <a
+                                            className="text-primary"
+                                            href="/settings/account"
+                                        >
                                             email preferences
                                         </a>{' '}
                                         in settings

@@ -55,6 +55,6 @@ export interface CourseProgressProps {
 export interface AddCourseProp {
     topic: string;
     setTopic: React.Dispatch<React.SetStateAction<string>>;
-    selectedTopics: string[];
-    setSelectedTopics: React.Dispatch<React.SetStateAction<string[]>>;
+    selectedTopics: string;
+    setSelectedTopics: React.Dispatch<React.SetStateAction<string>>;
 }

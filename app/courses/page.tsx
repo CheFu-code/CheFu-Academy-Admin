@@ -12,16 +12,18 @@ import { auth, db } from '@/lib/firebase';
 import { Course } from '@/types/course';
 import {
     collection,
-    getDocFromCache,
+    DocumentData,
+    getDocs,
     limit,
     orderBy,
     query,
+    QueryDocumentSnapshot,
     where,
 } from 'firebase/firestore';
 import { Loader, Plus } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 export default function CoursesPage() {
@@ -29,29 +31,13 @@ export default function CoursesPage() {
     const router = useRouter();
     const courseRef = collection(db, 'course');
     const [courses, setCourses] = useState<Course[]>([]);
-    const [lastDoc, setLastDoc] = useState(null);
+    const [lastDoc, setLastDoc] =
+        useState<QueryDocumentSnapshot<DocumentData> | null>(null);
+
     const [fetchingCourses, setFetchingCourses] = useState(false);
 
-    // useEffect(() => {
-    //     (async () => {
-    //         try {
-    //             setLoadingCourses(true);
-    //             const data = await getCourses();
-    //             setCourses(data);
-    //             console.log('data:', data);
-    //         } catch (error) {
-    //             console.log(`Error fetching courses, ${error}`);
-    //             alert(`${error}`);
-    //         } finally {
-    //             setLoadingCourses(false);
-    //         }
-    //     })();
-    // }, []);
-
     const fetchCourses = useCallback(async () => {
-        if (fetchingCourses) return;
         setFetchingCourses(true);
-        setLastDoc(null);
 
         if (!user?.email) {
             setFetchingCourses(false);
@@ -61,27 +47,33 @@ export default function CoursesPage() {
         try {
             const q = query(
                 courseRef,
-                where('createdBy', '!=', user?.email),
+                where('createdBy', '!=', user.email),
                 orderBy('createdOn', 'desc'),
                 limit(7),
             );
 
-            const snapshot = await getDocFromCache(q);
+            const snapshot = await getDocs(q);
 
             const data = snapshot.docs.map((doc) => ({
-                ...doc.data(),
+                ...(doc.data() as Course),
                 id: doc.id,
             }));
 
             setCourses(data);
-            setLastDoc(snapshot.docs[snapshot.docs.length - 1] || null);
+            setLastDoc(snapshot.docs.at(-1) ?? null);
         } catch (error) {
             console.error(error);
-            toast.error('Failed to load your progress');
+            toast.error('Failed to load courses.');
         } finally {
             setFetchingCourses(false);
         }
-    }, [user?.email, fetchingCourses, courseRef]);
+    }, [user?.email, courseRef]);
+
+    useEffect(() => {
+        if (user?.email) {
+            fetchCourses();
+        }
+    }, [user?.email]);
 
     return (
         <div className="min-h-screen px-4 py-8">
@@ -95,14 +87,16 @@ export default function CoursesPage() {
                         courses.map((c) => (
                             <Card
                                 key={c.id}
-                                className="hover:shadow-lg transition-shadow duration-200 rounded-2xl"
+                                className="hover:shadow-lg transition-shadow duration-200 rounded-2xl cursor-pointer"
                             >
                                 <div className="relative w-full h-40 overflow-hidden rounded-t-2xl">
                                     <Image
                                         alt="Banner"
                                         src={c.banner_image}
+                                        priority
                                         fill
                                         className="object-fit"
+                                        sizes="w-full h-40"
                                     />
                                 </div>
 
@@ -116,7 +110,11 @@ export default function CoursesPage() {
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent>
-                                    {c.chapters.length} Chapters
+                                    <p className="font-semibold">
+                                        {c.chapters.length > 1
+                                            ? `${c.chapters.length} Chapters`
+                                            : `${c.chapters.length} Chapter`}
+                                    </p>
                                 </CardContent>
                             </Card>
                         ))

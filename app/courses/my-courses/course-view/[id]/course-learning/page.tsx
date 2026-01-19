@@ -1,22 +1,27 @@
-"use client";
+'use client';
 
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { useAuthUser } from "@/hooks/useAuthUser";
-import { Course } from "@/types/course";
+import NoChapter from '@/components/Courses/noChapter';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import ExampleBlock from '@/helpers/exampleBlock';
+import ExplainText from '@/helpers/expandText';
+import { useAuthUser } from '@/hooks/useAuthUser';
+import { db } from '@/lib/firebase';
+import { Course } from '@/types/course';
 import {
     arrayUnion,
     doc,
     getDoc,
     getFirestore,
     updateDoc,
-} from "firebase/firestore";
-import hljs from "highlight.js";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
-import { toast } from "sonner";
+} from 'firebase/firestore';
+import hljs from 'highlight.js';
+import { ArrowRight } from 'lucide-react';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { toast } from 'sonner';
 
 const CourseLearning = () => {
     const params = useParams();
@@ -24,7 +29,7 @@ const CourseLearning = () => {
     const searchParams = useSearchParams();
     const { user } = useAuthUser();
     const courseId = params.id;
-    const initialChapterIndex = Number(searchParams.get("chapter") || 0);
+    const initialChapterIndex = Number(searchParams.get('chapter') || 0);
 
     const [course, setCourse] = useState<Course | null>(null);
     const [chapterIndex, setChapterIndex] = useState(initialChapterIndex);
@@ -35,12 +40,12 @@ const CourseLearning = () => {
         const fetchCourse = async () => {
             if (!courseId) return;
             const db = getFirestore();
-            const docRef = doc(db, "course", courseId as string);
+            const docRef = doc(db, 'course', courseId as string);
             const docSnap = await getDoc(docRef);
             if (docSnap.exists()) {
                 setCourse({ id: docSnap.id, ...docSnap.data() } as Course);
             } else {
-                console.error("Course not found:", courseId);
+                console.error('Course not found:', courseId);
             }
         };
         fetchCourse();
@@ -49,25 +54,20 @@ const CourseLearning = () => {
     useEffect(() => {
         if (!user || loading) return;
         if (course?.createdBy !== user.email) {
-            toast.error("You are not authorized to view this course!");
-            router.replace("/courses");
+            toast.error('You are not authorized to view this course!');
+            router.replace('/courses');
         }
     }, [course, user, router, loading]);
 
     if (!course)
         return (
-            <div className="text-center font-bold flex justify-center items-center h-full">
+            <div className="text-center font-bold flex justify-center items-center h-full animate-pulse">
                 Loading...
             </div>
         );
 
     const chapter = course.chapters[chapterIndex];
-    if (!chapter)
-        return (
-            <div className="text-center font-bold flex justify-center items-center mt-8">
-                Chapter not found!
-            </div>
-        );
+    if (!chapter) return <NoChapter />;
 
     const totalContents = chapter.content.length;
     const progressPercent = (contentIndex + 1) / totalContents;
@@ -83,29 +83,28 @@ const CourseLearning = () => {
         setLoading(true);
 
         try {
-            const db = getFirestore();
-            const courseRef = doc(db, "course", course.id);
+            const courseRef = doc(db, 'course', course.id);
             await updateDoc(courseRef, {
                 completedChapter: arrayUnion(chapterIndex.toString()),
             });
             toast.success(
-                "Chapter completed! Redirecting to course overview..."
+                'Chapter completed! Redirecting to course overview...',
             );
-            router.replace(`/courses/course-view/${course.id}`);
+            router.replace(`/courses/my-courses/course-view/${course.id}`);
         } catch (err) {
             console.error(err);
-            toast.error("Error completing chapter!");
+            toast.error('Error completing chapter!');
         } finally {
             setLoading(false);
         }
     };
 
     const content = chapter.content[contentIndex];
-    const code = content.code || "";
+    const code = content.code || '';
     const cleanCode = code
-        ? code.replace(/^```[\w]*\n/, "").replace(/```$/, "")
-        : "";
-    const detectedLanguage = hljs.highlightAuto(code).language || "javascript";
+        ? code.replace(/^```[\w]*\n/, '').replace(/```$/, '')
+        : '';
+    const detectedLanguage = hljs.highlightAuto(code).language || 'javascript';
 
     return (
         <div className="p-4 max-w-3xl mx-auto space-y-6">
@@ -120,9 +119,8 @@ const CourseLearning = () => {
                 {content.topic && (
                     <h2 className="text-xl font-semibold">{content.topic}</h2>
                 )}
-                {content.explain && (
-                    <p className="text-muted-foreground">{content.explain}</p>
-                )}
+                {content.explain && <ExplainText text={content.explain} />}
+
                 {cleanCode && (
                     <SyntaxHighlighter
                         language={detectedLanguage}
@@ -130,32 +128,23 @@ const CourseLearning = () => {
                         showLineNumbers
                         wrapLongLines
                         customStyle={{
-                            borderRadius: "0.5rem",
-                            padding: "1rem",
-                            fontSize: "0.875rem",
-                            fontFamily: "Fira Code, monospace",
-                            overflowX: "auto",
-                            boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
+                            borderRadius: '0.5rem',
+                            padding: '1rem',
+                            fontSize: '0.875rem',
+                            fontFamily: 'Fira Code, monospace',
+                            overflowX: 'auto',
+                            boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
                         }}
                     >
                         {cleanCode}
                     </SyntaxHighlighter>
                 )}
 
-                {content.example && (
-                    <div className="pt-2 border-t border-muted-foreground/20 bg-green-900 p-2 rounded-2xl">
-                        <h4 className="text-lg font-semibold">Example:</h4>
-                        <p className="text-muted-foreground">
-                            <span className="font-mono text-gray-400">
-                                {content.example}
-                            </span>
-                        </p>
-                    </div>
-                )}
+                {content.example && <ExampleBlock text={content.example} />}
             </div>
 
             <Button
-                className="hover:bg-blue-700"
+                className="hover:bg-blue-700 cursor-pointer transition w-full"
                 onClick={
                     contentIndex + 1 === totalContents
                         ? handleFinish
@@ -163,11 +152,15 @@ const CourseLearning = () => {
                 }
                 disabled={loading}
             >
-                {loading
-                    ? "Loading..."
-                    : contentIndex + 1 === totalContents
-                    ? "Finish"
-                    : "Next"}
+                {loading ? (
+                    'Loading...'
+                ) : contentIndex + 1 === totalContents ? (
+                    'Finish'
+                ) : (
+                    <span className="flex items-center gap-2">
+                        Next <ArrowRight size={16} />
+                    </span>
+                )}
             </Button>
         </div>
     );

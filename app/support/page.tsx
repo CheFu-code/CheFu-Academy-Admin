@@ -1,3 +1,5 @@
+'use client'
+
 import {
     Accordion,
     AccordionContent,
@@ -6,13 +8,20 @@ import {
 } from '@/components/ui/accordion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useRouter } from 'next/navigation';
 
 const Support = () => {
+    const router = useRouter();
     const currentYear = new Date().getFullYear();
 
     return (
         <div className="max-w-3xl mx-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
-            <h1 className="text-2xl sm:text-3xl font-bold">Support</h1>
+            <h1
+                onClick={() => router.push('/courses')}
+                className="text-2xl sm:text-3xl font-bold cursor-pointer"
+            >
+                Support
+            </h1>
             <p className="text-sm sm:text-base text-muted-foreground">
                 We&apos;re here to help. Find answers to common questions or
                 reach out to us directly.
@@ -293,12 +302,10 @@ const Support = () => {
                                 <li>
                                     Live chat is available{' '}
                                     <a
-                                        href="https://play.google.com/store/apps/details?id=com.chefu.academy"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
+                                        href="/support/chat"
                                         className="text-blue-600 hover:underline"
                                     >
-                                        in-app
+                                        in-chat-support
                                     </a>{' '}
                                     during business hours.
                                 </li>
