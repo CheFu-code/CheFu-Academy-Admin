@@ -1,7 +1,7 @@
 'use client';
 
 import Loading from '@/components/Loading';
-import { fetchVideos } from '@/services/videoService';
+import { fetchVideos, fetchYTVideos } from '@/services/videoService';
 import { Video } from '@/types/video';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -15,6 +15,9 @@ const AllVideos = () => {
     useEffect(() => {
         fetchAllVideos();
     }, []);
+    useEffect(() => {
+        fetchAllYTVideos();
+    }, []);
 
     const fetchAllVideos = async () => {
         try {
@@ -22,6 +25,17 @@ const AllVideos = () => {
             setVideos(fetched);
         } catch (err) {
             console.error('Failed to fetch videos:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+    const fetchAllYTVideos = async () => {
+        try {
+            const fetched = await fetchYTVideos();
+            setVideos(fetched);
+            console.log('fetched', fetched);
+        } catch (err) {
+            console.error('Failed to fetch yt videos:', err);
         } finally {
             setLoading(false);
         }

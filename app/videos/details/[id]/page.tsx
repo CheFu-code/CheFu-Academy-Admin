@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
-import Loading from "@/components/Loading";
-import { fetchVideos } from "@/services/videoService";
-import { Video } from "@/types/video";
-import { auth, db } from "@/lib/firebase";
+import { useParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import Loading from '@/components/Loading';
+import { fetchVideos } from '@/services/videoService';
+import { Video } from '@/types/video';
+import { auth, db } from '@/lib/firebase';
 import {
     doc,
     getDoc,
@@ -13,13 +13,21 @@ import {
     serverTimestamp,
     setDoc,
     updateDoc,
-} from "firebase/firestore";
-import { toast } from "sonner";
-import { Timer } from "lucide-react";
+} from 'firebase/firestore';
+import { toast } from 'sonner';
+import { Timer } from 'lucide-react';
 
 // ✅ Import the components
-import Overview from "@/components/Overview";
-import Reviews from "@/components/Reviews";
+import Overview from '@/components/Overview';
+import Reviews from '@/components/Reviews';
+import Image from 'next/image';
+import { Button } from '@/components/ui/button';
+import {
+    Card,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 
 const VideoDetailsPage = () => {
     const params = useParams();
@@ -28,7 +36,9 @@ const VideoDetailsPage = () => {
     const [video, setVideo] = useState<Video | null>(null);
     const [loading, setLoading] = useState(false);
     const [enrolled, setEnrolled] = useState(false);
-    const [activeTab, setActiveTab] = useState<"overview" | "reviews">("overview");
+    const [activeTab, setActiveTab] = useState<'overview' | 'reviews'>(
+        'overview',
+    );
 
     useEffect(() => {
         fetchVideoDetails();
@@ -37,14 +47,14 @@ const VideoDetailsPage = () => {
     useEffect(() => {
         if (!user?.email || !video?.id) return;
 
-        const ref = doc(db, "users", user.email, "enrollments", video.id);
+        const ref = doc(db, 'users', user.email, 'enrollments', video.id);
 
         const checkEnrollment = async () => {
             try {
                 const docSnap = await getDoc(ref);
                 if (docSnap.exists()) setEnrolled(true);
             } catch (err) {
-                console.error("Failed to check enrollment:", err);
+                console.error('Failed to check enrollment:', err);
             }
         };
 
@@ -58,7 +68,7 @@ const VideoDetailsPage = () => {
             const selected = allVideos.find((v) => v.id === params?.id) || null;
             setVideo(selected);
         } catch (err) {
-            console.error("Failed to fetch video:", err);
+            console.error('Failed to fetch video:', err);
         } finally {
             setLoading(false);
         }
@@ -66,7 +76,7 @@ const VideoDetailsPage = () => {
 
     const handleEnroll = async () => {
         if (!user) {
-            toast.warning("Please log in to enroll.");
+            toast.warning('Please log in to enroll.');
             return;
         }
         if (!video) return;
@@ -74,10 +84,10 @@ const VideoDetailsPage = () => {
         setEnrolling(true);
         try {
             if (!user?.email || !video?.id) {
-                console.error("User email or video ID is missing");
+                console.error('User email or video ID is missing');
                 return;
             }
-            const ref = doc(db, "users", user.email, "enrollments", video.id);
+            const ref = doc(db, 'users', user.email, 'enrollments', video.id);
             await setDoc(ref, {
                 videoId: video.id,
                 title: video.title,
@@ -85,17 +95,17 @@ const VideoDetailsPage = () => {
                 enrolledAt: serverTimestamp(),
             });
 
-            const videoRef = doc(db, "videos", video.id);
+            const videoRef = doc(db, 'videos', video.id);
             await updateDoc(videoRef, { views: increment(1) });
 
             setVideo((prev) =>
-                prev ? { ...prev, views: (prev.views || 0) + 1 } : prev
+                prev ? { ...prev, views: (prev.views || 0) + 1 } : prev,
             );
             setEnrolled(true);
-            toast.success("Successfully enrolled!");
+            toast.success('Successfully enrolled!');
         } catch (err) {
-            console.error("Enrollment failed:", err);
-            toast.error("Something went wrong while enrolling.");
+            console.error('Enrollment failed:', err);
+            toast.error('Something went wrong while enrolling.');
         } finally {
             setEnrolling(false);
         }
@@ -104,7 +114,9 @@ const VideoDetailsPage = () => {
     if (loading) return <Loading message="Loading video..." fullScreen />;
 
     if (!video)
-        return <p className="text-center mt-20 text-gray-600">Video not found.</p>;
+        return (
+            <p className="text-center mt-20 text-gray-600">Video not found.</p>
+        );
 
     return (
         <div className="max-w-5xl p-4 flex flex-col gap-6">
@@ -117,22 +129,23 @@ const VideoDetailsPage = () => {
                     />
                 ) : (
                     <>
-                        <img
+                        <Image
+                            fill
                             src={video.thumbnailURL}
                             alt={video.title}
                             className="w-full h-full object-contain rounded-lg"
                         />
-                        <div className="absolute inset-0 bg-gray-400/50 flex flex-col items-center justify-center gap-2 sm:gap-3 p-4 sm:p-6">
-                            <p className="text-white font-semibold text-center text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl">
+                        <div className="absolute inset-0 bg-gray-400/90 flex flex-col items-center justify-center gap-2 sm:gap-3 p-4 sm:p-6">
+                            <p className=" font-semibold text-center text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl">
                                 Enroll to watch this video
                             </p>
-                            <button
+                            <Button
                                 onClick={handleEnroll}
                                 disabled={enrolling}
-                                className="px-4 py-2 sm:px-5 sm:py-3 cursor-pointer md:px-6 md:py-3 bg-green-600 hover:bg-green-700 text-white rounded-md transition disabled:opacity-50 text-sm sm:text-base md:text-lg"
+                                className=" cursor-pointer  bg-green-500 hover:bg-green-700 text-white transition disabled:opacity-50 text-sm sm:text-base md:text-lg"
                             >
-                                {enrolling ? "Enrolling..." : "Enroll Now"}
-                            </button>
+                                {enrolling ? 'Enrolling...' : 'Enroll Now'}
+                            </Button>
                         </div>
                     </>
                 )}
@@ -143,18 +156,21 @@ const VideoDetailsPage = () => {
 
             {/* Details */}
             <div className="flex flex-col gap-2 sm:gap-3">
-                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">
+                <h1 className="text-lg sm:text-xl md:text-2xl font-bold">
                     {video.title}
                 </h1>
-                <h3 className="text-sm sm:text-base md:text-lg">by {video.uploadedBy}</h3>
+                <h3 className="text-sm sm:text-base md:text-lg">
+                    by {video.uploadedBy}
+                </h3>
 
                 <div className="flex flex-wrap gap-2 sm:gap-4 text-gray-600">
                     <p className="text-sm sm:text-base md:text-lg">
                         {video.uploadedAt.toDate().toLocaleDateString()}
                     </p>
                     <p className="flex items-center gap-1 text-sm sm:text-base md:text-lg">
-                        <Timer className="h-4 w-4" />{" "}
-                        {Math.floor(video.duration / 60)}m {video.duration % 60}s
+                        <Timer className="h-4 w-4" />{' '}
+                        {Math.floor(video.duration / 60)}m {video.duration % 60}
+                        s
                     </p>
                     <p className="text-sm sm:text-base md:text-lg">
                         Views: {video.views || 0}
@@ -162,41 +178,44 @@ const VideoDetailsPage = () => {
                 </div>
 
                 {/* Info Boxes */}
-                <div className="flex flex-wrap gap-4 justify-center items-center">
-                    <div className="bg-gray-200 h-20 w-25 p-3 rounded-lg shadow-sm">
-                        <p className="text-sm sm:text-base md:text-lg text-black">Level:</p>
-                        <p className="text-sm sm:text-base md:text-lg text-black font-semibold">
-                            {video.level.charAt(0).toUpperCase() + video.level.slice(1)}
-                        </p>
-                    </div>
-                    <div className="bg-gray-200 h-20 w-25 p-3 rounded-lg shadow-sm">
-                        <p className="text-sm sm:text-base md:text-lg text-black">
-                            Language
-                        </p>
-                        <p className="text-sm sm:text-base md:text-lg text-black font-semibold">
-                            English
-                        </p>
-                    </div>
+                <div className="grid grid-cols-2 gap-4">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Level:</CardTitle>
+                            <CardDescription>
+                                {video.level.charAt(0).toUpperCase() +
+                                    video.level.slice(1)}
+                            </CardDescription>
+                        </CardHeader>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Language</CardTitle>
+                            <CardDescription>English</CardDescription>
+                        </CardHeader>
+                    </Card>
                 </div>
 
                 {/* Tabs */}
                 <div className="flex flex-col gap-4">
                     <div className="flex justify-between bg-gray-400/50 gap-4 rounded-2xl px-2 py-0.5 items-center">
                         <p
-                            onClick={() => setActiveTab("overview")}
-                            className={`text-sm sm:text-base md:text-lg cursor-pointer transition px-3 py-1 rounded-lg ${activeTab === "overview"
-                                ? "bg-green-600 text-white border-2 border-green-700"
-                                : "hover:text-green-600"
-                                }`}
+                            onClick={() => setActiveTab('overview')}
+                            className={`text-sm sm:text-base md:text-lg cursor-pointer transition px-3 py-1 rounded-lg ${
+                                activeTab === 'overview'
+                                    ? 'bg-green-600 text-white border-2 border-green-700'
+                                    : 'hover:text-green-600'
+                            }`}
                         >
                             Overview
                         </p>
                         <p
-                            onClick={() => setActiveTab("reviews")}
-                            className={`text-sm sm:text-base md:text-lg cursor-pointer transition px-3 py-1 rounded-lg ${activeTab === "reviews"
-                                ? "bg-green-600 text-white border-2 border-green-700"
-                                : "hover:text-green-600"
-                                }`}
+                            onClick={() => setActiveTab('reviews')}
+                            className={`text-sm sm:text-base md:text-lg cursor-pointer transition px-3 py-1 rounded-lg ${
+                                activeTab === 'reviews'
+                                    ? 'bg-green-600 text-white border-2 border-green-700'
+                                    : 'hover:text-green-600'
+                            }`}
                         >
                             Reviews
                         </p>
@@ -204,8 +223,8 @@ const VideoDetailsPage = () => {
 
                     {/* Tab Content */}
                     <div className="mt-4">
-                        {activeTab === "overview" && <Overview video={video} />}
-                        {activeTab === "reviews" && <Reviews video={video} />}
+                        {activeTab === 'overview' && <Overview video={video} />}
+                        {activeTab === 'reviews' && <Reviews video={video} />}
                     </div>
                 </div>
             </div>

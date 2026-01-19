@@ -95,6 +95,15 @@ export const fetchVideos = async (): Promise<Video[]> => {
     const snap = await getDocs(q);
     return snap.docs.map((doc: QueryDocumentSnapshot) => doc.data() as Video);
 };
+export const fetchYTVideos = async (): Promise<Video[]> => {
+    const q = query(
+        collection(db, "youTubeVideos"),
+        orderBy("createdAt", "desc")
+    );
+
+    const snap = await getDocs(q);
+    return snap.docs.map((doc: QueryDocumentSnapshot) => doc.data() as Video);
+};
 
 export const fetchVideoById = async (
     videoId: string
