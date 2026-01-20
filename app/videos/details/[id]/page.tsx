@@ -2,7 +2,7 @@
 
 import Loading from '@/components/Loading';
 import { auth, db } from '@/lib/firebase';
-import { fetchVideos } from '@/services/videoService';
+import { fetchUploadedVideos } from '@/services/videoService';
 import { Video } from '@/types/video';
 import {
     doc,
@@ -52,7 +52,7 @@ const VideoDetailsPage = () => {
     const fetchVideoDetails = async () => {
         try {
             setLoading(true);
-            const allVideos = await fetchVideos();
+            const allVideos = await fetchUploadedVideos();
             const selected = allVideos.find((v) => v.id === params?.id) || null;
             setVideo(selected);
         } catch (err) {

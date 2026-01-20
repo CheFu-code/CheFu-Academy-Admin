@@ -2,7 +2,7 @@
 
 import Loading from '@/components/Loading';
 import Header from '@/components/Shared/Header';
-import { fetchVideos } from '@/services/videoService';
+import { fetchUploadedVideos } from '@/services/videoService';
 import { Video } from '@/types/video';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -19,7 +19,7 @@ const AdvancedVideos = () => {
 
     const fetchAllVideos = async () => {
         try {
-            const fetched = await fetchVideos();
+            const fetched = await fetchUploadedVideos();
             const advancedVideos = fetched.filter(
                 (v) => v.level.toLowerCase() === 'advance',
             );

@@ -17,6 +17,10 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
     title: 'CheFu Academy | Smart Learners Platform',
     description: 'Smart Learning Starts Here',
+    applicationName: 'CheFu Academy',
+    authors: [{ name: 'CheFu Inc Team', url: 'https://chefuinc.com' }],
+    creator: 'CheFu Inc Team',
+    publisher: 'CheFu Inc',
 };
 
 export default function RootLayout({
@@ -36,7 +40,6 @@ export default function RootLayout({
                     disableTransitionOnChange
                 >
                     {children}
-
                     <Toaster />
                 </ThemeProvider>
             </body>

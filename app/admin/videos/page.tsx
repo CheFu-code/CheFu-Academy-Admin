@@ -1,7 +1,7 @@
 "use client";
 
 import Loading from "@/components/Loading";
-import { fetchVideos } from "@/services/videoService";
+import { fetchUploadedVideos } from "@/services/videoService";
 import { Video } from "@/types/video";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -19,7 +19,7 @@ const VideosCreationPage = () => {
   const fetchAllVideos = async () => {
     try {
       setLoading(true);
-      const fetched = await fetchVideos();
+      const fetched = await fetchUploadedVideos();
       setVideos(fetched);
     } catch (err) {
       console.error("Failed to fetch videos:", err);

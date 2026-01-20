@@ -1,7 +1,7 @@
 'use client';
 
 import Loading from '@/components/Loading';
-import { fetchVideos } from '@/services/videoService';
+import { fetchUploadedVideos } from '@/services/videoService';
 import { Video } from '@/types/video';
 import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
@@ -18,7 +18,7 @@ const SearchContent = () => {
         const fetchFilteredVideos = async () => {
             setLoading(true);
             try {
-                const allVideos = await fetchVideos();
+                const allVideos = await fetchUploadedVideos();
                 const filtered = allVideos.filter((v) => v.category === query);
                 setVideos(filtered);
             } catch (err) {

@@ -85,7 +85,7 @@ export const uploadFile = async (
     return await getDownloadURL(fileRef);
 };
 
-export const fetchVideos = async (): Promise<Video[]> => {
+export const fetchUploadedVideos = async (): Promise<Video[]> => {
     const q = query(
         collection(db, "videos"),
         where("visibility", "==", "public"),

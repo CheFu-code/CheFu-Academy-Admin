@@ -1,7 +1,7 @@
 "use client"
 
 import Loading from "@/components/Loading";
-import { fetchVideos } from "@/services/videoService";
+import { fetchUploadedVideos } from "@/services/videoService";
 import { Video } from "@/types/video";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -17,7 +17,7 @@ const BeginnerVideos = () => {
 
     const fetchAllVideos = async () => {
         try {
-            const fetched = await fetchVideos();
+            const fetched = await fetchUploadedVideos();
             const beginnerVideos = fetched.filter(v => v.level.toLowerCase() === "beginner");
             setVideos(beginnerVideos);
         } catch (err) {
