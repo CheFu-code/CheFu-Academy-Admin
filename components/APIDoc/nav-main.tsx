@@ -11,11 +11,11 @@ import {
     SidebarMenuItem,
     SidebarMenuSub,
     SidebarMenuSubButton,
-    SidebarMenuSubItem
+    SidebarMenuSubItem,
 } from '@/components/ui/sidebar';
-import { ChevronRight, type LucideIcon } from 'lucide-react';
+import { type LucideIcon } from 'lucide-react';
 
-export function NavMain({
+export function APINavMain({
     items,
 }: {
     items: {
@@ -28,9 +28,7 @@ export function NavMain({
 }) {
     return (
         <SidebarGroup>
-            <SidebarGroupLabel>
-                Study Center
-            </SidebarGroupLabel>
+            <SidebarGroupLabel>Documentations</SidebarGroupLabel>
             <SidebarMenu>
                 {items.map((item) => {
                     const hasSubItems = !!item.items?.length;
@@ -48,12 +46,14 @@ export function NavMain({
                                 >
                                     <SidebarMenuButton className="flex justify-between items-center w-full">
                                         <div className="flex items-center gap-2">
-                                            <item.icon size={18} />
-                                            <span>{item.title}</span>
+                                            <item.icon
+                                                size={18}
+                                                className="text-primary"
+                                            />
+                                            <span className="font-semibold text-primary">
+                                                {item.title}
+                                            </span>
                                         </div>
-                                        {hasSubItems && (
-                                            <ChevronRight className="transition-transform data-[state=open]:rotate-90" />
-                                        )}
                                     </SidebarMenuButton>
                                 </CollapsibleTrigger>
 
@@ -75,15 +75,6 @@ export function NavMain({
                                             ))}
                                         </SidebarMenuSub>
                                     </CollapsibleContent>
-                                )}
-
-                                {/* If no subitems, render normal link */}
-                                {!hasSubItems && (
-                                    <a
-                                        href={item.url}
-                                        className="absolute inset-0"
-                                        aria-hidden="true"
-                                    />
                                 )}
                             </SidebarMenuItem>
                         </Collapsible>

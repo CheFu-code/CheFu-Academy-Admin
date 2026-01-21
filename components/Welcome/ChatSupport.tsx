@@ -21,7 +21,7 @@ const ChatSupport = () => {
     };
     return (
         <section className="py-24 border-t border-white/5 bg-background">
-            <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center gap-16">
+            <div className="max-w-6xl flex flex-col md:flex-row gap-16">
                 <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-6">
                     Chat Support
                 </h2>

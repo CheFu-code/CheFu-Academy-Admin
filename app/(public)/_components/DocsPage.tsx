@@ -1,3 +1,5 @@
+'use client';
+
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -7,10 +9,11 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Book, Code, Github, LifeBuoy, Rocket } from 'lucide-react';
-import React from 'react';
+import { Book, Github, Rocket } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 const DocsPage = () => {
+    const router = useRouter();
     return (
         <div className="container min-h-screen mx-auto bg-background p-6">
             <div className="mb-8 text-center">
@@ -20,7 +23,11 @@ const DocsPage = () => {
                 </p>
                 <div className="mt-4 flex justify-center gap-2">
                     <Button className="cursor-pointer">Get Started</Button>
-                    <Button variant={'outline'} className="cursor-pointer">
+                    <Button
+                        onClick={() => router.push('/api-docs')}
+                        variant={'outline'}
+                        className="cursor-pointer"
+                    >
                         View API Docs
                     </Button>
                     <Button variant={'ghost'} className="cursor-pointer">
@@ -30,7 +37,7 @@ const DocsPage = () => {
             </div>
 
             <Tabs defaultValue="getting-started" className="w-full">
-                <TabsList className="grid w-full grid-cols-4">
+                <TabsList className="grid w-full grid-cols-2">
                     <TabsTrigger
                         value="getting-started"
                         className="cursor-pointer"
@@ -38,20 +45,10 @@ const DocsPage = () => {
                         <Rocket className="h-4 w-4 mr-2" />
                         Getting Started
                     </TabsTrigger>
-                    <TabsTrigger
-                        value="api-reference"
-                        className="cursor-pointer"
-                    >
-                        <Code className="h-4 w-4 mr-2" />
-                        API Reference
-                    </TabsTrigger>
+
                     <TabsTrigger value="examples" className="cursor-pointer">
                         <Book className="h-4 w-4 mr-2" />
                         Examples
-                    </TabsTrigger>
-                    <TabsTrigger value="support" className="cursor-pointer">
-                        <LifeBuoy className="h-4 w-4 mr-2" />
-                        Support
                     </TabsTrigger>
                 </TabsList>
 
@@ -246,29 +243,6 @@ const DocsPage = () => {
                                     </code>
                                 </pre>
                             </div>
-                        </CardContent>
-                    </Card>
-                </TabsContent>
-
-                <TabsContent value="support">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Support</CardTitle>
-                            <CardDescription>
-                                Get help with integrating CheFu Academy
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-sm text-muted-foreground">
-                                Contact our support team at{' '}
-                                <a
-                                    className="hover:underline text-blue-500"
-                                    href="mailto:chefu.inc@gmail.com"
-                                >
-                                    chefu.inc@gmail.com
-                                </a>{' '}
-                                for assistance
-                            </p>
                         </CardContent>
                     </Card>
                 </TabsContent>
