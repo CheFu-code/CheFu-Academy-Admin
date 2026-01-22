@@ -110,7 +110,7 @@ export const navigationItems = [
     },
     {
         name: 'Documentation',
-        href: '/documentation',
+        href: '/api-docs',
     },
 ];
 
