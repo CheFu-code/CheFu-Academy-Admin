@@ -27,7 +27,7 @@ const CreateDialog = ({
     generatedKey: string | null;
     setGeneratedKey: Dispatch<SetStateAction<string | null>>;
     generatingKey: boolean;
-    createKey(): Promise<void>
+    createKey(): Promise<void>;
 }) => {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
@@ -43,6 +43,8 @@ const CreateDialog = ({
                         </p>
                         <Input value={generatedKey} readOnly />
                         <Button
+                            size={'sm'}
+                            className="cursor-pointer"
                             onClick={() => {
                                 navigator.clipboard.writeText(generatedKey);
                                 toast.success('API Key copied to clipboard');

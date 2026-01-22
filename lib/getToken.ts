@@ -1,9 +1,34 @@
 import { auth } from './firebase';
+import { onAuthStateChanged } from 'firebase/auth';
 
 async function getUserToken() {
-    const user = auth.currentUser;
-    if (!user) return null;
-    return await user.getIdToken();
+    return new Promise<string | null>((resolve) => {
+        const user = auth.currentUser;
+        if (user) {
+            user.getIdToken()
+                .then(resolve)
+                .catch((err) => {
+                    console.error('Error getting token:', err);
+                    resolve(null);
+                });
+        } else {
+            const unsubscribe = onAuthStateChanged(auth, async (user) => {
+                unsubscribe(); // stop listening once fired
+                if (user) {
+                    try {
+                        const token = await user.getIdToken();
+                        resolve(token);
+                    } catch (err) {
+                        console.error('Error getting token:', err);
+                        resolve(null);
+                    }
+                } else {
+                    console.log('User is not logged in.');
+                    resolve(null);
+                }
+            });
+        }
+    });
 }
 
 export default getUserToken;
