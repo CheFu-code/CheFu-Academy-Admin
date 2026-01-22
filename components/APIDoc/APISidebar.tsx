@@ -24,11 +24,15 @@ const data = {
             isActive: true,
             items: [
                 { title: 'Installation', url: '/api-docs/installation' },
-                { title: 'All Courses', url: '/courses' },
-                { title: 'My Courses', url: '/courses/my-courses' },
+                { title: 'Authentication', url: '/api-docs/authentication' },
+                { title: 'Requests', url: '/api-docs/requests' },
                 {
                     title: 'Error Handling',
-                    url: '/courses/completed-lessons',
+                    url: '/api-docs/error-handling',
+                },
+                {
+                    title: 'Rate Limits & Usage',
+                    url: '/api-docs/rate-limits',
                 },
             ],
         },

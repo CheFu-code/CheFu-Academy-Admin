@@ -7,10 +7,9 @@ import {
     TableCell,
     TableHead,
     TableHeader,
-    TableRow
+    TableRow,
 } from '@/components/ui/table';
 import { ApiKey } from '@/types/keys';
-import { Loader } from 'lucide-react';
 import { Dispatch, SetStateAction } from 'react';
 
 const TableComp = ({
@@ -24,6 +23,8 @@ const TableComp = ({
     keys: ApiKey[];
     revokeKey(id: string): Promise<void>;
 }) => {
+    const skeletonRows = Array.from({ length: 3 }); // Number of skeleton rows
+
     return (
         <Card className="mt-6">
             <CardHeader className="flex flex-row items-center justify-between">
@@ -53,54 +54,79 @@ const TableComp = ({
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {keys.map((key) => (
-                            <TableRow key={key.id}>
-                                <TableCell>{key.name}</TableCell>
-                                <TableCell>
-                                    {key.active ? (
-                                        <Badge className="bg-green-500">
-                                            Active
-                                        </Badge>
-                                    ) : (
-                                        <Badge
-                                            className="cursor-not-allowed hover:opacity-70"
-                                            variant="destructive"
-                                        >
-                                            Revoked
-                                        </Badge>
-                                    )}
-                                </TableCell>
-                                <TableCell>{key.plan}</TableCell>
-                                <TableCell>{key.lastUsedAt || '—'}</TableCell>
-                                <TableCell className="text-right">
-                                    {key.active && (
-                                        <Button
-                                            className="cursor-pointer"
-                                            variant="destructive"
-                                            size="sm"
-                                            onClick={() => revokeKey(key.id)}
-                                        >
-                                            Revoke
-                                        </Button>
-                                    )}
-                                </TableCell>
-                            </TableRow>
-                        ))}
+                        {loading
+                            ? skeletonRows.map((_, idx) => (
+                                  <TableRow key={idx} className="animate-pulse">
+                                      <TableCell>
+                                          <div className="h-4 bg-gray-700 rounded w-24"></div>
+                                      </TableCell>
+                                      <TableCell>
+                                          <div className="h-4 bg-gray-700 rounded w-16"></div>
+                                      </TableCell>
+                                      <TableCell>
+                                          <div className="h-4 bg-gray-700 rounded w-20"></div>
+                                      </TableCell>
+                                      <TableCell>
+                                          <div className="h-4 bg-gray-700 rounded w-32"></div>
+                                      </TableCell>
+                                      <TableCell className="text-right">
+                                          <div className="h-6 bg-gray-700 rounded w-16 mx-auto"></div>
+                                      </TableCell>
+                                  </TableRow>
+                              ))
+                            : keys.map((key) => (
+                                  <TableRow key={key.id}>
+                                      <TableCell>{key.name}</TableCell>
+                                      <TableCell>
+                                          {key.active ? (
+                                              <Badge className="bg-green-500">
+                                                  Active
+                                              </Badge>
+                                          ) : (
+                                              <Badge
+                                                  className="cursor-not-allowed hover:opacity-70"
+                                                  variant="destructive"
+                                              >
+                                                  Revoked
+                                              </Badge>
+                                          )}
+                                      </TableCell>
+                                      <TableCell>{key.plan}</TableCell>
+                                      <TableCell>
+                                          {key.lastUsedAt
+                                              ? typeof key.lastUsedAt ===
+                                                'string'
+                                                  ? new Date(
+                                                        key.lastUsedAt,
+                                                    ).toLocaleString()
+                                                  : new Date(
+                                                        key.lastUsedAt
+                                                            ._seconds * 1000,
+                                                    ).toLocaleString()
+                                              : '—'}
+                                      </TableCell>
+                                      <TableCell className="text-right">
+                                          {key.active && (
+                                              <Button
+                                                  className="cursor-pointer"
+                                                  variant="destructive"
+                                                  size="sm"
+                                                  onClick={() =>
+                                                      revokeKey(key.id)
+                                                  }
+                                              >
+                                                  Revoke
+                                              </Button>
+                                          )}
+                                      </TableCell>
+                                  </TableRow>
+                              ))}
                     </TableBody>
                 </Table>
 
-                {!keys && !loading && (
+                {!loading && keys.length === 0 && (
                     <div className="text-center text-base mt-2 text-muted-foreground">
                         No API key yet
-                    </div>
-                )}
-
-                {loading && (
-                    <div className="flex flex-row items-center mt-3 gap-2">
-                        <p className="text-sm text-muted-foreground animate-pulse">
-                            Loading...
-                        </p>
-                        <Loader className={'size-3 animate-spin'} />
                     </div>
                 )}
             </CardContent>

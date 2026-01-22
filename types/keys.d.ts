@@ -3,5 +3,9 @@ export interface ApiKey {
     name: string;
     active: boolean;
     plan: string;
-    lastUsedAt?: string;
-}
+    lastUsedAt?: {
+      _seconds: number;
+      _nanoseconds: number;
+    } | string | null;
+  }
+  

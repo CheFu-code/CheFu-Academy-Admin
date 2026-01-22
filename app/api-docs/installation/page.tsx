@@ -1,16 +1,16 @@
-// chefu-academy-web/app/api-installation/page.tsx
-
 'use client';
 
+import Header from '@/components/Shared/Header';
+import { Separator } from '@/components/ui/separator';
 import getUserToken from '@/lib/getToken';
+import { ApiKey } from '@/types/keys';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import CreateDialog from '../_components/CreateDialog';
-import TableComp from '../_components/Table';
-import { ApiKey } from '@/types/keys';
-import Header from '@/components/Shared/Header';
+import InstallationComp from '../_components/InstallationComp';
+import { SDK_URL } from '@/constants/Data';
 
-export default function ApiKeysDashboard() {
+export default function Installation() {
     const [keys, setKeys] = useState<ApiKey[]>([]);
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false);
@@ -22,28 +22,16 @@ export default function ApiKeysDashboard() {
         setLoading(true);
         try {
             const token = await getUserToken();
-            if (!token) {
-                console.error('No token found, user might not be logged in.');
-                return;
-            }
+            if (!token) return;
 
-            const res = await fetch('https://chefu-academy-sdk.onrender.com/api/keys/list', {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
+            const res = await fetch(`${SDK_URL}/api/keys/list`, {
+                headers: { Authorization: `Bearer ${token}` },
             });
 
             const data = await res.json();
-
-            if (!Array.isArray(data)) {
-                console.error('Expected array, got:', data);
-                setKeys([]);
-                return;
-            }
-
-            setKeys(data);
+            setKeys(Array.isArray(data) ? data : []);
         } catch (error) {
-            console.error('Error fetching keys:', error);
+            console.error(error);
             setKeys([]);
         } finally {
             setLoading(false);
@@ -63,7 +51,7 @@ export default function ApiKeysDashboard() {
                 return;
             }
 
-            const res = await fetch('https://chefu-academy-sdk.onrender.com/api/keys/create', {
+            const res = await fetch(`${SDK_URL}/api/keys/create`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -73,17 +61,13 @@ export default function ApiKeysDashboard() {
             });
 
             const data = await res.json();
-
-            if (!res.ok) {
-                throw new Error(data.error || 'Failed to create API key');
-            }
+            if (!res.ok) throw new Error(data.error);
 
             setGeneratedKey(data.apiKey);
             setKeyName('');
-            fetchKeys(); // refresh list
-        } catch (error) {
-            console.error('Error creating API key:', error);
-            toast.error('Failed to create API key. Please try again.');
+            fetchKeys();
+        } catch {
+            toast.error('Failed to create API key.');
         } finally {
             setGeneratingKey(false);
         }
@@ -92,11 +76,11 @@ export default function ApiKeysDashboard() {
     async function revokeKey(id: string) {
         const token = await getUserToken();
         if (!token) {
-            toast.error('You must be logged in to revoke an API key.');
+            toast.error('You must be logged in.');
             return;
         }
 
-        const res = await fetch('https://chefu-academy-sdk.onrender.com/api/keys/revoke', {
+        await fetch(`${SDK_URL}/api/keys/revoke`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -105,24 +89,24 @@ export default function ApiKeysDashboard() {
             body: JSON.stringify({ keyId: id }),
         });
 
-        const data = await res.json();
-        if (!res.ok) {
-            throw new Error(data.error || 'Failed to revoke API key');
-        }
-
         fetchKeys();
     }
 
     return (
-        <div className="min-h-screen bg-background">
-            <Header header='API Docs' description=''/>
-            <TableComp
+        <div className="min-h-screen bg-background pb-20">
+            <Header
+                header="Installation & API Keys"
+                description="Install the SDK, generate an API key, and start making requests."
+            />
+
+            <Separator className="my-10" />
+
+            <InstallationComp
                 setOpen={setOpen}
                 loading={loading}
                 keys={keys}
                 revokeKey={revokeKey}
             />
-
             <CreateDialog
                 open={open}
                 setOpen={setOpen}

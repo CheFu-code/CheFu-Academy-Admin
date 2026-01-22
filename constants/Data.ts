@@ -113,3 +113,6 @@ export const navigationItems = [
         href: '/documentation',
     },
 ];
+
+
+export const SDK_URL = 'https://chefu-academy-sdk.onrender.com';
