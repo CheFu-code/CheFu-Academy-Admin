@@ -7,11 +7,13 @@ import { toast } from 'sonner';
 interface CodeHighlighterProps {
     code: string;
     language?: string;
+    showLineNumbers?: boolean;
 }
 
 const CodeHighlighter: React.FC<CodeHighlighterProps> = ({
     code,
     language = 'javascript',
+    showLineNumbers = true,
 }) => {
     const [copied, setCopied] = React.useState(false);
 
@@ -27,7 +29,8 @@ const CodeHighlighter: React.FC<CodeHighlighterProps> = ({
             <SyntaxHighlighter
                 language={language}
                 style={vscDarkPlus}
-                showLineNumbers
+                showLineNumbers={showLineNumbers}
+                useInlineStyles={true}
                 customStyle={{
                     borderRadius: '0.5rem',
                     padding: '1rem',

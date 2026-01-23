@@ -6,6 +6,7 @@ import { Video } from '@/types/video';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import NoVideo from '../_components/NoVideo';
 
 const AllVideos = () => {
     const [videos, setVideos] = useState<Video[]>([]);
@@ -50,7 +51,7 @@ const AllVideos = () => {
         router.push(`/videos/details/${videoId}`);
     };
 
-    if (loading) return <Loading message="Loading..." fullScreen={true} />;
+    if (loading) return <Loading message="Loading..." />;
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
@@ -96,9 +97,7 @@ const AllVideos = () => {
                     </div>
                 ))
             ) : (
-                <p className="flex items-center justify-center h-full">
-                    No videos available.
-                </p>
+                <NoVideo />
             )}
         </div>
     );

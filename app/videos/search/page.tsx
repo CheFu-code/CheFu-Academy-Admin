@@ -6,7 +6,7 @@ import SearchContent from "@/components/SearchContent";
 
 export default function SearchPage() {
   return (
-    <Suspense fallback={<Loading message="Loading search..." fullScreen />}>
+    <Suspense fallback={<Loading message="Loading search..." />}>
       <SearchContent />
     </Suspense>
   );

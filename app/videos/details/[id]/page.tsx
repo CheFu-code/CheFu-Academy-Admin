@@ -99,7 +99,7 @@ const VideoDetailsPage = () => {
         }
     };
 
-    if (loading) return <Loading message="Loading video..." fullScreen />;
+    if (loading) return <Loading message="Loading video..." />;
 
     if (!video) return <NotFound />;
 

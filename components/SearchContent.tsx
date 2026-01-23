@@ -6,6 +6,7 @@ import { Video } from '@/types/video';
 import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import Header from './Shared/Header';
 
 const SearchContent = () => {
     const searchParams = useSearchParams();
@@ -31,12 +32,14 @@ const SearchContent = () => {
         fetchFilteredVideos();
     }, [query]);
 
-    if (loading)
-        return <Loading message="Fetching videos..." fullScreen={true} />;
+    if (loading) return <Loading message="Fetching videos..." />;
 
     return (
         <div>
-            <h1>Search results for &quot;{query}&quot;</h1>
+            <Header
+                header="Search results"
+                description={`Search results for "${query}"`}
+            />
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
                 {videos.length ? (
                     videos.map((video) => (
@@ -75,7 +78,9 @@ const SearchContent = () => {
                         </div>
                     ))
                 ) : (
-                    <p>No videos available.</p>
+                    <p className="text-muted-foreground flex mt-8 justify-center">
+                        No videos available.
+                    </p>
                 )}
             </div>
         </div>

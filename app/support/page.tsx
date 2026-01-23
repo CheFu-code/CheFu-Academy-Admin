@@ -300,7 +300,7 @@ const Support = () => {
                                 </li>
                                 <li>Phone: +27 (60) 603-1205</li>
                                 <li>
-                                    Live chat is available{' '}
+                                    Live chat is available on{' '}
                                     <a
                                         href="/support/chat"
                                         className="text-blue-600 hover:underline"

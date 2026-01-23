@@ -1,6 +1,8 @@
 'use client';
 
 import { Input } from '@/components/ui/input';
+import { useAuthUser } from '@/hooks/useAuthUser';
+import { cn } from '@/lib/utils';
 import { Send, User } from 'lucide-react';
 import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
@@ -9,6 +11,7 @@ import { Suspense, useState } from 'react';
 const ChatContent = () => {
     const searchParams = useSearchParams();
     const initialMessage = searchParams.get('message');
+    const { user, loading } = useAuthUser();
     const [input, setInput] = useState('');
 
     return (
@@ -32,6 +35,7 @@ const ChatContent = () => {
 
                         <div className="flex-1 p-6 overflow-y-auto space-y-6  bg-zinc-950/30">
                             <div className="flex w-full flex-col items-start">
+                                {/**agent message */}
                                 <div className="flex max-w-[85%] gap-3 flex-row">
                                     <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 border border-white/10">
                                         <Image
@@ -54,7 +58,11 @@ const ChatContent = () => {
                                 <div className="flex w-full flex-col items-end mt-5">
                                     <div className="flex max-w-[85%] gap-3 flex-row-reverse">
                                         <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 border border-white/5 bg-zinc-800">
-                                            <User className="w-4 h-4 text-zinc-400" />
+                                            {user && !loading ? (
+                                                user.profilePicture
+                                            ) : (
+                                                <User className="w-4 h-4 text-zinc-400" />
+                                            )}
                                         </div>
                                         <div className="p-2.5 rounded-2xl text-sm leading-relaxed shadow-sm bg-zinc-800 text-zinc-200 rounded-tr-sm">
                                             {initialMessage}
@@ -77,9 +85,14 @@ const ChatContent = () => {
                                     />
                                     <button
                                         disabled={!input.trim()}
-                                        className="h-8 w-8 ml-5 rounded-lg bg-zinc-800 flex items-center justify-center text-zinc-500 cursor-pointer"
+                                        className={cn(
+                                            'h-8 w-8 ml-4 rounded-lg  flex items-center justify-center cursor-pointer',
+                                            input.trim()
+                                                ? 'text-green-500 bg-green-900'
+                                                : 'text-zinc-500 bg-zinc-800',
+                                        )}
                                     >
-                                        <Send className="w-4 h-4" />
+                                        <Send className="size-4" />
                                     </button>
                                 </div>
                             </div>
@@ -87,15 +100,20 @@ const ChatContent = () => {
                     </div>
                 </div>
             </div>
-            <div className="mt-6">
-                <p className="text-center text-sm text-gray-500">
-                    Want to pick up where you left off?{' '}
-                    <a href="/login" className="text-primary hover:underline">
-                        Login
-                    </a>{' '}
-                    to save your chat history.
-                </p>
-            </div>
+            {!user && !loading && (
+                <div className="mt-6">
+                    <p className="text-center text-sm text-gray-500">
+                        Want to pick up where you left off?{' '}
+                        <a
+                            href="/login"
+                            className="text-primary hover:underline"
+                        >
+                            Login
+                        </a>{' '}
+                        to save your chat history.
+                    </p>
+                </div>
+            )}
         </div>
     );
 };

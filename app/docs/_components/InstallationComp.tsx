@@ -40,7 +40,15 @@ const InstallationComp = ({
                     Install the official CheFu Academy SDK using npm.
                 </p>
 
-                <CodeHighlighter code={`npm install chefu-academy-sdk`} />
+                <CodeHighlighter
+                    showLineNumbers={false}
+                    code={`npm install chefu-academy-sdk`}
+                />
+
+                <CodeHighlighter
+                    showLineNumbers={false}
+                    code={`yarn add chefu-academy-sdk`}
+                />
             </section>
             <Separator className="my-10" />
             {/* Usage Example */}
@@ -55,7 +63,7 @@ const InstallationComp = ({
                     code={`import CheFuAcademy from 'chefu-academy-sdk';
 
 const sdk = new CheFuAcademy({
-apiKey: process.env.CHEFU_API_KEY,
+    apiKey: process.env.CHEFU_API_KEY,
 });
 
 const courses = await sdk.courses.getAll();

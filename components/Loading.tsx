@@ -1,28 +1,18 @@
 // components/Loading.tsx
-"use client";
+'use client';
 
-import React from "react";
+import { Loader } from 'lucide-react';
+import React from 'react';
 
 type LoadingProps = {
     message?: string;
-    fullScreen?: boolean; // optional: center vertically if true
 };
 
-const Loading: React.FC<LoadingProps> = ({
-    message = "Loading...",
-    fullScreen = false,
-}) => {
+const Loading: React.FC<LoadingProps> = ({ message = 'Loading...' }) => {
     return (
-        <div
-            className={`${
-                fullScreen
-                    ? "flex items-center justify-center h-screen"
-                    : "flex"
-            } flex-col items-center space-y-4`}
-        >
+        <div className={'flex mt-12 h-screen flex-col items-center space-y-4'}>
             {/* Spinner */}
-            <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-
+            <Loader className="size-10 animate-spin" />
             {/* Loading text */}
             <p className="animate-pulse text-lg sm:text-xl font-medium">
                 {message}

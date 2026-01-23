@@ -1,12 +1,12 @@
 'use client';
 
 import Loading from '@/components/Loading';
-import Header from '@/components/Shared/Header';
 import { fetchUploadedVideos } from '@/services/videoService';
 import { Video } from '@/types/video';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import NoVideo from '../_components/NoVideo';
 
 const AdvancedVideos = () => {
     const [videos, setVideos] = useState<Video[]>([]);
@@ -35,7 +35,7 @@ const AdvancedVideos = () => {
         router.push(`/videos/search?query=${encodeURIComponent(category)}`);
     };
 
-    if (loading) return <Loading message="Loading..." fullScreen={true} />;
+    if (loading) return <Loading message="Loading..." />;
 
     const goToVidDetails = (videoId?: string) => {
         if (!videoId) return;
@@ -86,10 +86,7 @@ const AdvancedVideos = () => {
                     </div>
                 ))
             ) : (
-                <Header
-                    header="No videos available."
-                    description="No videos are currently available for this section. Content will be added shortly."
-                />
+                <NoVideo />
             )}
         </div>
     );

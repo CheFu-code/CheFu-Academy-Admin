@@ -15,9 +15,9 @@ const Terms = () => {
     const router = useRouter();
 
     return (
-        <div className="max-w-5xl mx-auto p-6 space-y-8">
+        <div className="max-w-5xl mx-auto mb-10 p-2 space-y-6">
             <h1
-                onClick={() => router.push('/courses')}
+                onClick={() => router.push('/')}
                 className="text-4xl font-extrabold cursor-pointer"
             >
                 Terms of Service
@@ -26,10 +26,10 @@ const Terms = () => {
                 Last updated: September 3, 2025
             </p>
 
-            <ScrollArea className="h-[700px] border rounded-lg p-6">
+            <ScrollArea className="h-[650px] border rounded-lg p-6">
                 <div className="space-y-6">
                     {/* Introduction */}
-                    <Card className="bg-gray-50 dark:bg-gray-900">
+                    <Card className="bg-gray-100 dark:bg-gray-900">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
                                 <FaExclamationCircle className="text-blue-500" />
@@ -269,15 +269,15 @@ const Terms = () => {
                             </AccordionContent>
                         </AccordionItem>
                     </Accordion>
-
-                    {/* Footer Note */}
-                    <p className="text-xs text-center text-muted-foreground mt-4">
-                        © {new Date().getFullYear()} CheFu Academy. All rights
-                        reserved. Using this platform indicates agreement with
-                        these Terms of Service.
-                    </p>
                 </div>
             </ScrollArea>
+            {/* Footer Note */}
+            <p className="text-xs text-center text-muted-foreground mt-4">
+                © {new Date().getFullYear()} CheFu Academy. All rights reserved.
+                <br />
+                Using this platform indicates agreement with these Terms of
+                Service.
+            </p>
         </div>
     );
 };

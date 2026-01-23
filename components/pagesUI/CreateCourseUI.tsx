@@ -11,6 +11,7 @@ import { Button } from '../ui/button';
 import { PlusIcon, Sparkle } from 'lucide-react';
 import { AddCourseProp } from '@/types/course';
 import { cn } from '@/lib/utils';
+import Header from '../Shared/Header';
 
 const CreateCourseUI = ({
     topic,
@@ -21,28 +22,31 @@ const CreateCourseUI = ({
     const topics = [
         {
             topic: 'Prepare ingredients',
+            id: '123',
         },
         {
             topic: 'Add flour',
+            id: '456',
         },
         {
             topic: 'Add flavors',
+            id: '789',
         },
-        { topic: 'Put to oven' },
     ];
     return (
         <main className="min-h-screen bg-background">
+            <Header
+                header="Create new course"
+                description="What do you want to learn today?"
+            />
             <div>
-                <Card>
+                <Card className="mt-6">
                     <CardHeader>
                         <CardTitle>Create new course</CardTitle>
                         <CardDescription>
-                            What do you want to learn today?
-                        </CardDescription>
-                        <p className="text-muted-foreground text-sm text-center mt-5">
                             What course do you want to create? (eg: Learn
                             JavaScript)
-                        </p>
+                        </CardDescription>
                     </CardHeader>
                     <CardContent>
                         <p>Topic</p>
@@ -62,13 +66,14 @@ const CreateCourseUI = ({
                     Select all topics which you want to add in this course:
                 </p>
             </div>
-            <div className="mt-5">
+
+            <div className="mt-5 flex flex-row flex-wrap gap-2">
                 {topics.map((item, index) => {
                     return (
                         <button
-                            onClick={() => setSelectedTopics(item.topic)}
+                            onClick={() => setSelectedTopics(item.id)}
                             className={cn(
-                                'border border-cyan-500 rounded-lg p-2 cursor-pointer mb-2 flex flex-col',
+                                'border border-cyan-500 rounded-lg p-1.5 cursor-pointer',
                                 selectedTopics ? 'bg-blue-950' : '',
                             )}
                             key={index}

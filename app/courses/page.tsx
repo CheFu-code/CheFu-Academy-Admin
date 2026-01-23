@@ -1,5 +1,6 @@
 'use client';
 
+import Header from '@/components/Shared/Header';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -76,11 +77,11 @@ export default function CoursesPage() {
     }, [user?.email]);
 
     return (
-        <div className="min-h-screen px-4 py-8">
-            <h1 className="text-3xl font-bold mb-6 text-start">Courses</h1>
+        <div className="min-h-screen px-4">
+            <Header header="Courses" description="" />
 
             {fetchingCourses ? (
-                <Loader className="animate-spin size-4" />
+                <Loader className="animate-spin items-center justify-center size-4" />
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-4xl mx-auto">
                     {courses.length > 0 ? (
@@ -119,15 +120,15 @@ export default function CoursesPage() {
                             </Card>
                         ))
                     ) : (
-                        <div>
-                            <p className="text-end w-full text-gray-500">
+                        <div className="justify-start text-start">
+                            <p className="text-start mt-10 text-gray-500">
                                 No courses found.
                             </p>
                             <Button
                                 onClick={() =>
                                     router.push('/courses/create-course')
                                 }
-                                className="mt-8 cursor-pointer"
+                                className="mt-20 items-center cursor-pointer"
                             >
                                 Create course
                                 <Plus />
