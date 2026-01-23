@@ -43,7 +43,7 @@ const CodeHighlighter: React.FC<CodeHighlighterProps> = ({
                 <Copy
                     size={20}
                     onClick={handleCopy}
-                    className="absolute top-3 right-3 cursor-pointer text-white"
+                    className="absolute hover:text-primary top-3 right-3 cursor-pointer text-white"
                 />
             ) : (
                 <Check

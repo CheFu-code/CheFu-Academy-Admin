@@ -129,7 +129,7 @@ const RateLimits = () => {
                     Learn about best practices for securing your keys and
                     preventing misuse in the{' '}
                     <a
-                        href="/api-docs/security"
+                        href="/docs/security"
                         className="text-primary hover:underline"
                     >
                         Security & Best Practices

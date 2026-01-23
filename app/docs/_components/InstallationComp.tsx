@@ -82,7 +82,7 @@ console.log(courses);`}
             <p className="mt-10 text-sm text-muted-foreground">
                 Next up →{' '}
                 <a
-                    href="/api-docs/authentication"
+                    href="/docs/authentication"
                     className="text-primary hover:underline"
                 >
                     Authentication & Core Concepts

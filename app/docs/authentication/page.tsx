@@ -62,10 +62,27 @@ const Authentication = () => {
 
                 <CodeHighlighter
                     code={`import CheFuAcademy from 'chefu-academy-sdk';
+import React from 'react';
 
-const sdk = new CheFuAcademy({
-  apiKey: process.env.CHEFU_API_KEY,
-});`}
+const Example = () => {
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
+
+  const Auth = async () => {
+    try {
+      const authenticate = new CheFuAcademy({
+        apiKey: process.env.MY_API_KEY,
+      });
+
+      const res = await authenticate.auth.login(email, password);
+      console.log('Response:', res.data());
+    } catch (error) {
+      console.error(error);
+    }
+  };
+};
+
+export default Example;`}
                 />
             </section>
 
@@ -144,7 +161,7 @@ const sdk = new CheFuAcademy({
                     Learn how to structure requests, handle responses, and work
                     with SDK methods in{' '}
                     <a
-                        href="/api-docs/requests"
+                        href="/docs/requests"
                         className="text-primary hover:underline"
                     >
                         Making Requests

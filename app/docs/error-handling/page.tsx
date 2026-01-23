@@ -158,7 +158,7 @@ const ErrorHandling = () => {
 
                 <CodeHighlighter
                     code={`try {
-  await sdk.courses.list();
+  await sdk.courses.getAll();
 } catch (error) {
   if (!error.statusCode) {
     console.error('Network error:', error.message);
@@ -192,7 +192,7 @@ const ErrorHandling = () => {
                     Learn how usage limits work and how to avoid request
                     throttling in{' '}
                     <a
-                        href="/api-docs/rate-limits"
+                        href="/docs/rate-limits"
                         className="text-primary hover:underline"
                     >
                         Rate Limits & Usage

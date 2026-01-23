@@ -3,6 +3,7 @@
 import Header from '@/components/Shared/Header';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { WEBSITE_URL } from '@/constants/Data';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
@@ -11,7 +12,7 @@ const APIDoc = () => {
     return (
         <div className="min-h-screen bg-background">
             <Header
-                header="CheFu Academy SDK Documentation"
+                header="CheFu Academy Documentation"
                 description="Everything you need to integrate CheFu Academy into your application."
             />
 
@@ -32,7 +33,7 @@ const APIDoc = () => {
                     The platform is available on{' '}
                     <a
                         target="_blank"
-                        href="https://chefuacademy.vercel.app"
+                        href={WEBSITE_URL}
                         className="text-primary hover:underline"
                     >
                         Web
@@ -169,15 +170,13 @@ const APIDoc = () => {
                 <h1 className="text-xl font-bold">Next steps</h1>
                 <p className="mt-5 text-muted-foreground leading-relaxed">
                     Continue to the next section to{' '}
-                    <span className="text-primary">
                         learn how to install the SDK{' '}
-                    </span>
                     and make your first API call. Each section builds on the
                     previous one, so we recommend following the documentation in
                     order.
                 </p>
                 <Button
-                    onClick={() => router.push('/api-docs/installation')}
+                    onClick={() => router.push('/docs/installation')}
                     className="mt-2 cursor-pointer"
                     variant={'outline'}
                 >

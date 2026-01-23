@@ -30,25 +30,20 @@ const MobileMenu = ({ user, loading }: MobileMenuProps) => {
                 </SheetTrigger>
 
                 <SheetContent side="right" className="w-72">
-
                     <VisuallyHidden>
                         <SheetTitle>Navigation menu</SheetTitle>
                     </VisuallyHidden>
 
                     <div className="flex flex-col space-y-6 mt-10 ml-4">
-                        {loading ? (
-                            <Loader className="size-4 animate-spin" />
-                        ) : (
-                            navigationItems.map((item) => (
-                                <Link
-                                    key={item.name}
-                                    href={item.href}
-                                    className="text-sm font-semibold transition-colors hover:text-primary"
-                                >
-                                    {item.name}
-                                </Link>
-                            ))
-                        )}
+                        {navigationItems.map((item) => (
+                            <Link
+                                key={item.name}
+                                href={item.href}
+                                className="text-sm font-semibold transition-colors hover:text-primary"
+                            >
+                                {item.name}
+                            </Link>
+                        ))}
 
                         <div className="pt-4 border-t flex items-center justify-between">
                             <ThemeToggle />

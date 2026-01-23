@@ -23,16 +23,16 @@ const data = {
             icon: CodeXmlIcon,
             isActive: true,
             items: [
-                { title: 'Installation', url: '/api-docs/installation' },
-                { title: 'Authentication', url: '/api-docs/authentication' },
-                { title: 'Requests', url: '/api-docs/requests' },
+                { title: 'Installation', url: '/docs/installation' },
+                { title: 'Authentication', url: '/docs/authentication' },
+                { title: 'Requests', url: '/docs/requests' },
                 {
                     title: 'Error Handling',
-                    url: '/api-docs/error-handling',
+                    url: '/docs/error-handling',
                 },
                 {
                     title: 'Rate Limits & Usage',
-                    url: '/api-docs/rate-limits',
+                    url: '/docs/rate-limits',
                 },
             ],
         },
@@ -49,7 +49,7 @@ const APISidebar = ({ ...props }: React.ComponentProps<typeof Sidebar>) => {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link href={'/api-docs'}>
+                            <Link href={'/docs'}>
                                 <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
                                     <Image
                                         alt="Logo"

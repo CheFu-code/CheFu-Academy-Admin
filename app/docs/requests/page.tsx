@@ -37,14 +37,14 @@ const MakingRequests = () => {
             <section className="max-w-3xl space-y-4">
                 <h2 className="text-xl font-bold">Basic request</h2>
                 <p className="text-muted-foreground">
-                    Use the SDK to fetch a list of available courses.
+                    Use the SDK to fetch all of available courses.
                 </p>
 
                 <CodeHighlighter
                     code={`import CheFuAcademy from 'chefu-academy-sdk';
 
 const sdk = new CheFuAcademy({
-  apiKey: process.env.CHEFU_API_KEY,
+  apiKey: process.env.MY_API_KEY,
 });
 
 const courses = await sdk.courses.getAll();
@@ -171,7 +171,7 @@ useEffect(() => {
                     Learn how to detect failures, interpret SDK errors, and
                     handle edge cases gracefully in the{' '}
                     <a
-                        href="/api-docs/error-handling"
+                        href="/docs/error-handling"
                         className="text-primary hover:underline"
                     >
                         Error Handling

@@ -24,7 +24,7 @@ const DocsPage = () => {
                 <div className="mt-4 flex justify-center gap-2">
                     <Button className="cursor-pointer">Get Started</Button>
                     <Button
-                        onClick={() => router.push('/api-docs')}
+                        onClick={() => router.push('/docs')}
                         variant={'outline'}
                         className="cursor-pointer"
                     >

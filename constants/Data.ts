@@ -110,9 +110,9 @@ export const navigationItems = [
     },
     {
         name: 'Documentation',
-        href: '/api-docs',
+        href: '/docs',
     },
 ];
 
-
 export const SDK_URL = 'https://chefu-academy-sdk.onrender.com';
+export const WEBSITE_URL = 'https://chefu-academy.vercel.app';
