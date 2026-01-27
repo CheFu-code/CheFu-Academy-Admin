@@ -32,10 +32,11 @@ export default function CoursesPage() {
     const router = useRouter();
     const courseRef = collection(db, 'course');
     const [courses, setCourses] = useState<Course[]>([]);
+    const [fetchingCourses, setFetchingCourses] = useState(false);
+
+    const [loadingMore, setLoadingMore] = useState(false);
     const [lastDoc, setLastDoc] =
         useState<QueryDocumentSnapshot<DocumentData> | null>(null);
-
-    const [fetchingCourses, setFetchingCourses] = useState(false);
 
     const fetchCourses = useCallback(async () => {
         setFetchingCourses(true);
@@ -78,17 +79,20 @@ export default function CoursesPage() {
 
     return (
         <div className="min-h-screen px-4">
-            <Header header="Courses" description="" />
+            <Header
+                header="Courses"
+                description="Explore our wide range of courses and start learning today."
+            />
 
             {fetchingCourses ? (
                 <Loader className="animate-spin items-center justify-center size-4" />
             ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-4xl mx-auto">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
                     {courses.length > 0 ? (
                         courses.map((c) => (
-                            <Card
+                            <div
                                 key={c.id}
-                                className="hover:shadow-lg transition-shadow duration-200 rounded-2xl cursor-pointer"
+                                className="hover:shadow-lg hover:bg-gray-100/10  transition-shadow duration-200 rounded-xl cursor-pointer border border-muted-foreground"
                             >
                                 <div className="relative w-full h-40 overflow-hidden rounded-t-2xl">
                                     <Image
@@ -102,7 +106,7 @@ export default function CoursesPage() {
                                 </div>
 
                                 <CardHeader>
-                                    <CardTitle className="text-lg font-semibold truncate">
+                                    <CardTitle className="text-lg mt-4 font-semibold truncate">
                                         {c.courseTitle}
                                     </CardTitle>
                                     <CardDescription className="line-clamp-2">
@@ -111,13 +115,13 @@ export default function CoursesPage() {
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent>
-                                    <p className="font-semibold">
+                                    <p className="font-semibold mb-2 mt-2">
                                         {c.chapters.length > 1
                                             ? `${c.chapters.length} Chapters`
                                             : `${c.chapters.length} Chapter`}
                                     </p>
                                 </CardContent>
-                            </Card>
+                            </div>
                         ))
                     ) : (
                         <div className="justify-start text-start">

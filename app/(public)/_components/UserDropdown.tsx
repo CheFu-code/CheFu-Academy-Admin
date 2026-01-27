@@ -4,10 +4,10 @@ import {
     Home,
     LayoutDashboardIcon,
     LogOutIcon,
-} from "lucide-react";
+} from 'lucide-react';
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -16,23 +16,21 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { auth } from "@/lib/firebase";
-import { UserDropdownProps } from "@/types/user";
-import { signOut } from "firebase/auth";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+} from '@/components/ui/dropdown-menu';
+import { auth } from '@/lib/firebase';
+import { UserDropdownProps } from '@/types/user';
+import { signOut } from 'firebase/auth';
+import Link from 'next/link';
+import { toast } from 'sonner';
 
 export default function UserDropdown({ user }: UserDropdownProps) {
-    const router = useRouter();
     const handleLogout = async () => {
         try {
             await signOut(auth);
-            toast.success("Logged out successfully!");
+            toast.success('Logged out successfully!');
         } catch (error) {
-            console.error("Logout failed:", error);
-            toast.error("Logout failed. Please try again.");
+            console.error('Logout failed:', error);
+            toast.error('Logout failed. Please try again.');
         }
     };
 
@@ -45,11 +43,11 @@ export default function UserDropdown({ user }: UserDropdownProps) {
                 >
                     <Avatar>
                         <AvatarImage
-                            src={user?.profilePicture || "/logo.jpg"}
+                            src={user?.profilePicture || '/logo.jpg'}
                             alt="Profile image"
                         />
                         <AvatarFallback>
-                            {user?.fullname?.[0] || "CA"}
+                            {user?.fullname?.[0] || 'CA'}
                         </AvatarFallback>
                     </Avatar>
                     <ChevronDownIcon
@@ -71,7 +69,7 @@ export default function UserDropdown({ user }: UserDropdownProps) {
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
                     <DropdownMenuItem asChild>
-                        <Link href={"/"} className="flex items-center gap-2">
+                        <Link href={'/'} className="flex items-center gap-2">
                             <Home
                                 size={16}
                                 className="opacity-60"
@@ -80,10 +78,23 @@ export default function UserDropdown({ user }: UserDropdownProps) {
                             <span>Home</span>
                         </Link>
                     </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                        <Link
+                            href={'/videos/all-videos'}
+                            className="flex items-center gap-2"
+                        >
+                            <LayoutDashboardIcon
+                                size={16}
+                                className="opacity-60"
+                                aria-hidden="true"
+                            />
+                            <span>Videos</span>
+                        </Link>
+                    </DropdownMenuItem>
 
                     <DropdownMenuItem asChild>
                         <Link
-                            href={"/courses"}
+                            href={'/courses'}
                             className="flex items-center gap-2"
                         >
                             <BookOpen
@@ -92,20 +103,6 @@ export default function UserDropdown({ user }: UserDropdownProps) {
                                 aria-hidden="true"
                             />
                             <span>Courses</span>
-                        </Link>
-                    </DropdownMenuItem>
-
-                    <DropdownMenuItem asChild>
-                        <Link
-                            href={"/dashboard"}
-                            className="flex items-center gap-2"
-                        >
-                            <LayoutDashboardIcon
-                                size={16}
-                                className="opacity-60"
-                                aria-hidden="true"
-                            />
-                            <span>Dashboard</span>
                         </Link>
                     </DropdownMenuItem>
                 </DropdownMenuGroup>

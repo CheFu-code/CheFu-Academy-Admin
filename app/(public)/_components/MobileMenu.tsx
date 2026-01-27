@@ -25,7 +25,7 @@ const MobileMenu = ({ user, loading }: MobileMenuProps) => {
             <Sheet>
                 <SheetTrigger asChild>
                     <button className="inline-flex items-center justify-center rounded-md p-2 hover:bg-accent">
-                        <Menu className="h-5 w-5" />
+                        <Menu className="h-5 w-5 cursor-pointer" />
                     </button>
                 </SheetTrigger>
 
