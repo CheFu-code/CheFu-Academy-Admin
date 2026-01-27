@@ -13,7 +13,7 @@ const FeaturesSection = () => {
                         className="hover:shadow-lg transition-shadow"
                     >
                         <CardHeader>
-                            <div className="text-4xl mb-2 text-white">
+                            <div className="text-4xl mb-2">
                                 <Icon />
                             </div>
                             <h3 className="text-xl md:text-2xl font-semibold">

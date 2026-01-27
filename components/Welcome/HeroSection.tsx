@@ -8,7 +8,7 @@ const HeroSection = () => {
     return (
         <section className="relative py-20">
             <div className="flex flex-col items-center text-center space-y-8">
-                <Badge className="border-cyan-400" variant={'outline'}>
+                <Badge className="border border-cyan-400" variant={'outline'}>
                     Smart Learning Starts Here
                 </Badge>
                 <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
