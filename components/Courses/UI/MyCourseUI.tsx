@@ -81,7 +81,7 @@ const MyCourseUI = ({
                                     </CardDescription>
                                 </CardHeader>
 
-                                <CardContent className="space-y-2 px-3 pb-3 flex flex-col flex-1 justify-end">
+                                <CardContent className="space-y-2 px-3 pt-1 pb-3 flex flex-col flex-1 justify-end">
                                     <Progress
                                         value={progress}
                                         className="h-1.5 sm:h-2 rounded-full"
