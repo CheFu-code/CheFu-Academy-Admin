@@ -1,6 +1,6 @@
 'use client';
 
-import Loading from '@/components/Loading';
+import Loading from '@/components/Shared/Loading';
 import { auth, db } from '@/lib/firebase';
 import { fetchUploadedVideos } from '@/services/videoService';
 import { Video } from '@/types/video';

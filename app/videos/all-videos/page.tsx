@@ -1,6 +1,6 @@
 'use client';
 
-import Loading from '@/components/Loading';
+import Loading from '@/components/Shared/Loading';
 import { fetchUploadedVideos, fetchYTVideos } from '@/services/videoService';
 import { Video } from '@/types/video';
 import Image from 'next/image';

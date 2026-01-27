@@ -6,11 +6,11 @@ import { useEffect, useState } from 'react';
 
 import NoCourse from '@/components/Courses/noCourse';
 import CourseViewUI from '@/components/Courses/UI/CourseViewUI';
-import Loading from '@/components/Shared/Loading';
 import { useCourseFunctions } from '@/hooks/useCourseFunctions';
 import { db } from '@/lib/firebase';
 import { Course } from '@/types/course';
 import { toast } from 'sonner';
+import Loading from '@/components/Shared/Loading';
 
 const CourseView = ({ course: initialCourse }: { course?: Course }) => {
     const params = useParams();

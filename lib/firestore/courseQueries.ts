@@ -1,7 +1,9 @@
 import { Course } from '@/types/course';
 import {
     collection,
+    doc,
     DocumentData,
+    getDoc,
     getDocs,
     limit,
     orderBy,
@@ -24,6 +26,7 @@ export const CoursesQuery = () => {
     const courseRef = collection(db, 'course');
     const [courses, setCourses] = useState<Course[]>([]);
     const [fetchingCourses, setFetchingCourses] = useState(false);
+    const [fetchingCourseById, setFetchingCourseById] = useState(false);
     const [loadingMore, setLoadingMore] = useState(false);
     const [lastDoc, setLastDoc] =
         useState<QueryDocumentSnapshot<DocumentData> | null>(null);
@@ -32,20 +35,39 @@ export const CoursesQuery = () => {
     const fetchCourses = useCallback(async () => {
         if (!user?.email) return;
         setFetchingCourses(true);
+
         try {
+            // 1️⃣ Get all courses not created by this user
             const q = query(
                 courseRef,
                 where('createdBy', '!=', user.email),
                 orderBy('createdOn', 'desc'),
-                limit(7),
+                limit(7)
             );
 
             const snapshot = await getDocs(q);
 
-            const freshData = snapshot.docs.map((doc) => ({
+            const allCourses = snapshot.docs.map((doc) => ({
                 ...(doc.data() as Course),
                 id: doc.id,
             }));
+
+            // 2️⃣ Get all originalCourseId's the user has already enrolled in
+            const enrolledQ = query(
+                courseRef,
+                where('createdBy', '==', user.email),
+                where('originalCourseId', '!=', null)
+            );
+
+            const enrolledSnap = await getDocs(enrolledQ);
+            const enrolledOriginalIds = enrolledSnap.docs.map(
+                (doc) => (doc.data() as Course).originalCourseId
+            );
+
+            // 3️⃣ Filter out courses the user already enrolled in
+            const freshData = allCourses.filter(
+                (course) => !enrolledOriginalIds.includes(course.id)
+            );
 
             // 🔁 Compare with cache
             const cached = getCoursesFromCache();
@@ -58,12 +80,13 @@ export const CoursesQuery = () => {
             setLastDoc(snapshot.docs.at(-1) ?? null);
             if (snapshot.docs.length < 7) setHasMore(false);
         } catch (error) {
-            console.error(error);
+            console.error('Failed to load courses:', error);
             toast.error('Failed to load courses.');
         } finally {
             setFetchingCourses(false);
         }
     }, [user?.email, courseRef]);
+
 
     const fetchMoreCourses = useCallback(async () => {
         if (!lastDoc || loadingMore || !hasMore || !user?.email) return;
@@ -99,6 +122,32 @@ export const CoursesQuery = () => {
         }
     }, [lastDoc, loadingMore, hasMore, courseRef, user?.email]);
 
+    const fetchCourseById = useCallback(async (id: string): Promise<Course | null> => {
+        if (!user?.email || !id) return null;
+
+        setFetchingCourseById(true);
+        try {
+            const docRef = doc(db, 'course', id); // direct reference by document ID
+            const snap = await getDoc(docRef);
+
+            if (!snap.exists()) {
+                console.warn('Course not found');
+                return null;
+            }
+
+            const { id: _, ...data } = snap.data() as Course;
+            return { id: snap.id, ...data }; // single Course
+        } catch (error) {
+            console.error('Error fetching course:', error);
+            return null;
+        } finally {
+            setFetchingCourseById(false);
+        }
+    }, [user?.email]);
+
+
+
+
     return {
         user,
         fetchCourses,
@@ -109,5 +158,8 @@ export const CoursesQuery = () => {
         fetchingCourses,
         setFetchingCourses,
         loadingMore,
+        fetchCourseById,
+        fetchingCourseById,
+        setFetchingCourseById,
     };
 };

@@ -45,6 +45,7 @@ export interface Course {
     qa: QA[];
     quiz: Quiz[];
     completedChapter?: string[];
+    originalCourseId?: string
 }
 
 export interface CourseProgressProps {
