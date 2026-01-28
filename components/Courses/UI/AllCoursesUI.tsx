@@ -2,6 +2,7 @@
 
 import Header from '@/components/Shared/Header';
 import CourseCardSkeleton from '@/components/skeletons/CourseCardSkeleton';
+import GridCourseCardSkeleton from '@/components/skeletons/GridCourseCardSkeleton';
 import { Button } from '@/components/ui/button';
 import {
     CardContent,
@@ -10,7 +11,7 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { Course } from '@/types/course';
-import { Plus } from 'lucide-react';
+import { Plus, PlusSquare } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
@@ -31,17 +32,15 @@ const AllCoursesUI = ({
             <div className="flex justify-between items-center">
                 <Header
                     header="Courses"
-                    description="Explore our wide range of courses and start learning today."
+                    description="Learn something new today."
                 />
                 <div className="flex flex-col items-end gap-2">
-                    <Button
+                    <button
                         onClick={() => router.push('/courses/create-course')}
-                        size={'sm'}
-                        variant={'outline'}
-                        className="cursor-pointer"
+                        className="cursor-pointer hover:bg-gray-100/20 transition-colors duration-200 rounded-md p-2 flex items-center gap-2"
                     >
-                        Create Course <Plus className="size-4" />
-                    </Button>
+                        <PlusSquare />
+                    </button>
                     {/**TODO implement this on new updates */}
                     {/* <Badge variant={'secondary'} className="cursor-pointer">
                         <Filter className="size-4" />
@@ -52,9 +51,7 @@ const AllCoursesUI = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
                 {fetchingCourses && courses.length === 0 ? (
-                    Array.from({ length: 6 }).map((_, i) => (
-                        <CourseCardSkeleton key={i} />
-                    ))
+                    <GridCourseCardSkeleton />
                 ) : courses.length > 0 ? (
                     courses.map((c) => (
                         <div

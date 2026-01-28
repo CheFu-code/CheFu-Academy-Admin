@@ -1,0 +1,80 @@
+{
+    "name": "CheFu Academy",
+    "short_name": "CheFu",
+    "description": "Smart Learning Starts Here - Join CheFu Academy for Interactive Courses and Expert Guidance.",
+    "lang": "en-US",
+    "start_url": "/?utm_source=web_app_manifest",
+    "scope": "/",
+    "display": "standalone",
+    "orientation": "portrait-primary",
+    "theme_color": "#4F46E5",
+    "background_color": "#ffffff",
+    "categories": [
+        "education",
+        "learning",
+        "technology"
+    ],
+    "dir": "ltr",
+    "iarc_rating_id": "e000000",
+    "icons": [
+        {
+            "src": "/icons/icon-72x72.png",
+            "sizes": "72x72",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/icons/icon-96x96.png",
+            "sizes": "96x96",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/icons/icon-128x128.png",
+            "sizes": "128x128",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/icons/icon-144x144.png",
+            "sizes": "144x144",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/icons/icon-152x152.png",
+            "sizes": "152x152",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/icons/icon-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/icons/icon-384x384.png",
+            "sizes": "384x384",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/icons/icon-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "related_applications": [
+        {
+            "platform": "web",
+            "url": "https://chefu-academy.vercel.app"
+        },
+        {
+            "platform": "play",
+            "id": "com.chefu.chefuacademy"
+        }
+    ],
+    "prefer_related_applications": false
+}
