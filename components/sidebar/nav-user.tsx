@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
 import {
     IconDotsVertical,
     IconLogout,
     IconUserCircle,
-} from "@tabler/icons-react";
+} from '@tabler/icons-react';
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -15,18 +15,18 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu';
 import {
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
     useSidebar,
-} from "@/components/ui/sidebar";
-import { auth } from "@/lib/firebase";
-import { signOut } from "firebase/auth";
-import Link from "next/link";
-import { toast } from "sonner";
-import { Button } from "../ui/button";
+} from '@/components/ui/sidebar';
+import { auth } from '@/lib/firebase';
+import { signOut } from 'firebase/auth';
+import Link from 'next/link';
+import { toast } from 'sonner';
+import { Button } from '../ui/button';
 
 export function NavUser({
     user,
@@ -54,7 +54,7 @@ export function NavUser({
                                     alt={user.fullname}
                                 />
                                 <AvatarFallback>
-                                    {user?.fullname?.[0] || "U"}
+                                    {user?.fullname?.[0] || 'U'}
                                 </AvatarFallback>
                             </Avatar>
                             <div className="grid flex-1 text-left text-sm leading-tight">
@@ -70,7 +70,7 @@ export function NavUser({
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
                         className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
-                        side={isMobile ? "bottom" : "right"}
+                        side={isMobile ? 'bottom' : 'right'}
                         align="end"
                         sideOffset={4}
                     >
@@ -82,7 +82,7 @@ export function NavUser({
                                         alt={user.fullname}
                                     />
                                     <AvatarFallback>
-                                        {user?.fullname?.[0] || "U"}
+                                        {user?.fullname?.[0] || 'U'}
                                     </AvatarFallback>
                                 </Avatar>
                                 <div className="grid flex-1 text-left text-sm leading-tight">
@@ -113,15 +113,16 @@ export function NavUser({
                         <DropdownMenuSeparator />
                         <DropdownMenuItem asChild>
                             <Button
+                                className="cursor-pointer"
                                 onClick={() => {
                                     try {
                                         signOut(auth);
                                         toast.success(
-                                            "Logged out successfully"
+                                            'Logged out successfully',
                                         );
                                     } catch (error) {
-                                        console.log("No user is logged in");
-                                        toast.error("No user is logged in");
+                                        console.log('No user is logged in');
+                                        toast.error('No user is logged in');
                                     }
                                 }}
                                 variant="outline"

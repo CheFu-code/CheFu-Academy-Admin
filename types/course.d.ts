@@ -54,8 +54,14 @@ export interface CourseProgressProps {
 }
 
 export interface AddCourseProp {
-    topic: string;
-    setTopic: React.Dispatch<React.SetStateAction<string>>;
-    selectedTopics: string;
-    setSelectedTopics: React.Dispatch<React.SetStateAction<string>>;
+    topics: string[];
+    setTopics: React.Dispatch<React.SetStateAction<string[]>>;
+    userInput: string;
+    setUserInput: React.Dispatch<React.SetStateAction<string>>;
+    selectedTopics: string[];
+    setSelectedTopics: React.Dispatch<React.SetStateAction<string[]>>;
+    generatingTopic: boolean;
+    generatingCourse: boolean;
+    onGenerateCourse: () => void;
+    generateTopic: () => void;
 }
