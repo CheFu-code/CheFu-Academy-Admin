@@ -116,3 +116,11 @@ export const navigationItems = [
 
 export const SDK_URL = 'https://chefu-academy-sdk.onrender.com';
 export const WEBSITE_URL = 'https://chefu-academy.vercel.app';
+export const BACKEND_URL = 'https://chefu-academy-tmzx.onrender.com';
+
+export const DEFAULT_PREFS = {
+    general: false,
+    marketing: false,
+    activity: false,
+    security: true,
+};

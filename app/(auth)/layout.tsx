@@ -26,7 +26,7 @@ export default function AuthLayout({
                 {children}
 
                 <div className="text-balance text-center text-xs text-muted-foreground">
-                    By signing in you agree to our{' '}
+                    By using our app, you agree to our{' '}
                     <Link
                         href={'/terms-service'}
                         className="text-primary hover:underline font-medium"
