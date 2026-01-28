@@ -33,14 +33,21 @@ const AllCoursesUI = ({
                     header="Courses"
                     description="Explore our wide range of courses and start learning today."
                 />
-                <Button
-                    onClick={() => router.push('/courses/create-course')}
-                    size={'sm'}
-                    variant={'outline'}
-                    className="cursor-pointer"
-                >
-                    Create Course <Plus className="size-4" />
-                </Button>
+                <div className="flex flex-col items-end gap-2">
+                    <Button
+                        onClick={() => router.push('/courses/create-course')}
+                        size={'sm'}
+                        variant={'outline'}
+                        className="cursor-pointer"
+                    >
+                        Create Course <Plus className="size-4" />
+                    </Button>
+                    {/**TODO implement this on new updates */}
+                    {/* <Badge variant={'secondary'} className="cursor-pointer">
+                        <Filter className="size-4" />
+                        Filter
+                    </Badge> */}
+                </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">

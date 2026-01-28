@@ -1,8 +1,8 @@
 'use client';
 
 import NoCourse from '@/components/Courses/noCourse';
+import CourseBanner from '@/components/Shared/CourseBanner';
 import Loading from '@/components/Shared/Loading';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardDescription, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -10,9 +10,15 @@ import { useAuthUser } from '@/hooks/useAuthUser';
 import { db } from '@/lib/firebase';
 import { CoursesQuery } from '@/lib/firestore/courseQueries';
 import { Course } from '@/types/course';
-import { collection, doc, getDocs, query, setDoc, where } from 'firebase/firestore';
+import {
+    collection,
+    doc,
+    getDocs,
+    query,
+    setDoc,
+    where,
+} from 'firebase/firestore';
 import { BookOpen } from 'lucide-react';
-import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -103,20 +109,11 @@ const CourseView = () => {
         <div className="p-4 max-w-5xl mx-auto space-y-6">
             {/* Course Banner */}
             {course.banner_image && (
-                <div className="relative w-full h-48 md:h-64 rounded-lg overflow-hidden">
-                    <Image
-                        fill
-                        priority
-                        src={course.banner_image}
-                        alt={course.courseTitle}
-                        className="w-full h-full object-cover"
-                    />
-                    {course.category && (
-                        <Badge className="absolute top-3 left-3 bg-green-600 text-white px-2 py-1">
-                            {course.category}
-                        </Badge>
-                    )}
-                </div>
+                <CourseBanner
+                    banner_image={course.banner_image}
+                    courseTitle={course.courseTitle}
+                    category={course.category}
+                />
             )}
 
             {/* Course Title & Description */}

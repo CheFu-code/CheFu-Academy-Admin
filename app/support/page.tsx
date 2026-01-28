@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import {
     Accordion,
@@ -27,7 +27,7 @@ const Support = () => {
                 reach out to us directly.
             </p>
 
-            <ScrollArea className="h-[400px] sm:h-[600px] border rounded-md p-3 sm:p-4 scrollbar-none">
+            <ScrollArea className="h-100 sm:h-150 border rounded-md p-3 sm:p-4 scrollbar-none">
                 <div className="space-y-3 sm:space-y-4">
                     {/* FAQ Section */}
                     <Card>

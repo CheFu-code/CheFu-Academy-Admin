@@ -85,10 +85,10 @@ export const useGenerateTopic = (
         if (generatingCourse) return; // Prevent double submission
         if (!selectedTopics.length) {
             alert('Please select at least one topic.');
-
             return;
         }
         setGeneratingCourse(true);
+        toast.success('Generating course, please wait...');
         const promptText = selectedTopics.join(', ') + Prompt.COURSE;
         const contents = [
             {
@@ -110,7 +110,6 @@ export const useGenerateTopic = (
                 console.log('Error parsing JSON:', e);
                 return;
             }
-            // Handle both array and object with courses property
             const coursesArray = Array.isArray(coursesObj)
                 ? coursesObj
                 : coursesObj.courses;

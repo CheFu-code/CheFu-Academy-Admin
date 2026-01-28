@@ -1,5 +1,4 @@
-import Image from 'next/image';
-import React from 'react';
+import CourseBanner from '@/components/Shared/CourseBanner';
 import { Badge } from '@/components/ui/badge';
 import {
     Card,
@@ -8,9 +7,9 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { BookOpen } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Course } from '@/types/course';
+import { BookOpen } from 'lucide-react';
 
 const CourseViewUI = ({
     course,
@@ -31,20 +30,11 @@ const CourseViewUI = ({
         <div className="p-4 max-w-5xl mx-auto space-y-6">
             {/* Course Banner */}
             {course.banner_image && (
-                <div className="relative w-full h-48 md:h-64 rounded-lg overflow-hidden">
-                    <Image
-                        fill
-                        priority
-                        src={course.banner_image}
-                        alt={course.courseTitle}
-                        className="w-full h-full object-cover"
-                    />
-                    {course.category && (
-                        <Badge className="absolute top-3 left-3 bg-green-600 text-white px-2 py-1">
-                            {course.category}
-                        </Badge>
-                    )}
-                </div>
+                <CourseBanner
+                    banner_image={course.banner_image}
+                    courseTitle={course.courseTitle}
+                    category={course.category}
+                />
             )}
 
             {/* Course Title & Description */}
@@ -87,16 +77,19 @@ const CourseViewUI = ({
                             <Card
                                 key={idx}
                                 onClick={() => handleChapterClick(idx)}
-                                className={`p-3 cursor-pointer hover:bg-muted/50 transition ${
+                                className={`p-3 cursor-pointer hover:bg-muted/50 transition flex flex-col h-full ${
                                     isCompleted ? 'border-green-500' : ''
                                 }`}
                             >
                                 <CardTitle className="text-sm sm:text-base">
                                     {chapter.chapterName}
                                 </CardTitle>
-                                <CardDescription className="text-xs text-muted-foreground line-clamp-3">
+
+                                {/* Push the description to the bottom */}
+                                <CardDescription className="text-xs text-muted-foreground line-clamp-2 mt-auto">
                                     {chapter.content[0]?.explain as string}
                                 </CardDescription>
+
                                 {isCompleted && (
                                     <Badge
                                         variant="secondary"
