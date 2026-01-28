@@ -22,7 +22,7 @@ const VideoDetailsUI = ({
     enrolled: boolean;
     video: Video;
     handleEnroll: () => Promise<void>;
-    enrolling: boolean
+    enrolling: boolean;
 }) => {
     return (
         <div className="max-w-5xl p-4 flex flex-col gap-6">
@@ -36,6 +36,7 @@ const VideoDetailsUI = ({
                 ) : (
                     <>
                         <Image
+                            priority
                             fill
                             src={video.thumbnailURL}
                             alt={video.title}
