@@ -27,7 +27,7 @@ const data = {
             icon: BookOpen,
             isActive: true,
             items: [
-                { title: 'Practice', url: '/courses/practice' },
+                // { title: 'Practice', url: '/courses/practice' },
                 { title: 'All Courses', url: '/courses' },
                 { title: 'My Courses', url: '/courses/my-courses' },
                 {
@@ -42,10 +42,10 @@ const data = {
             url: '#',
             icon: Video,
             items: [
-                {
-                    title: 'All Videos',
-                    url: '/videos/all-videos',
-                },
+                // {
+                //     title: 'All Videos',
+                //     url: '/videos/all-videos',
+                // },
                 {
                     title: 'Beginner Videos',
                     url: '/videos/beginner',

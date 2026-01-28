@@ -70,15 +70,17 @@ const VideoDetailsUI = ({
                     by {video.uploadedBy}
                 </h3>
 
-                <div className="flex flex-wrap gap-2 sm:gap-4 text-gray-600">
-                    <p className="text-sm sm:text-base md:text-lg">
-                        {video.uploadedAt.toDate().toLocaleDateString()}
-                    </p>
-                    <p className="flex items-center gap-1 text-sm sm:text-base md:text-lg">
-                        <Timer className="h-4 w-4" />{' '}
-                        {Math.floor(video.duration / 60)}m {video.duration % 60}
-                        s
-                    </p>
+                <div className="flex justify-between flex-wrap gap-2 sm:gap-4 text-gray-600">
+                    <div className="flex gap-4">
+                        <p className="text-sm sm:text-base md:text-lg">
+                            {video.uploadedAt.toDate().toLocaleDateString()}
+                        </p>
+                        <p className="flex items-center gap-1 text-sm sm:text-base md:text-lg">
+                            <Timer className="h-4 w-4" />{' '}
+                            {Math.floor(video.duration / 60)}m{' '}
+                            {video.duration % 60}s
+                        </p>
+                    </div>
                     <p className="text-sm sm:text-base md:text-lg">
                         Views: {video.views || 0}
                     </p>
@@ -106,16 +108,16 @@ const VideoDetailsUI = ({
                 {/* Tabs */}
                 <Tabs defaultValue="overview" className="flex flex-col gap-4">
                     {/* Tab headers */}
-                    <TabsList className="bg-gray-400/50 rounded-2xl p-1 gap-1">
+                    <TabsList className="rounded-2xl">
                         <TabsTrigger
                             value="overview"
-                            className="px-3 py-1 cursor-pointer rounded-lg text-sm sm:text-base md:text-lg"
+                            className="px-3 cursor-pointer rounded-lg text-sm sm:text-base md:text-lg"
                         >
                             Overview
                         </TabsTrigger>
                         <TabsTrigger
                             value="reviews"
-                            className="px-3 py-1 cursor-pointer rounded-lg text-sm sm:text-base md:text-lg"
+                            className="px-3 cursor-pointer rounded-lg text-sm sm:text-base md:text-lg"
                         >
                             Reviews
                         </TabsTrigger>

@@ -62,7 +62,10 @@ const BeginnerVideos = () => {
                             />
 
                             <div
-                                onClick={() => goToSearch(video.category)}
+                                onClick={(e) => {
+                                    e.stopPropagation(); // ✅ stop parent click
+                                    goToSearch(video.category);
+                                }}
                                 className="absolute top-2 left-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded-xl text-sm cursor-pointer select-none"
                             >
                                 {video.category}
