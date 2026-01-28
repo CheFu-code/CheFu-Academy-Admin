@@ -28,10 +28,20 @@ const AllCoursesUI = ({
     const router = useRouter();
     return (
         <div className="min-h-screen px-4">
-            <Header
-                header="Courses"
-                description="Explore our wide range of courses and start learning today."
-            />
+            <div className="flex justify-between items-center">
+                <Header
+                    header="Courses"
+                    description="Explore our wide range of courses and start learning today."
+                />
+                <Button
+                    onClick={() => router.push('/courses/create-course')}
+                    size={'sm'}
+                    variant={'outline'}
+                    className="cursor-pointer"
+                >
+                    Create Course <Plus className="size-4" />
+                </Button>
+            </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
                 {fetchingCourses && courses.length === 0 ? (

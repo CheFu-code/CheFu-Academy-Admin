@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
     BadgeCheck,
@@ -7,9 +7,9 @@ import {
     Loader,
     LogOut,
     Sparkles,
-} from "lucide-react";
+} from 'lucide-react';
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -18,19 +18,20 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu';
 import {
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
     useSidebar,
-} from "@/components/ui/sidebar";
-import { auth } from "@/lib/firebase";
-import { User } from "@/types/user";
-import Link from "next/link";
-import { useState } from "react";
-import { toast } from "sonner";
-import { Button, buttonVariants } from "./ui/button";
+} from '@/components/ui/sidebar';
+import { auth } from '@/lib/firebase';
+import { User } from '@/types/user';
+import Link from 'next/link';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { Button } from './ui/button';
+import { signOut } from 'firebase/auth';
 
 export function NavUser({ user }: { user: User }) {
     const { isMobile } = useSidebar();
@@ -39,11 +40,11 @@ export function NavUser({ user }: { user: User }) {
     const handleLogout = async () => {
         try {
             setLoading(true);
-            await auth.signOut();
-            toast.success("Successfully signed out");
+            await signOut(auth);
+            toast.success('Successfully signed out');
         } catch (error) {
-            toast.error("Error signing out");
-            console.error("Error signing out:", error);
+            toast.error('Error signing out');
+            console.error('Error signing out:', error);
         } finally {
             setLoading(false);
         }
@@ -64,7 +65,7 @@ export function NavUser({ user }: { user: User }) {
                                     alt={user.fullname}
                                 />
                                 <AvatarFallback>
-                                    {user?.fullname?.[0] || "CA"}
+                                    {user?.fullname?.[0] || 'CA'}
                                 </AvatarFallback>
                             </Avatar>
                             <div className="grid flex-1 text-left text-sm leading-tight">
@@ -80,7 +81,7 @@ export function NavUser({ user }: { user: User }) {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
                         className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
-                        side={isMobile ? "bottom" : "right"}
+                        side={isMobile ? 'bottom' : 'right'}
                         align="end"
                         sideOffset={4}
                     >
@@ -92,7 +93,7 @@ export function NavUser({ user }: { user: User }) {
                                         alt={user.fullname}
                                     />
                                     <AvatarFallback>
-                                        {user?.fullname?.[0] || "CA"}
+                                        {user?.fullname?.[0] || 'CA'}
                                     </AvatarFallback>
                                 </Avatar>
                                 <div className="grid flex-1 text-left text-sm leading-tight">
@@ -109,7 +110,7 @@ export function NavUser({ user }: { user: User }) {
                         {user.member === false && (
                             <DropdownMenuGroup asChild>
                                 <Link href="/settings/billing">
-                                    <DropdownMenuItem>
+                                    <DropdownMenuItem className="hover:bg-primary cursor-pointer">
                                         <Sparkles />
                                         Upgrade to Pro
                                     </DropdownMenuItem>
@@ -118,13 +119,19 @@ export function NavUser({ user }: { user: User }) {
                         )}
                         <DropdownMenuSeparator />
                         <DropdownMenuGroup>
-                            <DropdownMenuItem asChild>
+                            <DropdownMenuItem
+                                asChild
+                                className="hover:bg-primary cursor-pointer"
+                            >
                                 <Link href="/settings/account">
                                     <BadgeCheck />
                                     Account
                                 </Link>
                             </DropdownMenuItem>
-                            <DropdownMenuItem asChild>
+                            <DropdownMenuItem
+                                asChild
+                                className="hover:bg-primary cursor-pointer"
+                            >
                                 <Link href="/settings/billing">
                                     <CreditCard />
                                     Billing
@@ -133,20 +140,19 @@ export function NavUser({ user }: { user: User }) {
                         </DropdownMenuGroup>
                         <DropdownMenuSeparator />
                         <Button
-                            className={buttonVariants({
-                                variant: "outline",
-                                size: "sm",
-                            })}
+                            className="m-2"
+                            size={'sm'}
+                            variant={'destructive'}
                             onClick={handleLogout}
                         >
                             <DropdownMenuItem>
                                 {loading ? (
                                     <Loader />
                                 ) : (
-                                    <>
-                                        <LogOut />
+                                    <div className="hover:text-shadow-red-500 hover:text-red-300 cursor-pointer flex items-center gap-1">
+                                        <LogOut className="text-red-100" />
                                         Log out
-                                    </>
+                                    </div>
                                 )}
                             </DropdownMenuItem>
                         </Button>
