@@ -1,6 +1,6 @@
 'use client';
 
-import Loading from '@/components/Shared/Loading';
+import VideoCardSkeleton from '@/components/skeletons/VideoCardSkeleton';
 import { fetchUploadedVideos } from '@/services/videoService';
 import { Video } from '@/types/video';
 import Image from 'next/image';
@@ -37,7 +37,7 @@ const VideosCreationPage = () => {
         router.push(`/videos/details/${videoId}`);
     };
 
-    if (loading) return <Loading message="Loading videos..." />;
+    if (loading) return <VideoCardSkeleton />;
 
     return (
         <>
