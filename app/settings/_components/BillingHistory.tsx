@@ -1,16 +1,16 @@
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useAuthUser } from "@/hooks/useAuthUser";
-import { Payment } from "@/types/payment";
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAuthUser } from '@/hooks/useAuthUser';
+import { db } from '@/lib/firebase';
+import { Payment } from '@/types/payment';
 import {
     collection,
     getDocs,
-    getFirestore,
     query,
-    where,
-} from "firebase/firestore";
-import { Loader } from "lucide-react";
-import { useEffect, useState } from "react";
+    where
+} from 'firebase/firestore';
+import { Loader } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 const BillingHistory = () => {
     const { user } = useAuthUser();
@@ -21,12 +21,10 @@ const BillingHistory = () => {
         if (!user?.email) return; // wait until user exists
 
         const fetchPayments = async () => {
-            console.log("Fetching payments for user:", user.email);
             try {
-                const db = getFirestore();
                 const q = query(
-                    collection(db, "payments"),
-                    where("email", "==", user.email)
+                    collection(db, 'payments'),
+                    where('email', '==', user.email),
                 );
                 const snapshot = await getDocs(q);
                 const fetched: Payment[] = snapshot.docs.map((doc) => {
@@ -35,13 +33,13 @@ const BillingHistory = () => {
                         orderID: data.orderID,
                         payerID: data.payerID,
                         payerName: {
-                            given_name: data.payerName?.given_name || "",
-                            surname: data.payerName?.surname || "",
+                            given_name: data.payerName?.given_name || '',
+                            surname: data.payerName?.surname || '',
                         },
                         email: data.email,
                         amount: {
-                            currency_code: data.amount?.currency_code || "USD",
-                            value: data.amount?.value || "0.00",
+                            currency_code: data.amount?.currency_code || 'USD',
+                            value: data.amount?.value || '0.00',
                         },
                         planType: data.planType,
                         status: data.status,
@@ -52,9 +50,10 @@ const BillingHistory = () => {
                 });
 
                 setPayments(fetched);
-                console.log("Fetched payments:", fetched);
             } catch (error) {
-                console.error("Error fetching payments:", error);
+                alert(
+                    `There was an error fetching your billing history. Please try again later. Error: ${error}`,
+                );
             } finally {
                 setLoading(false);
             }
@@ -102,7 +101,7 @@ const BillingHistory = () => {
                                     <div className="flex flex-col mb-2 md:mb-0">
                                         <span className="text-sm text-muted-foreground">
                                             {new Date(
-                                                p.timestamp
+                                                p.timestamp,
                                             ).toLocaleDateString()}
                                         </span>
                                         <span className="text-sm font-medium text-gray-400">
@@ -112,16 +111,16 @@ const BillingHistory = () => {
 
                                     {/* Center: Amount */}
                                     <div className="text-sm font-semibold text-gray-400 mb-2 md:mb-0">
-                                        {p.amount.currency_code}{" "}
+                                        {p.amount.currency_code}{' '}
                                         {p.amount.value}
                                     </div>
 
                                     {/* Right: Status */}
                                     <Badge
                                         variant={
-                                            p.status === "COMPLETED"
-                                                ? "default"
-                                                : "destructive"
+                                            p.status === 'COMPLETED'
+                                                ? 'default'
+                                                : 'destructive'
                                         }
                                         className="capitalize"
                                     >
@@ -130,7 +129,7 @@ const BillingHistory = () => {
 
                                     {/* Optional: Payer Name */}
                                     <div className="text-sm text-gray-400 mt-2 md:mt-0 md:ml-4">
-                                        {p.payerName.given_name}{" "}
+                                        {p.payerName.given_name}{' '}
                                         {p.payerName.surname}
                                     </div>
                                 </Card>

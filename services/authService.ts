@@ -67,8 +67,7 @@ export const saveUser = async (user: User, fullname: string, email: string) => {
             return cleanData;
         }
     } catch (e) {
-        console.log("Error in saveUser:", e);
-        throw new Error("Failed to save your data. Please try again later.");
+        throw new Error(`Failed to save your data. Please try again later. ${e}`);
     }
 };
 
