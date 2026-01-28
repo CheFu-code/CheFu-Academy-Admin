@@ -87,6 +87,18 @@ export const CoursesQuery = () => {
         }
     }, [user?.email, courseRef]);
 
+    const fetchSearchedCourses = async (): Promise<Course[]> => {
+        const q = query(
+            collection(db, 'course'),
+            orderBy('createdOn', 'desc'),
+        );
+
+        const snap = await getDocs(q);
+        return snap.docs.map((doc) => ({
+            ...(doc.data() as Omit<Course, 'id'>),
+            id: doc.id,
+        }));
+    };
 
     const fetchMoreCourses = useCallback(async () => {
         if (!lastDoc || loadingMore || !hasMore || !user?.email) return;
@@ -146,8 +158,6 @@ export const CoursesQuery = () => {
     }, [user?.email]);
 
 
-
-
     return {
         user,
         fetchCourses,
@@ -161,5 +171,6 @@ export const CoursesQuery = () => {
         fetchCourseById,
         fetchingCourseById,
         setFetchingCourseById,
+        fetchSearchedCourses
     };
 };

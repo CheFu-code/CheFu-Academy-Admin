@@ -41,7 +41,6 @@ export function NavUser({ user }: { user: User }) {
         try {
             setLoading(true);
             await signOut(auth);
-            toast.success('Successfully signed out');
         } catch (error) {
             toast.error('Error signing out');
             console.error('Error signing out:', error);
