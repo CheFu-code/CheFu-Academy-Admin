@@ -12,7 +12,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuthUser } from '@/hooks/useAuthUser';
 import { auth } from '@/lib/firebase';
-import { GoogleAuthProvider, signInWithEmailAndPassword } from 'firebase/auth';
+import {
+    GoogleAuthProvider,
+    signInWithEmailAndPassword,
+    signInWithPopup,
+} from 'firebase/auth';
 import { Loader } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useTransition } from 'react';
@@ -42,12 +46,18 @@ export default function LoginForm() {
                     client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
                 });
 
+                // Actually sign in with Google
+                const result = await signInWithPopup(auth, provider);
+
+                // Optionally get user info
+                const user = result.user;
+                console.log('Logged in user:', user);
+
                 toast.success('Login successful!');
             } catch (error: unknown) {
                 if (error instanceof Error) {
                     console.error('Google login failed:', error);
 
-                    // Some Firebase auth errors come as objects with `code`
                     const firebaseError = error as {
                         code?: string;
                         message?: string;
