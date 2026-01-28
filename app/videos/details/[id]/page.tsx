@@ -29,8 +29,9 @@ const VideoDetailsPage = () => {
     const [enrolled, setEnrolled] = useState(false);
 
     useEffect(() => {
+        if (!params?.id) return;
         fetchVideoDetails();
-    });
+    }, [params?.id]);
 
     useEffect(() => {
         if (!user?.email || !video?.id) return;

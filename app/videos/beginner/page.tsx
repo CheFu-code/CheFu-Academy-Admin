@@ -40,7 +40,7 @@ const BeginnerVideos = () => {
         router.push(`/videos/details/${videoId}`);
     };
 
-    if (loading) return <Loading message="Loading..."  />;
+    if (loading) return <Loading message="Loading..." />;
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
@@ -76,9 +76,12 @@ const BeginnerVideos = () => {
                             </h2>
                             <p className="text-sm sm:text-base text-gray-500">
                                 Level:{' '}
-                                {video.level.charAt(0).toUpperCase() +
-                                    video.level.slice(1)}
+                                {video.level
+                                    ? video.level.charAt(0).toUpperCase() +
+                                      video.level.slice(1)
+                                    : 'Unknown'}
                             </p>
+
                             <p className="text-sm sm:text-base text-gray-500">
                                 Duration: {Math.floor(video.duration / 60)}m{' '}
                                 {video.duration % 60}s

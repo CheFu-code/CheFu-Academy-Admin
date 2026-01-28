@@ -85,9 +85,12 @@ const AllVideos = () => {
                             </h2>
                             <p className="text-sm sm:text-base text-gray-500">
                                 Level:{' '}
-                                {video.level.charAt(0).toUpperCase() +
-                                    video.level.slice(1)}
+                                {video.level
+                                    ? video.level.charAt(0).toUpperCase() +
+                                      video.level.slice(1)
+                                    : 'Unknown'}
                             </p>
+
                             <p className="text-sm sm:text-base text-gray-500">
                                 Duration: {Math.floor(video.duration / 60)}m{' '}
                                 {video.duration % 60}s
