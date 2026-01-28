@@ -187,10 +187,17 @@ const ProfileTab = () => {
                                         .toDate()
                                         .toLocaleDateString()}
                                 </p>
-                                <p>
+                                <p className="font-bold">
                                     <span className="font-medium">Roles:</span>{' '}
-                                    {user?.roles.join(', ')}
+                                    {user?.roles
+                                        .map(
+                                            (role) =>
+                                                role.charAt(0).toUpperCase() +
+                                                role.slice(1),
+                                        )
+                                        .join(', ')}
                                 </p>
+
                                 <p>
                                     <span className="font-medium">
                                         Subscription:

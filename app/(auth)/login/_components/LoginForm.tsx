@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuthUser } from '@/hooks/useAuthUser';
 import { auth } from '@/lib/firebase';
+import { saveUser } from '@/services/authService';
 import {
     GoogleAuthProvider,
     signInWithEmailAndPassword,
@@ -25,17 +26,17 @@ import { toast } from 'sonner';
 
 export default function LoginForm() {
     const router = useRouter();
-    const { user, loading } = useAuthUser();
+    const { user: localUser, loading } = useAuthUser();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [emailPending, startEmailTransition] = useTransition();
     const [googlePending, startGoogleTransition] = useTransition();
 
     useEffect(() => {
-        if (!loading && user) {
+        if (!loading && localUser) {
             router.replace('/');
         }
-    }, [loading, user, router]);
+    }, [loading, localUser, router]);
 
     const handleGoogle = async () => {
         startGoogleTransition(async () => {
@@ -46,14 +47,17 @@ export default function LoginForm() {
                     client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
                 });
 
-                // Actually sign in with Google
+                // Sign in with Google
                 const result = await signInWithPopup(auth, provider);
-
-                // Optionally get user info
                 const user = result.user;
-                console.log('Logged in user:', user);
+                if (!user.email) {
+                    throw new Error('No email found in Google account.');
+                }
+                const name = user.displayName?.trim() || 'Google User';
+                const email = user.email || '';
 
-                toast.success('Login successful!');
+                const savedData = await saveUser(user, name, email);
+                if (!savedData) throw new Error('Failed to save user data.');
             } catch (error: unknown) {
                 if (error instanceof Error) {
                     console.error('Google login failed:', error);
