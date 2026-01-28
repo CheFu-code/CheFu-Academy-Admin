@@ -4,14 +4,14 @@ import Loading from '@/components/Shared/Loading';
 import { fetchUploadedVideos } from '@/services/videoService';
 import { Video } from '@/types/video';
 import Image from 'next/image';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Header from './Shared/Header';
 
 const SearchContent = () => {
     const searchParams = useSearchParams();
     const query = searchParams.get('query') || '';
-
+    const router = useRouter();
     const [videos, setVideos] = useState<Video[]>([]);
     const [loading, setLoading] = useState(false);
 
@@ -32,6 +32,11 @@ const SearchContent = () => {
         fetchFilteredVideos();
     }, [query]);
 
+    const goToVidDetails = (videoId?: string) => {
+        if (!videoId) return;
+        router.push(`/videos/details/${videoId}`);
+    };
+
     if (loading) return <Loading message="Fetching videos..." />;
 
     return (
@@ -44,20 +49,19 @@ const SearchContent = () => {
                 {videos.length ? (
                     videos.map((video) => (
                         <div
+                            onClick={() => goToVidDetails(video.id)}
                             key={video.id}
-                            className="border rounded-lg overflow-hidden shadow-md"
+                            className="border rounded-lg overflow-hidden shadow-md cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-900/40"
                         >
                             {/* Thumbnail with description overlay */}
                             <div className="relative w-full aspect-video">
                                 <Image
+                                    fill
+                                    priority
                                     src={video.thumbnailURL}
                                     alt={video.title}
                                     className="w-full h-full object-cover rounded-t-lg"
                                 />
-
-                                <div className="absolute top-2 left-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded-xl text-sm  select-none">
-                                    {video.category}
-                                </div>
                             </div>
 
                             {/* Video info */}
@@ -73,6 +77,9 @@ const SearchContent = () => {
                                 <p className="text-sm sm:text-base text-gray-500">
                                     Duration: {Math.floor(video.duration / 60)}m{' '}
                                     {video.duration % 60}s
+                                </p>
+                                <p className="text-sm sm:text-base text-gray-500">
+                                    Category: {video.category}
                                 </p>
                             </div>
                         </div>
