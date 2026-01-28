@@ -121,8 +121,9 @@ export function NavUser({
                                             'Logged out successfully',
                                         );
                                     } catch (error) {
-                                        console.log('No user is logged in');
-                                        toast.error('No user is logged in');
+                                        toast.error(
+                                            `No user is logged in. ${error}`,
+                                        );
                                     }
                                 }}
                                 variant="outline"

@@ -23,7 +23,6 @@ async function getUserToken() {
                         resolve(null);
                     }
                 } else {
-                    console.log('User is not logged in.');
                     resolve(null);
                 }
             });

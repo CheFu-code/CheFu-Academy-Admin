@@ -1,5 +1,5 @@
-import { auth, db } from "@/lib/firebase";
-import { Video } from "@/types/video";
+import { auth, db } from '@/lib/firebase';
+import { Video } from '@/types/video';
 import {
     collection,
     doc,
@@ -11,9 +11,9 @@ import {
     serverTimestamp,
     setDoc,
     where,
-} from "firebase/firestore";
-import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
-import { v4 as uuidv4 } from "uuid";
+} from 'firebase/firestore';
+import { getDownloadURL, getStorage, ref, uploadBytes } from 'firebase/storage';
+import { v4 as uuidv4 } from 'uuid';
 
 export const uploadVideo = async (
     title: string,
@@ -23,14 +23,14 @@ export const uploadVideo = async (
     videoUri: string,
     thumbnailUri: string,
     category: string,
-    visibility: "public" | "private",
-    level: "beginner" | "advance",
+    visibility: 'public' | 'private',
+    level: 'beginner' | 'advance',
     duration: number,
     views: number = 0,
-    topics: string[]
+    topics: string[],
 ) => {
     const user = auth.currentUser;
-    if (!user) throw new Error("Not authenticated");
+    if (!user) throw new Error('Not authenticated');
 
     const videoId = uuidv4().toString();
 
@@ -38,11 +38,11 @@ export const uploadVideo = async (
     const videoURL = await uploadFile(videoUri, `videos/${videoId}/video.mp4`);
     const thumbnailURL = await uploadFile(
         thumbnailUri,
-        `videos/${videoId}/thumbnail.jpg`
+        `videos/${videoId}/thumbnail.jpg`,
     );
 
     // Save Firestore metadata
-    await setDoc(doc(db, "videos", videoId), {
+    await setDoc(doc(db, 'videos', videoId), {
         id: videoId,
         title,
         instructorCompany,
@@ -65,14 +65,14 @@ export const uploadVideo = async (
 
 export const uploadFile = async (
     fileOrUri: File | string,
-    path: string
+    path: string,
 ): Promise<string> => {
     const storage = getStorage();
     const fileRef = ref(storage, path);
 
     let data: Blob;
 
-    if (typeof fileOrUri === "string") {
+    if (typeof fileOrUri === 'string') {
         // It's a URI → fetch blob
         const response = await fetch(fileOrUri);
         data = await response.blob();
@@ -87,9 +87,9 @@ export const uploadFile = async (
 
 export const fetchUploadedVideos = async (): Promise<Video[]> => {
     const q = query(
-        collection(db, "videos"),
-        where("visibility", "==", "public"),
-        orderBy("uploadedAt", "desc")
+        collection(db, 'videos'),
+        where('visibility', '==', 'public'),
+        orderBy('uploadedAt', 'desc'),
     );
 
     const snap = await getDocs(q);
@@ -97,8 +97,8 @@ export const fetchUploadedVideos = async (): Promise<Video[]> => {
 };
 export const fetchYTVideos = async (): Promise<Video[]> => {
     const q = query(
-        collection(db, "youTubeVideos"),
-        orderBy("createdAt", "desc")
+        collection(db, 'youTubeVideos'),
+        orderBy('createdAt', 'desc'),
     );
 
     const snap = await getDocs(q);
@@ -106,14 +106,13 @@ export const fetchYTVideos = async (): Promise<Video[]> => {
 };
 
 export const fetchVideoById = async (
-    videoId: string
+    videoId: string,
 ): Promise<Video | null> => {
     try {
-        const docRef = doc(db, "videos", videoId);
+        const docRef = doc(db, 'videos', videoId);
         const docSnap = await getDoc(docRef);
 
         if (!docSnap.exists()) {
-            console.log("Video not found");
             return null;
         }
 
@@ -138,7 +137,7 @@ export const fetchVideoById = async (
             topics: data.topics ?? [],
         } as Video;
     } catch (error) {
-        console.error("Error fetching video:", error);
+        console.error('Error fetching video:', error);
         return null;
     }
 };

@@ -34,7 +34,6 @@ const AllVideos = () => {
         try {
             const fetched = await fetchYTVideos();
             setVideos(fetched);
-            console.log('fetched', fetched);
         } catch (err) {
             console.error('Failed to fetch yt videos:', err);
         } finally {
