@@ -1,12 +1,12 @@
 'use client';
 
-import Loading from '@/components/Shared/Loading';
 import { fetchUploadedVideos } from '@/services/videoService';
 import { Video } from '@/types/video';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Header from './Shared/Header';
+import VideoCardSkeleton from './skeletons/VideoCardSkeleton';
 
 const SearchContent = () => {
     const searchParams = useSearchParams();
@@ -37,14 +37,21 @@ const SearchContent = () => {
         router.push(`/videos/details/${videoId}`);
     };
 
-    if (loading) return <Loading message="Fetching videos..." />;
+    if (loading) return <VideoCardSkeleton />;
 
     return (
         <div>
-            <Header
-                header="Search results"
-                description={`Search results for "${query}"`}
-            />
+            <div className="flex justify-between items-center">
+                <Header
+                    header="Search results"
+                    description={`Search results for "${query}"`}
+                />
+                {videos && (
+                    <span className="text-muted-foreground">
+                        {videos.length} result{videos.length !== 1 ? 's' : ''}
+                    </span>
+                )}
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
                 {videos.length ? (
                     videos.map((video) => (

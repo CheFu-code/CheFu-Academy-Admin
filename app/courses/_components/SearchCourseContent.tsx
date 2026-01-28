@@ -2,9 +2,9 @@
 
 import CourseCard from '@/components/Shared/CourseCard';
 import Header from '@/components/Shared/Header';
+import GridCourseCardSkeleton from '@/components/skeletons/GridCourseCardSkeleton';
 import { CoursesQuery } from '@/lib/firestore/courseQueries';
 import { Course } from '@/types/course';
-import { Loader } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -42,11 +42,18 @@ const SearchCourseContent = () => {
         fetchFilteredCourses();
     }, [query]);
     return (
-        <div>
-            <Header
-                header="Search results"
-                description={`Search results for "${query}"`}
-            />
+        <div className="min-h-screen bg-background">
+            <div className="flex justify-between items-center">
+                <Header
+                    header="Search results"
+                    description={`Search results for "${query}"`}
+                />
+                {courses && (
+                    <span className="text-muted-foreground">
+                        {courses.length} result{courses.length !== 1 ? 's' : ''}
+                    </span>
+                )}
+            </div>
 
             {!loading && courses.length === 0 && (
                 <p className="flex justify-center items-center h-full">
@@ -55,7 +62,7 @@ const SearchCourseContent = () => {
             )}
 
             {loading ? (
-                <Loader className="animate-spin" />
+                <GridCourseCardSkeleton />
             ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-6">
                     {courses.map((course) => (

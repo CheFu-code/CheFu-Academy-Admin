@@ -47,12 +47,12 @@ const data = {
                 //     url: '/videos/all-videos',
                 // },
                 {
-                    title: 'Beginner Videos',
-                    url: '/videos/beginner',
-                },
-                {
                     title: 'Advanced Videos',
                     url: '/videos/advanced',
+                },
+                {
+                    title: 'Beginner Videos',
+                    url: '/videos/beginner',
                 },
             ],
         },

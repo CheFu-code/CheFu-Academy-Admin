@@ -2,7 +2,7 @@
 
 import NoCourse from '@/components/Courses/noCourse';
 import CourseBanner from '@/components/Shared/CourseBanner';
-import Loading from '@/components/Shared/Loading';
+import CourseCardSkeleton from '@/components/skeletons/CourseCardSkeleton';
 import { Button } from '@/components/ui/button';
 import { Card, CardDescription, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -99,7 +99,7 @@ const CourseView = () => {
     };
 
     if (fetchingCourseById) {
-        return <Loading message="Loading..." />;
+        return <CourseCardSkeleton />;
     }
     if (!course) {
         return <NoCourse />;
@@ -140,7 +140,7 @@ const CourseView = () => {
                         {course.chapters.map((chapter, idx) => (
                             <Card
                                 key={idx}
-                                className="p-3 cursor-pointer hover:bg-muted/50 transition"
+                                className="p-3 hover:bg-muted/50 transition"
                             >
                                 <CardTitle className="text-sm sm:text-base">
                                     {chapter.chapterName}

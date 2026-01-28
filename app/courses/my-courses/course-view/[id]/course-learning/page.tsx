@@ -8,13 +8,7 @@ import ExplainText from '@/helpers/expandText';
 import { useAuthUser } from '@/hooks/useAuthUser';
 import { db } from '@/lib/firebase';
 import { Course } from '@/types/course';
-import {
-    arrayUnion,
-    doc,
-    getDoc,
-    getFirestore,
-    updateDoc,
-} from 'firebase/firestore';
+import { arrayUnion, doc, getDoc, updateDoc } from 'firebase/firestore';
 import hljs from 'highlight.js';
 import { ArrowRight } from 'lucide-react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
@@ -39,7 +33,6 @@ const CourseLearning = () => {
     useEffect(() => {
         const fetchCourse = async () => {
             if (!courseId) return;
-            const db = getFirestore();
             const docRef = doc(db, 'course', courseId as string);
             const docSnap = await getDoc(docRef);
             if (docSnap.exists()) {
@@ -87,9 +80,7 @@ const CourseLearning = () => {
             await updateDoc(courseRef, {
                 completedChapter: arrayUnion(chapterIndex.toString()),
             });
-            toast.success(
-                'Chapter completed! Redirecting to course overview...',
-            );
+            toast.success('Chapter completed...');
             router.replace(`/courses/my-courses/course-view/${course.id}`);
         } catch (err) {
             console.error(err);

@@ -1,17 +1,18 @@
-"use client";
+'use client';
 
-import { SidebarIcon } from "lucide-react";
+import { SidebarIcon } from 'lucide-react';
 
 import {
     Breadcrumb,
     BreadcrumbItem,
     BreadcrumbLink,
     BreadcrumbList,
-} from "@/components/ui/breadcrumb";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { useSidebar } from "@/components/ui/sidebar";
-import { ThemeToggle } from "./ui/themeToggle";
+} from '@/components/ui/breadcrumb';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import { useSidebar } from '@/components/ui/sidebar';
+import { ThemeToggle } from './ui/themeToggle';
+import { Input } from './ui/input';
 
 export function SiteHeader() {
     const { toggleSidebar } = useSidebar();
@@ -29,15 +30,21 @@ export function SiteHeader() {
                 </Button>
                 <Separator orientation="vertical" className="mr-2 h-4" />
                 <div className="flex justify-between items-center flex-1">
+                    {/* <div className="flex justify-between w-full gap-2 items-center"> */}
                     <Breadcrumb className="hidden sm:block">
                         <BreadcrumbList>
                             <BreadcrumbItem>
-                                <BreadcrumbLink className="font-bold" href="/courses">
+                                <BreadcrumbLink
+                                    className="font-bold truncate"
+                                    href="/courses"
+                                >
                                     CheFu Academy
                                 </BreadcrumbLink>
                             </BreadcrumbItem>
                         </BreadcrumbList>
                     </Breadcrumb>
+                    {/* <Input placeholder="Search courses..." /> */}
+                    {/* </div> */}
                     <div className="flex justify-end items-end">
                         <ThemeToggle />
                     </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import Loading from '@/components/Shared/Loading';
+import VideoCardSkeleton from '@/components/skeletons/VideoCardSkeleton';
 import { fetchUploadedVideos, fetchYTVideos } from '@/services/videoService';
 import { Video } from '@/types/video';
 import Image from 'next/image';
@@ -50,7 +50,7 @@ const AllVideos = () => {
         router.push(`/videos/details/${videoId}`);
     };
 
-    if (loading) return <Loading message="Loading..." />;
+    if (loading) return <VideoCardSkeleton />;
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">

@@ -1,6 +1,6 @@
 'use client';
 
-import Loading from '@/components/Shared/Loading';
+import VideoCardSkeleton from '@/components/skeletons/VideoCardSkeleton';
 import { fetchUploadedVideos } from '@/services/videoService';
 import { Video } from '@/types/video';
 import Image from 'next/image';
@@ -35,7 +35,7 @@ const AdvancedVideos = () => {
         router.push(`/videos/search?query=${encodeURIComponent(category)}`);
     };
 
-    if (loading) return <Loading message="Loading..." />;
+    if (loading) return <VideoCardSkeleton />;
 
     const goToVidDetails = (videoId?: string) => {
         if (!videoId) return;

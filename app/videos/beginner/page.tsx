@@ -1,12 +1,12 @@
 'use client';
 
-import Loading from '@/components/Shared/Loading';
 import { fetchUploadedVideos } from '@/services/videoService';
 import { Video } from '@/types/video';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import NoVideo from '../_components/NoVideo';
+import VideoCardSkeleton from '@/components/skeletons/VideoCardSkeleton';
 
 const BeginnerVideos = () => {
     const [videos, setVideos] = useState<Video[]>([]);
@@ -40,7 +40,7 @@ const BeginnerVideos = () => {
         router.push(`/videos/details/${videoId}`);
     };
 
-    if (loading) return <Loading message="Loading..." />;
+    if (loading) return <VideoCardSkeleton />;
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">

@@ -1,6 +1,5 @@
 'use client';
 
-import Loading from '@/components/Shared/Loading';
 import { auth, db } from '@/lib/firebase';
 import { fetchUploadedVideos } from '@/services/videoService';
 import { Video } from '@/types/video';
@@ -19,6 +18,7 @@ import { toast } from 'sonner';
 // ✅ Import the components
 import NotFound from '@/components/VideoDetails/NotFound';
 import VideoDetailsUI from '@/components/VideoDetails/UI/VideoDetailsUI';
+import VideoCardSkeleton from '@/components/skeletons/VideoCardSkeleton';
 
 const VideoDetailsPage = () => {
     const params = useParams();
@@ -100,7 +100,7 @@ const VideoDetailsPage = () => {
         }
     };
 
-    if (loading) return <Loading message="Loading video..." />;
+    if (loading) return <VideoCardSkeleton />;
 
     if (!video) return <NotFound />;
 
