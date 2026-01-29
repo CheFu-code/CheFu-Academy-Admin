@@ -27,7 +27,6 @@ const CourseView = () => {
     const router = useRouter();
     const params = useParams();
     const mainWrapperRef = useRef<HTMLDivElement>(null);
-
     const { user } = useAuthUser();
     const { fetchCourseById, fetchingCourseById } = CoursesQuery();
     const [course, setCourse] = useState<Course | null>(null);

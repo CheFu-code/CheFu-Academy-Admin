@@ -15,7 +15,7 @@ export default function ExplainText({ text }: { text: string }) {
 
             <button
                 onClick={() => setExpanded((v) => !v)}
-                className="mt-1 cursor-pointer text-sm font-medium text-primary hover:underline"
+                className="mt-1 cursor-pointer text-xs font-medium text-primary hover:underline"
             >
                 {expanded ? (
                     <span className="text-yellow-500">Read less</span>
