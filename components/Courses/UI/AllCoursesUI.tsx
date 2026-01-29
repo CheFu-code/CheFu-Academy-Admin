@@ -2,33 +2,35 @@
 
 import Header from '@/components/Shared/Header';
 import CourseCardSkeleton from '@/components/skeletons/CourseCardSkeleton';
-import GridCourseCardSkeleton from '@/components/skeletons/GridCourseCardSkeleton';
-import { Button } from '@/components/ui/button';
 import {
     CardContent,
     CardDescription,
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { useCourseNavigation } from '@/hooks/useCourseNavigation';
 import { Course } from '@/types/course';
-import { Plus, PlusSquare } from 'lucide-react';
+import { PlusSquare } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import EmptyCourse from './EmptyCourse';
+import GridCourseCardSkeleton from '@/components/skeletons/GridCourseCardSkeleton';
 
 const AllCoursesUI = ({
     fetchingCourses,
     courses,
     loadingMore,
-    goToCourseView,
 }: {
     fetchingCourses: boolean;
     courses: Course[];
     loadingMore: boolean;
-    goToCourseView: (courseId: string) => void;
 }) => {
     const router = useRouter();
+    const { goToCourseView } = useCourseNavigation();
+
     return (
         <div className="min-h-screen px-4">
+            {/* Header */}
             <div className="flex justify-between items-center">
                 <Header
                     header="Courses"
@@ -39,21 +41,16 @@ const AllCoursesUI = ({
                         onClick={() => router.push('/courses/create-course')}
                         className="cursor-pointer hover:bg-gray-100/20 transition-colors duration-200 rounded-md p-2 flex items-center gap-2"
                     >
-                        <PlusSquare />
+                        <PlusSquare className="size-5" />
                     </button>
-                    {/**TODO implement this on new updates */}
-                    {/* <Badge variant={'secondary'} className="cursor-pointer">
-                        <Filter className="size-4" />
-                        Filter
-                    </Badge> */}
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
-                {fetchingCourses && courses.length === 0 ? (
-                    <GridCourseCardSkeleton />
-                ) : courses.length > 0 ? (
-                    courses.map((c) => (
+            {fetchingCourses ? (
+                <GridCourseCardSkeleton />
+            ) : courses.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
+                    {courses.map((c) => (
                         <div
                             key={c.id}
                             onClick={() => goToCourseView(c.id)}
@@ -65,7 +62,7 @@ const AllCoursesUI = ({
                                     src={c.banner_image}
                                     priority
                                     fill
-                                    className="object-fit"
+                                    className="object-cover"
                                     sizes="w-full h-40"
                                 />
                             </div>
@@ -96,29 +93,16 @@ const AllCoursesUI = ({
                                 </p>
                             </CardContent>
                         </div>
-                    ))
-                ) : (
-                    <div className="justify-start text-start">
-                        <p className="text-start mt-10 text-gray-500">
-                            No courses found.
-                        </p>
-                        <Button
-                            onClick={() =>
-                                router.push('/courses/create-course')
-                            }
-                            className="mt-20 items-center cursor-pointer"
-                        >
-                            Create course
-                            <Plus />
-                        </Button>
-                    </div>
-                )}
-
-                {loadingMore &&
-                    Array.from({ length: 3 }).map((_, i) => (
-                        <CourseCardSkeleton key={`loading-${i}`} />
                     ))}
-            </div>
+                </div>
+            ) : (
+                <EmptyCourse />
+            )}
+
+            {loadingMore &&
+                Array.from({ length: 3 }).map((_, i) => (
+                    <CourseCardSkeleton key={`loading-${i}`} />
+                ))}
         </div>
     );
 };

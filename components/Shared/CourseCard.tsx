@@ -6,6 +6,7 @@ import {
     CardHeader,
     CardTitle,
 } from '../ui/card';
+import { useRouter } from 'next/navigation';
 
 type CourseCardProps = {
     id: string;
@@ -13,7 +14,6 @@ type CourseCardProps = {
     title: string;
     description?: string;
     chaptersCount: number;
-    onClick?: (id: string) => void;
 };
 
 const CourseCard = ({
@@ -22,11 +22,14 @@ const CourseCard = ({
     title,
     description,
     chaptersCount,
-    onClick,
 }: CourseCardProps) => {
+    const router = useRouter();
+    const handleClick = () => {
+        router.replace(`/courses/course-view/${id}`);
+    };
     return (
         <div
-            onClick={() => onClick?.(id)}
+            onClick={handleClick}
             className="max-w-full hover:shadow-lg hover:bg-gray-100/10 transition-shadow duration-200 rounded-xl cursor-pointer border border-muted-foreground"
         >
             {/* Banner */}
@@ -37,7 +40,6 @@ const CourseCard = ({
                     priority
                     fill
                     className="object-cover"
-                    sizes="100vw"
                 />
             </div>
 

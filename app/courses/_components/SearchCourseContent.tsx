@@ -31,7 +31,6 @@ const SearchCourseContent = () => {
                 );
 
                 setCourses(filtered);
-                console.log('Filtered courses:', filtered);
             } catch (err) {
                 console.error('Failed to fetch courses:', err);
             } finally {

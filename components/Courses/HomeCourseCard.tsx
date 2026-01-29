@@ -58,7 +58,7 @@ const HomeCourseCard = ({
                                 goToSearch(category);
                             }}
                             variant="secondary"
-                            className="absolute cursor-pointer ml-2 mt-2  top-1 left-1 text-[10px] sm:text-xs px-1 py-0.5 shadow-md bg-green-600"
+                            className="absolute hover:bg-green-700 cursor-pointer ml-2 mt-2  top-1 left-1 text-[10px] sm:text-xs px-1 py-0.5 shadow-md bg-green-600"
                         >
                             <span className="text-white">{category}</span>
                         </Badge>
