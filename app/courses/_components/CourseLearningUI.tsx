@@ -47,7 +47,10 @@ const CourseLearningUI = ({
         >
             {/* Header and save button */}
             <div className="flex justify-between items-center">
-                <h1 className="text-3xl font-bold">{chapter.chapterName}</h1>
+                <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-bold">
+                    {chapter.chapterName}
+                </h1>
+
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <button
@@ -70,7 +73,7 @@ const CourseLearningUI = ({
             {/* Scrollable main content */}
             <div className="flex-1 space-y-4 overflow-y-auto">
                 {content.topic && (
-                    <h2 className="text-xl font-semibold">{content.topic}</h2>
+                    <h2 className="text-lg font-semibold">{content.topic}</h2>
                 )}
                 {content.explain && <ExplainText text={content.explain} />}
                 {cleanCode && (
