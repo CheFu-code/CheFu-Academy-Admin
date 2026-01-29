@@ -20,13 +20,15 @@ import {
 } from 'firebase/firestore';
 import { BookOpen } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 const CourseView = () => {
-    const { user } = useAuthUser();
     const router = useRouter();
     const params = useParams();
+    const mainWrapperRef = useRef<HTMLDivElement>(null);
+
+    const { user } = useAuthUser();
     const { fetchCourseById, fetchingCourseById } = CoursesQuery();
     const [course, setCourse] = useState<Course | null>(null);
     const [enrolling, setEnrolling] = useState(false);
@@ -44,26 +46,24 @@ const CourseView = () => {
     }, [params.id, fetchCourseById]);
 
     const enrollCourse = async () => {
-        if (!course) return;
-        if (course.enrolled) {
-            toast.error('You are already enrolled in this course.');
-            return;
-        }
-        if (!user) {
-            toast.error('Please login to enroll in this course.');
+        if (!course || !user) return;
+
+        const rootCourseId = course.originalCourseId ?? course.id;
+
+        if (course.createdBy === user.email) {
+            toast.error("You can't enroll in your own course.");
             return;
         }
 
         try {
             setEnrolling(true);
-
             const emailSafe = user.email.replace(/[@.]/g, '_');
 
             // check if a copy already exists for this user
             const q = query(
                 collection(db, 'course'),
-                where('originalCourseId', '==', course.id),
                 where('createdBy', '==', user.email),
+                where('originalCourseId', '==', rootCourseId),
             );
             const querySnap = await getDocs(q);
 
@@ -80,7 +80,7 @@ const CourseView = () => {
             const docId = emailSafe + '_' + Date.now().toString();
             const data = {
                 ...course,
-                originalCourseId: course.id,
+                originalCourseId: rootCourseId,
                 createdBy: user.email,
                 createdOn: new Date(),
                 enrolled: true,
@@ -98,6 +98,23 @@ const CourseView = () => {
         }
     };
 
+    const handleClick = () => {
+        if (!course) return;
+        if (course?.createdBy === user?.email) {
+            router.push(`/courses/my-courses/course-view/${course?.id}`);
+            return;
+        } else {
+            toast.error('Please enroll in the course first.');
+            if (mainWrapperRef.current) {
+                mainWrapperRef.current?.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'end',
+                });
+            }
+            return;
+        }
+    };
+
     if (fetchingCourseById) {
         return <CourseCardSkeleton />;
     }
@@ -106,7 +123,7 @@ const CourseView = () => {
     }
 
     return (
-        <div className="p-4 max-w-5xl mx-auto space-y-6">
+        <div ref={mainWrapperRef} className="p-4 max-w-5xl mx-auto space-y-6">
             {/* Course Banner */}
             {course.banner_image && (
                 <CourseBanner
@@ -131,16 +148,15 @@ const CourseView = () => {
             </div>
 
             {/* Chapters List inside ScrollArea */}
+            <h2 className="text-xl font-semibold">Chapters</h2>
             <ScrollArea className="h-100">
-                {' '}
-                {/* set a fixed height for scrolling */}
-                <div className="space-y-3">
-                    <h2 className="text-xl font-semibold">Chapters</h2>
+                <div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         {course.chapters.map((chapter, idx) => (
                             <Card
+                                onClick={handleClick}
                                 key={idx}
-                                className="p-3 hover:bg-muted/50 transition"
+                                className="p-3 cursor-pointer hover:bg-muted/50 transition"
                             >
                                 <CardTitle className="text-sm sm:text-base">
                                     {chapter.chapterName}
