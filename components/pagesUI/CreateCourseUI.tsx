@@ -22,9 +22,13 @@ const CreateCourseUI = ({
     onGenerateCourse,
     selectedTopics,
     setSelectedTopics,
+    mainWrapperRef,
 }: AddCourseProp) => {
     return (
-        <main className="min-h-screen bg-background flex flex-col justify-between">
+        <main
+            ref={mainWrapperRef}
+            className="min-h-screen bg-background flex flex-col justify-between"
+        >
             <div>
                 <Header
                     header="Create new course"
@@ -89,6 +93,14 @@ const CreateCourseUI = ({
                                                     ...prev,
                                                     topic,
                                                 ]);
+                                                if (mainWrapperRef.current) {
+                                                    mainWrapperRef.current?.scrollIntoView(
+                                                        {
+                                                            behavior: 'smooth',
+                                                            block: 'end',
+                                                        },
+                                                    );
+                                                }
                                             }
                                         }}
                                         className={cn(

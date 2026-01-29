@@ -2,9 +2,10 @@
 
 import CreateCourseUI from '@/components/pagesUI/CreateCourseUI';
 import { useGenerateTopic } from '@/hooks/useGenerateTopic';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 
 const CreateCourse = () => {
+     const mainWrapperRef = useRef<HTMLDivElement>(null);
     const [userInput, setUserInput] = useState('');
     const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
     const {
@@ -28,6 +29,7 @@ const CreateCourse = () => {
                 generatingCourse={generatingCourse}
                 onGenerateCourse={() => onGenerateCourse(selectedTopics)}
                 setSelectedTopics={setSelectedTopics}
+                mainWrapperRef={mainWrapperRef}
             />
         </div>
     );

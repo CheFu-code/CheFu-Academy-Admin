@@ -3,11 +3,12 @@
 import { generateCourse, generateTopics } from '@/config/AIModel';
 import Prompt from '@/constants/Prompt';
 import React, { useState } from 'react';
-import { toast } from 'sonner';
 import { useAuthUser } from './useAuthUser';
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+
 
 export const useGenerateTopic = (
     userInput: string,
@@ -82,13 +83,22 @@ export const useGenerateTopic = (
     };
 
     const onGenerateCourse = async (selectedTopics: string[]) => {
-        if (generatingCourse) return; // Prevent double submission
+        if (generatingCourse) return;
         if (!selectedTopics.length) {
             alert('Please select at least one topic.');
             return;
         }
         setGeneratingCourse(true);
-        toast.success('Generating course, please wait...');
+        const initialToastId = toast.success('Generating course, please wait...', {
+            duration: Infinity,
+        });
+
+        // Show a follow-up toast if generating takes more than 10 seconds
+        const followUpTimeout = setTimeout(() => {
+            toast('Hang on, your course is almost ready!', {
+                duration: 3000,
+            });
+        }, 20000); // 10 seconds delay
         const promptText = selectedTopics.join(', ') + Prompt.COURSE;
         const contents = [
             {
@@ -98,6 +108,10 @@ export const useGenerateTopic = (
         ];
         try {
             const aiResp = await generateCourse(contents);
+
+            clearTimeout(followUpTimeout); // stop the follow-up if done early
+            toast.dismiss(initialToastId);
+
             if (!aiResp || aiResp.trim() === '') {
                 alert('The AI didn’t return any results.');
                 setGeneratingCourse(false);
@@ -143,6 +157,8 @@ export const useGenerateTopic = (
             );
         } finally {
             setGeneratingCourse(false);
+            clearTimeout(followUpTimeout);
+            toast.dismiss(initialToastId);
         }
     };
 
