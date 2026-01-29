@@ -23,7 +23,6 @@ export default function ExampleBlock({ text }: { text: string }) {
             <h4 className="text-lg font-semibold">Example:</h4>
 
             <div className="relative border-t border-muted-foreground/20 bg-muted p-3.5 pt-5 rounded-2xl">
-                {/* Copy button */}
                 <button
                     onClick={handleCopy}
                     className="absolute top-2 right-3 rounded-md cursor-pointer"

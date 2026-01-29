@@ -43,9 +43,7 @@ const CourseView = ({ course: initialCourse }: { course?: Course }) => {
     }, [courseId, initialCourse]);
 
     useEffect(() => {
-        // Only run after both user and course have loaded
         if (!user || loading) return;
-
         if (course && course.createdBy !== user.email) {
             toast.error('You are not authorized to view this course!');
             router.replace('/courses');

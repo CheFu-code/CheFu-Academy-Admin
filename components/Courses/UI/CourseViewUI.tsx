@@ -28,16 +28,15 @@ const CourseViewUI = ({
 }) => {
     return (
         <div className="p-4 max-w-5xl mx-auto space-y-6">
-            {/* Course Banner */}
             {course.banner_image && (
                 <CourseBanner
                     banner_image={course.banner_image}
                     courseTitle={course.courseTitle}
                     category={course.category}
+                    course={course}
                 />
             )}
 
-            {/* Course Title & Description */}
             <div className="space-y-2">
                 <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">
                     {course.courseTitle}
@@ -54,7 +53,7 @@ const CourseViewUI = ({
             {/* Progress */}
             <Card className={'py-4'}>
                 <CardHeader className="space-y-2">
-                    <CardTitle>Progress</CardTitle>
+                    <CardTitle>Learning Progress</CardTitle>
                     <CardDescription>
                         {completedChapters}/{totalChapters} chapters completed
                     </CardDescription>
