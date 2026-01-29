@@ -1,34 +1,40 @@
 'use client';
 
+import CourseLearningUI from '@/app/courses/_components/CourseLearningUI';
 import NoChapter from '@/components/Courses/noChapter';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import ExampleBlock from '@/helpers/exampleBlock';
-import ExplainText from '@/helpers/expandText';
+import NoCourse from '@/components/Courses/noCourse';
 import { useAuthUser } from '@/hooks/useAuthUser';
+import { useScrollIntoView } from '@/hooks/useScrollIntoView';
 import { db } from '@/lib/firebase';
 import { Course } from '@/types/course';
 import { arrayUnion, doc, getDoc, updateDoc } from 'firebase/firestore';
 import hljs from 'highlight.js';
-import { ArrowRight } from 'lucide-react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { toast } from 'sonner';
+import jsPDF from 'jspdf';
 
 const CourseLearning = () => {
     const params = useParams();
     const router = useRouter();
     const searchParams = useSearchParams();
-    const { user } = useAuthUser();
     const courseId = params.id;
     const initialChapterIndex = Number(searchParams.get('chapter') || 0);
 
+    const { user } = useAuthUser();
+    const { ref: scrollRef, scroll } = useScrollIntoView<HTMLDivElement>();
     const [course, setCourse] = useState<Course | null>(null);
-    const [chapterIndex, setChapterIndex] = useState(initialChapterIndex);
+    const [chapterIndex] = useState(initialChapterIndex);
     const [contentIndex, setContentIndex] = useState(0);
     const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            scroll();
+        }, 5000); // 5 seconds
+
+        return () => clearTimeout(timer);
+    }, [scroll]);
 
     useEffect(() => {
         const fetchCourse = async () => {
@@ -52,12 +58,7 @@ const CourseLearning = () => {
         }
     }, [course, user, router, loading]);
 
-    if (!course)
-        return (
-            <div className="text-center font-bold flex justify-center items-center h-full animate-pulse">
-                Loading...
-            </div>
-        );
+    if (!course) return <NoCourse />;
 
     const chapter = course.chapters[chapterIndex];
     if (!chapter) return <NoChapter />;
@@ -97,63 +98,117 @@ const CourseLearning = () => {
         : '';
     const detectedLanguage = hljs.highlightAuto(code).language || 'javascript';
 
+
+    const handleDownloadChapter = () => {
+        if (!chapter) return;
+    
+        const doc = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: 'a4',
+        });
+    
+        let y = 20;
+    
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const marginX = 20;
+        const maxWidth = pageWidth - marginX * 2;
+    
+        // ---------- Title ----------
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(20);
+        doc.text(chapter.chapterName, pageWidth / 2, y, {
+            align: 'center',
+        });
+    
+        y += 15;
+    
+        // Divider
+        doc.setDrawColor(200);
+        doc.line(marginX, y, pageWidth - marginX, y);
+        y += 10;
+    
+        // ---------- Lessons ----------
+        chapter.content.forEach((item, index) => {
+            // New page safety
+            if (y > 260) {
+                doc.addPage();
+                y = 20;
+            }
+    
+            // Lesson header
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(14);
+            doc.text(`Lesson ${index + 1}`, marginX, y);
+            y += 8;
+    
+            // Topic
+            if (item.topic) {
+                doc.setFontSize(12);
+                doc.text(item.topic, marginX, y);
+                y += 7;
+            }
+    
+            // Explanation
+            if (item.explain) {
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(11);
+                const lines = doc.splitTextToSize(item.explain, maxWidth);
+                doc.text(lines, marginX, y);
+                y += lines.length * 6 + 5;
+            }
+    
+            // Code block
+            if (item.code) {
+                const clean = item.code
+                    .replace(/^```[\w]*\n/, '')
+                    .replace(/```$/, '');
+    
+                doc.setFont('courier', 'normal');
+                doc.setFontSize(10);
+    
+                const codeLines = doc.splitTextToSize(clean, maxWidth - 4);
+    
+                // Code background
+                doc.setFillColor(245, 245, 245);
+                doc.rect(marginX - 2, y - 5, maxWidth + 4, codeLines.length * 5 + 6, 'F');
+    
+                doc.text(codeLines, marginX, y);
+                y += codeLines.length * 5 + 10;
+            }
+    
+            // Example
+            if (item.example) {
+                doc.setFont('helvetica', 'italic');
+                doc.setFontSize(11);
+                const exampleLines = doc.splitTextToSize(
+                    `Example:\n${item.example}`,
+                    maxWidth
+                );
+                doc.text(exampleLines, marginX, y);
+                y += exampleLines.length * 6 + 8;
+            }
+        });
+    
+        doc.save(`${chapter.chapterName.replace(/\s+/g, '_')}.pdf`);
+    };
+    
+
     return (
-        <div className="p-4 max-w-3xl mx-auto space-y-6">
-            <h1 className="text-3xl font-bold">{chapter.chapterName}</h1>
-
-            <Progress value={progressPercent * 100} />
-            <p className="text-sm text-muted-foreground mt-1">
-                Lesson {contentIndex + 1} of {totalContents}
-            </p>
-
-            <div className="space-y-4">
-                {content.topic && (
-                    <h2 className="text-xl font-semibold">{content.topic}</h2>
-                )}
-                {content.explain && <ExplainText text={content.explain} />}
-
-                {cleanCode && (
-                    <SyntaxHighlighter
-                        language={detectedLanguage}
-                        style={vscDarkPlus}
-                        showLineNumbers
-                        wrapLongLines
-                        customStyle={{
-                            borderRadius: '0.5rem',
-                            padding: '1rem',
-                            fontSize: '0.875rem',
-                            fontFamily: 'Fira Code, monospace',
-                            overflowX: 'auto',
-                            boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
-                        }}
-                    >
-                        {cleanCode}
-                    </SyntaxHighlighter>
-                )}
-
-                {content.example && <ExampleBlock text={content.example} />}
-            </div>
-
-            <Button
-                className="hover:bg-blue-700 cursor-pointer transition w-full"
-                onClick={
-                    contentIndex + 1 === totalContents
-                        ? handleFinish
-                        : handleNext
-                }
-                disabled={loading}
-            >
-                {loading ? (
-                    'Loading...'
-                ) : contentIndex + 1 === totalContents ? (
-                    'Finish'
-                ) : (
-                    <span className="flex items-center gap-2">
-                        Next <ArrowRight size={16} />
-                    </span>
-                )}
-            </Button>
-        </div>
+        <CourseLearningUI
+            loading={loading}
+            scrollRef={scrollRef}
+            progressPercent={progressPercent}
+            totalContents={totalContents}
+            contentIndex={contentIndex}
+            chapter={chapter}
+            content={content}
+            cleanCode={cleanCode}
+            detectedLanguage={detectedLanguage}
+            handleFinish={handleFinish}
+            handleNext={handleNext}
+            handleDownloadChapter={handleDownloadChapter}
+        />
     );
 };
 
