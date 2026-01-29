@@ -129,6 +129,7 @@ const CourseView = () => {
                     banner_image={course.banner_image}
                     courseTitle={course.courseTitle}
                     category={course.category}
+                    course={course}
                 />
             )}
 

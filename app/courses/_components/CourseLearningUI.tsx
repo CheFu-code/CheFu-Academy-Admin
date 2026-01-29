@@ -1,3 +1,4 @@
+import CodeHighlighter from '@/app/docs/_components/CodeHighlighter';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import {
@@ -10,8 +11,6 @@ import ExplainText from '@/helpers/expandText';
 import { Chapter, ChapterContentItem } from '@/types/course';
 import { ArrowRight, Download } from 'lucide-react';
 import { RefObject } from 'react';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 const CourseLearningUI = ({
     loading,
@@ -22,7 +21,6 @@ const CourseLearningUI = ({
     chapter,
     content,
     cleanCode,
-    detectedLanguage,
     handleFinish,
     handleNext,
     handleDownloadChapter,
@@ -35,7 +33,6 @@ const CourseLearningUI = ({
     chapter: Chapter;
     content: ChapterContentItem;
     cleanCode: string;
-    detectedLanguage: string;
     handleFinish: () => void;
     handleNext: () => void;
     handleDownloadChapter: () => void;
@@ -76,24 +73,7 @@ const CourseLearningUI = ({
                     <h2 className="text-lg font-semibold">{content.topic}</h2>
                 )}
                 {content.explain && <ExplainText text={content.explain} />}
-                {cleanCode && (
-                    <SyntaxHighlighter
-                        language={detectedLanguage}
-                        style={vscDarkPlus}
-                        showLineNumbers
-                        wrapLongLines
-                        customStyle={{
-                            borderRadius: '0.5rem',
-                            padding: '1rem',
-                            fontSize: '0.875rem',
-                            fontFamily: 'Fira Code, monospace',
-                            overflowX: 'auto',
-                            boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
-                        }}
-                    >
-                        {cleanCode}
-                    </SyntaxHighlighter>
-                )}
+                {cleanCode && <CodeHighlighter code={cleanCode} />}
                 {content.example && <ExampleBlock text={content.example} />}
             </div>
 

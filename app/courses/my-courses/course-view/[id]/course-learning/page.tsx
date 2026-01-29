@@ -9,7 +9,6 @@ import { useScrollIntoView } from '@/hooks/useScrollIntoView';
 import { db } from '@/lib/firebase';
 import { Course } from '@/types/course';
 import { arrayUnion, doc, getDoc, updateDoc } from 'firebase/firestore';
-import hljs from 'highlight.js';
 import jsPDF from 'jspdf';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -68,7 +67,6 @@ const CourseLearning = () => {
     const progressPercent = (contentIndex + 1) / totalContents;
     const content = chapter.content[contentIndex];
     const code = content.code || '';
-    const detectedLanguage = hljs.highlightAuto(code).language || 'javascript';
     const cleanCode = code
         ? code.replace(/^```[\w]*\n/, '').replace(/```$/, '')
         : '';
@@ -267,7 +265,6 @@ const CourseLearning = () => {
             chapter={chapter}
             content={content}
             cleanCode={cleanCode}
-            detectedLanguage={detectedLanguage}
             handleFinish={handleFinish}
             handleNext={handleNext}
             handleDownloadChapter={handleDownloadChapter}
