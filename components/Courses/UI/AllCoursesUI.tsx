@@ -1,7 +1,7 @@
 'use client';
 
 import Header from '@/components/Shared/Header';
-import CourseCardSkeleton from '@/components/skeletons/CourseCardSkeleton';
+import GridCourseCardSkeleton from '@/components/skeletons/GridCourseCardSkeleton';
 import {
     CardContent,
     CardDescription,
@@ -14,7 +14,6 @@ import { PlusSquare } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import EmptyCourse from './EmptyCourse';
-import GridCourseCardSkeleton from '@/components/skeletons/GridCourseCardSkeleton';
 
 const AllCoursesUI = ({
     fetchingCourses,
@@ -99,10 +98,7 @@ const AllCoursesUI = ({
                 <EmptyCourse />
             )}
 
-            {loadingMore &&
-                Array.from({ length: 3 }).map((_, i) => (
-                    <CourseCardSkeleton key={`loading-${i}`} />
-                ))}
+            {loadingMore && <GridCourseCardSkeleton />}
         </div>
     );
 };

@@ -106,9 +106,9 @@ const CourseView = () => {
         } else {
             toast.error('Please enroll in the course first.');
             if (mainWrapperRef.current) {
-                mainWrapperRef.current.scrollTo({
-                    top: mainWrapperRef.current.scrollHeight,
+                mainWrapperRef.current?.scrollIntoView({
                     behavior: 'smooth',
+                    block: 'end',
                 });
             }
             return;
@@ -123,10 +123,7 @@ const CourseView = () => {
     }
 
     return (
-        <div
-            ref={mainWrapperRef}
-            className="p-4 max-w-5xl mx-auto space-y-6 h-screen overflow-y-auto"
-        >
+        <div ref={mainWrapperRef} className="p-4 max-w-5xl mx-auto space-y-6">
             {/* Course Banner */}
             {course.banner_image && (
                 <CourseBanner
@@ -151,11 +148,9 @@ const CourseView = () => {
             </div>
 
             {/* Chapters List inside ScrollArea */}
+            <h2 className="text-xl font-semibold">Chapters</h2>
             <ScrollArea className="h-100">
-                {' '}
-                {/* set a fixed height for scrolling */}
-                <div className="space-y-3">
-                    <h2 className="text-xl font-semibold">Chapters</h2>
+                <div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         {course.chapters.map((chapter, idx) => (
                             <Card
