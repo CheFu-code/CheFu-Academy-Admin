@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Course } from '@/types/course';
+import { formatParagraph } from '@/utils/formatParagraph';
 import { BookOpen } from 'lucide-react';
 
 const CourseViewUI = ({
@@ -86,7 +87,9 @@ const CourseViewUI = ({
 
                                 {/* Push the description to the bottom */}
                                 <CardDescription className="text-xs text-muted-foreground line-clamp-2 mt-auto">
-                                    {chapter.content[0]?.explain as string}
+                                    {formatParagraph(
+                                        chapter.content[0]?.explain as string,
+                                    )}
                                 </CardDescription>
 
                                 {isCompleted && (

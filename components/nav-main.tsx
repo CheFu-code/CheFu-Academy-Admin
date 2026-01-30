@@ -43,7 +43,7 @@ export function NavMain({
                             <SidebarMenuItem>
                                 <CollapsibleTrigger
                                     asChild
-                                    className="cursor-pointer"
+                                    className="group cursor-pointer"
                                 >
                                     <SidebarMenuButton className="flex justify-between items-center w-full">
                                         <div className="flex items-center gap-2">
@@ -51,7 +51,7 @@ export function NavMain({
                                             <span>{item.title}</span>
                                         </div>
                                         {hasSubItems && (
-                                            <ChevronRight className="transition-transform data-[state=open]:rotate-90" />
+                                            <ChevronRight className="transition-transform group-data-[state=open]:rotate-90" />
                                         )}
                                     </SidebarMenuButton>
                                 </CollapsibleTrigger>

@@ -93,12 +93,16 @@ export const useGenerateTopic = (
             duration: Infinity,
         });
 
-        // Show a follow-up toast if generating takes more than 10 seconds
         const followUpTimeout = setTimeout(() => {
             toast('Hang on, your course is almost ready!', {
                 duration: 3000,
             });
-        }, 20000); // 10 seconds delay
+        }, 20000); // 20 seconds delay
+
+        const lastToastTimeout = setTimeout(() => {
+            toast('Still working… thanks for your patience!', { duration: 3000 });
+        }, 40000);
+
         const promptText = selectedTopics.join(', ') + Prompt.COURSE;
         const contents = [
             {
@@ -109,7 +113,8 @@ export const useGenerateTopic = (
         try {
             const aiResp = await generateCourse(contents);
 
-            clearTimeout(followUpTimeout); // stop the follow-up if done early
+            clearTimeout(followUpTimeout);
+            clearTimeout(lastToastTimeout);
             toast.dismiss(initialToastId);
 
             if (!aiResp || aiResp.trim() === '') {
@@ -158,6 +163,7 @@ export const useGenerateTopic = (
         } finally {
             setGeneratingCourse(false);
             clearTimeout(followUpTimeout);
+            clearTimeout(lastToastTimeout);
             toast.dismiss(initialToastId);
         }
     };

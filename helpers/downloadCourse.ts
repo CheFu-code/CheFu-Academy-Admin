@@ -7,38 +7,6 @@ import type { Course } from '@/types/course';
 /* -------------------------------------------------------------------------- */
 /* Utilities                                                                  */
 /* -------------------------------------------------------------------------- */
-
-/** Image URL -> data URL (CORS-safe where allowed). */
-const toDataURL = (src?: string): Promise<string | undefined> => {
-    if (!src) return Promise.resolve(undefined);
-    if (src.startsWith('data:')) return Promise.resolve(src);
-
-    return new Promise((resolve) => {
-        try {
-            const img = new Image();
-            img.crossOrigin = 'anonymous';
-            img.onload = () => {
-                try {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = img.naturalWidth;
-                    canvas.height = img.naturalHeight;
-                    const ctx = canvas.getContext('2d');
-                    if (!ctx) return resolve(undefined);
-                    ctx.drawImage(img, 0, 0);
-                    const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
-                    resolve(dataUrl);
-                } catch {
-                    resolve(undefined);
-                }
-            };
-            img.onerror = () => resolve(undefined);
-            img.src = src;
-        } catch {
-            resolve(undefined);
-        }
-    });
-};
-
 type FontSize = 9 | 10 | 11 | 12 | 14 | 18 | 20;
 
 /* -------------------------------------------------------------------------- */
@@ -413,28 +381,11 @@ export const downloadCoursePDF_Office = async (course: Course) => {
 
     /* ----------------------------- Cover & Header ---------------------------- */
 
-    // Optional banner
-    const bannerDataUrl = await toDataURL(course.banner_image);
-    if (bannerDataUrl) {
-        const BANNER_H = 36;
-        ensureSpace(BANNER_H + GAP_SM);
-        try {
-            doc.addImage(
-                bannerDataUrl,
-                bannerDataUrl.startsWith('data:image/png') ? 'PNG' : 'JPEG',
-                MARGIN.left, y, CONTENT_WIDTH, BANNER_H, undefined, 'FAST'
-            );
-            y += BANNER_H + GAP_SM;
-        } catch { /* ignore */ }
-    }
-
-    // Title (wrap long titles cleanly)
-    writeHeading(course.courseTitle || 'Course', 1);
 
     // Meta line
     const metaBits: string[] = [];
     if (course.category) metaBits.push(course.category);
-    if (course.createdBy) metaBits.push(`Author: ${course.createdBy}`);
+    if (course.createdBy) metaBits.push('Author: CheFu Academy');
     const createdOn = formatDate(course.createdOn);
     if (createdOn) metaBits.push(`Created: ${createdOn}`);
     if (metaBits.length) {
@@ -453,7 +404,7 @@ export const downloadCoursePDF_Office = async (course: Course) => {
 
     // Optional QR (course.url)
     let qrDataUrl: string | undefined;
-    const courseUrl = (course as Course)?.id as string | undefined;
+    const courseUrl = 'chefu-academy.vercel.app';
     if (courseUrl) {
         try {
             qrDataUrl = await QRCode.toDataURL(courseUrl, { margin: 0, width: 160 });
@@ -465,7 +416,6 @@ export const downloadCoursePDF_Office = async (course: Course) => {
     if (course.category) metaRows.push(['Category', course.category]);
     if (course.createdBy) metaRows.push(['Author', 'CheFu Academy']);
     if (createdOn) metaRows.push(['Created', createdOn]);
-    if (courseUrl) metaRows.push(['Link', courseUrl]);
 
     if (metaRows.length) {
         autoTable(doc, {
