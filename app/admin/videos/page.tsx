@@ -52,6 +52,8 @@ const VideosCreationPage = () => {
                             {/* Thumbnail with description overlay */}
                             <div className="relative w-full aspect-video">
                                 <Image
+                                    fill
+                                    priority
                                     src={video.thumbnailURL}
                                     alt={video.title}
                                     className="w-full h-full object-contain bg-gray-500/70 rounded-t-lg"
