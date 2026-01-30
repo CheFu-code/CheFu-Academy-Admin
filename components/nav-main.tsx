@@ -41,7 +41,6 @@ export function NavMain({
                             defaultOpen={item.isActive}
                         >
                             <SidebarMenuItem>
-                                {/* Trigger handles collapse */}
                                 <CollapsibleTrigger
                                     asChild
                                     className="cursor-pointer"

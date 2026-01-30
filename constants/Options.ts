@@ -2,7 +2,7 @@ export const imageAssets: Record<string, string> = {
     "/tech-coding.jpg": "/tech-coding.jpg",
     "/science-engineering.png": "/science-engineering.png",
     "/business-finance.jpg": "/business-finance.jpg",
-    "/health-fitness.png": "/health-fitness.png",
+    "/health-fitness.jpg": "/health-fitness.jpg",
     "/arts-creativity.png": "/arts-creativity.png",
     "/language-communication.png": "/language-communication.png",
     "/personal-development.png": "/personal-development.png",
