@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
 import {
     IconDashboard,
-    IconFolder,
     IconListDetails,
+    IconMessage,
     IconReport,
-    IconVideo
-} from "@tabler/icons-react";
-import * as React from "react";
+    IconVideo,
+} from '@tabler/icons-react';
+import * as React from 'react';
 
-import { NavDocuments } from "@/components/sidebar/nav-documents";
-import { NavMain } from "@/components/sidebar/nav-main";
-import { NavUser } from "@/components/sidebar/nav-user";
+import { NavDocuments } from '@/components/sidebar/nav-documents';
+import { NavMain } from '@/components/sidebar/nav-main';
+import { NavUser } from '@/components/sidebar/nav-user';
 import {
     Sidebar,
     SidebarContent,
@@ -20,42 +20,42 @@ import {
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
-} from "@/components/ui/sidebar";
+} from '@/components/ui/sidebar';
 
-import { auth, db } from "@/lib/firebase";
-import { User } from "@/types/user";
-import { onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
-import Image from "next/image";
-import { useEffect, useState } from "react";
+import { auth, db } from '@/lib/firebase';
+import { User } from '@/types/user';
+import { onAuthStateChanged } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
+import Image from 'next/image';
+import { useEffect, useState } from 'react';
 
 const navMain = [
     {
-        title: "Dashboard",
-        url: "/dashboard",
+        title: 'Dashboard',
+        url: '/admin/dashboard',
         icon: IconDashboard,
     },
     {
-        title: "Courses",
-        url: "/admin/courses",
+        title: 'Messages',
+        url: '/admin/messages',
+        icon: IconMessage,
+    },
+    {
+        title: 'Courses',
+        url: '/admin/courses',
         icon: IconListDetails,
     },
     {
-        title: "Videos",
-        url: "/admin/videos",
+        title: 'Videos',
+        url: '/admin/videos',
         icon: IconVideo,
-    },
-    {
-        title: "Projects",
-        url: "#",
-        icon: IconFolder,
     },
 ];
 
 const documents = [
     {
-        name: "Reports",
-        url: "/admin/reports",
+        name: 'Reports',
+        url: '/admin/reports',
         icon: IconReport,
     },
 ];
@@ -67,7 +67,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
             if (firebaseUser && firebaseUser.email) {
-                const docRef = doc(db, "users", firebaseUser.email);
+                const docRef = doc(db, 'users', firebaseUser.email);
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
@@ -75,9 +75,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 } else {
                     // fallback to firebase auth basic data
                     setUser({
-                        fullname: firebaseUser.displayName || "Unnamed User",
+                        fullname: firebaseUser.displayName || 'Unnamed User',
                         email: firebaseUser.email!,
-                        profilePicture: firebaseUser.photoURL || "logo.png",
+                        profilePicture: firebaseUser.photoURL || 'logo.png',
                     } as User);
                 }
             } else {
@@ -96,7 +96,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     <SidebarMenuItem>
                         <SidebarMenuButton
                             asChild
-                            className="data-[slot=sidebar-menu-button]:!p-1.5"
+                            className="data-[slot=sidebar-menu-button]:p-1.5!"
                         >
                             <a href="/admin">
                                 <Image
@@ -123,9 +123,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 {!loading && user && (
                     <NavUser
                         user={{
-                            fullname: user.fullname ?? "Unnamed User",
+                            fullname: user.fullname ?? 'Unnamed User',
                             email: user.email,
-                            avatar: user.profilePicture || "logo.png",
+                            avatar: user.profilePicture || 'logo.png',
                         }}
                     />
                 )}

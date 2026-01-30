@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import { IconCirclePlusFilled, IconMail, type Icon } from "@tabler/icons-react";
-import Link from "next/link";
+import { IconCirclePlusFilled, IconMail, type Icon } from '@tabler/icons-react';
+import Link from 'next/link';
 
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 import {
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from "@/components/ui/sidebar";
+    SidebarGroup,
+    SidebarGroupContent,
+    SidebarMenu,
+    SidebarMenuButton,
+    SidebarMenuItem,
+} from '@/components/ui/sidebar';
 
 export function NavMain({
     items,
@@ -24,12 +24,11 @@ export function NavMain({
     return (
         <SidebarGroup>
             <SidebarGroupContent className="flex flex-col gap-2">
-                {/* Quick Create Row */}
                 <SidebarMenu>
                     <SidebarMenuItem className="flex items-center gap-2">
                         <SidebarMenuButton
                             asChild
-                            tooltip="Quick Create"
+                            tooltip="Upload Video"
                             className="bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground min-w-8 duration-200 ease-linear"
                         >
                             <Link
@@ -37,7 +36,7 @@ export function NavMain({
                                 className="flex items-center gap-2"
                             >
                                 <IconCirclePlusFilled />
-                                <span>Quick Create</span>
+                                <span>Upload Video</span>
                             </Link>
                         </SidebarMenuButton>
 
