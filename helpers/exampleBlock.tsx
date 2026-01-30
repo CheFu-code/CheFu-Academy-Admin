@@ -1,3 +1,4 @@
+import { formatParagraph } from '@/utils/formatParagraph';
 import { Copy, CopyCheck } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -39,8 +40,8 @@ export default function ExampleBlock({ text }: { text: string }) {
                         expanded ? '' : 'line-clamp-3'
                     }`}
                 >
-                    <span className="font-mono dark:text-gray-100 whitespace-pre-wrap">
-                        {text}
+                    <span className=" dark:text-gray-100 whitespace-pre-wrap">
+                        {formatParagraph(text)}
                     </span>
                 </p>
 

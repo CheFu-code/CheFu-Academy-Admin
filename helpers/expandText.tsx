@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { formatParagraph } from '@/utils/formatParagraph';
 
 export default function ExplainText({ text }: { text: string }) {
     const [expanded, setExpanded] = useState(false);
@@ -10,7 +11,7 @@ export default function ExplainText({ text }: { text: string }) {
                     expanded ? '' : 'line-clamp-5'
                 }`}
             >
-                {text}
+                {formatParagraph(text)}
             </p>
 
             <button

@@ -1,10 +1,25 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { useRouter } from 'next/navigation';
+import { useAuthUser } from '@/hooks/useAuthUser';
+import { useState } from 'react';
+import { Input } from '../ui/input';
+import { toast } from 'sonner';
 
 const CallToActionSection = () => {
-    const router = useRouter();
+    const { user } = useAuthUser();
+    const [email, setEmail] = useState('');
+    const [submitted, setSubmitted] = useState(false);
+
+    const handleSubscribe = () => {
+        if (!email) return;
+
+        // TODO: integrate with your newsletter backend / API
+        toast.success('Coming soon!');
+        setSubmitted(true);
+        setEmail('');
+    };
+
     return (
         <section className="py-20 bg-indigo-600 text-white text-center">
             <h2 className="text-4xl font-bold mb-4">
@@ -15,12 +30,34 @@ const CallToActionSection = () => {
                 and achieving their goals. Sign up now and get instant access to
                 all courses and resources.
             </p>
-            <Button
-                onClick={() => router.push('/courses/create-course')}
-                className="bg-white text-indigo-600 hover:bg-gray-400 px-8 py-4 font-semibold cursor-pointer"
-            >
-                Get Started
-            </Button>
+
+            {/* Newsletter subscription */}
+            <div className="mt-8 max-w-md mx-auto">
+                <p className="mb-4 text-lg  font-medium">
+                    Subscribe to our newsletter for updates
+                </p>
+                {submitted ? (
+                    <p className="text-green-200">Thank you for subscribing!</p>
+                ) : (
+                    <div className="flex gap-2">
+                        <Input
+                            type="email"
+                            placeholder={
+                                user ? user?.email : 'Enter your email'
+                            }
+                            value={user ? user?.email : email}
+                            onChange={(e) => setEmail(e.target.value)}
+                        />
+                        <Button
+                            onClick={handleSubscribe}
+                            className="cursor-pointer"
+                            variant={'secondary'}
+                        >
+                            Subscribe
+                        </Button>
+                    </div>
+                )}
+            </div>
         </section>
     );
 };

@@ -1,9 +1,12 @@
+import CookieBanner from '@/components/Cookies/CookieBanner';
 import { Toaster } from '@/components/ui/sonner';
 import { ThemeProvider } from '@/components/ui/theme-provider';
+import { ConsentProvider } from '@/helpers/ConsentProvider';
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
-import './globals.css';
 import Script from 'next/script';
+import './globals.css';
+import { TrackPageView } from '@/components/Cookies/TrackPageView';
 
 const geistSans = Geist({
     variable: '--font-geist-sans',
@@ -52,7 +55,12 @@ export default function RootLayout({
                     enableSystem
                     disableTransitionOnChange
                 >
-                    {children}
+                    <ConsentProvider>
+                        <TrackPageView />
+                        {children}
+                        <CookieBanner />
+                    </ConsentProvider>
+                    
                     <Toaster />
                 </ThemeProvider>
             </body>

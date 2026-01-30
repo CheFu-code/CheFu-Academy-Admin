@@ -6,7 +6,7 @@ import { ArrowRight } from 'lucide-react';
 
 const HeroSection = () => {
     return (
-        <section className="relative py-20">
+        <section id="hero-section" className="relative py-20">
             <div className="flex flex-col items-center text-center space-y-8">
                 <Badge className="border border-cyan-400" variant={'outline'}>
                     Smart Learning Starts Here
@@ -14,7 +14,7 @@ const HeroSection = () => {
                 <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
                     Expand your knowledge with our courses
                 </h1>
-                <p className="max-w-[700px] md:text-xl text-muted-foreground">
+                <p className="max-w-175 md:text-xl text-muted-foreground">
                     Join our community of smart learners and take your skills to
                     the next level.
                 </p>

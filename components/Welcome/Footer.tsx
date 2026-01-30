@@ -7,8 +7,15 @@ import {
     FaInstagram,
 } from 'react-icons/fa';
 import Link from 'next/link';
+import { ArrowUp } from 'lucide-react';
 
 const Footer = () => {
+    const scrollToTop = () => {
+        const hero = document.getElementById('hero-section');
+        if (hero) {
+            hero.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }
+    };
     return (
         <footer className="bg-gray-900 text-gray-300 py-16">
             <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-4 gap-8">
@@ -114,7 +121,14 @@ const Footer = () => {
                 </div>
             </div>
 
-            {/* Bottom */}
+            <button
+                onClick={scrollToTop}
+                className="absolute right-5 bg-indigo-600 p-2 cursor-pointer rounded-full hover:bg-indigo-500 transition"
+                aria-label="Back to Top"
+            >
+                <ArrowUp size={22} />
+            </button>
+
             <div className="border-t border-gray-700 mt-12 pt-6 text-center text-gray-500 text-sm">
                 &copy; {new Date().getFullYear()} CheFu Academy. All rights
                 reserved.

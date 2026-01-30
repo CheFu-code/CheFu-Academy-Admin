@@ -3,6 +3,7 @@
 import CourseLearningUI from '@/app/courses/_components/CourseLearningUI';
 import NoChapter from '@/components/Courses/noChapter';
 import NoCourse from '@/components/Courses/noCourse';
+import CourseLearningSkeleton from '@/components/skeletons/CourseLearningSkeleton';
 import { getBlurredLogoDataUrl } from '@/helpers/downloadChapter';
 import { useAuthUser } from '@/hooks/useAuthUser';
 import { useScrollIntoView } from '@/hooks/useScrollIntoView';
@@ -27,6 +28,7 @@ const CourseLearning = () => {
     const [chapterIndex] = useState(initialChapterIndex);
     const [contentIndex, setContentIndex] = useState(0);
     const [loading, setLoading] = useState(false);
+    const [loadingCourse, setLoadingCourse] = useState(true);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -39,12 +41,18 @@ const CourseLearning = () => {
     useEffect(() => {
         const fetchCourse = async () => {
             if (!courseId) return;
-            const docRef = doc(db, 'course', courseId as string);
-            const docSnap = await getDoc(docRef);
-            if (docSnap.exists()) {
-                setCourse({ id: docSnap.id, ...docSnap.data() } as Course);
-            } else {
-                console.error('Course not found:', courseId);
+            try {
+                const docRef = doc(db, 'course', courseId as string);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    setCourse({ id: docSnap.id, ...docSnap.data() } as Course);
+                } else {
+                    console.error('Course not found:', courseId);
+                }
+            } catch (error) {
+                console.error('Error fetching course:', error);
+            } finally {
+                setLoadingCourse(false);
             }
         };
         fetchCourse();
@@ -58,7 +66,9 @@ const CourseLearning = () => {
         }
     }, [course, user, router, loading]);
 
-    if (!course) return <NoCourse />;
+    if (!course && !loadingCourse) return <NoCourse />;
+    if (loadingCourse) return <CourseLearningSkeleton />;
+    if (!course) return null;
 
     const chapter = course.chapters[chapterIndex];
     if (!chapter) return <NoChapter />;

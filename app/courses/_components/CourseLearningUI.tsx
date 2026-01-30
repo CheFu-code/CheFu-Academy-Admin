@@ -9,6 +9,7 @@ import {
 import ExampleBlock from '@/helpers/exampleBlock';
 import ExplainText from '@/helpers/expandText';
 import { Chapter, ChapterContentItem } from '@/types/course';
+import { formatParagraph } from '@/utils/formatParagraph';
 import { ArrowRight, Download } from 'lucide-react';
 import { RefObject } from 'react';
 
@@ -70,7 +71,9 @@ const CourseLearningUI = ({
             {/* Scrollable main content */}
             <div className="flex-1 space-y-4 overflow-y-auto">
                 {content.topic && (
-                    <h2 className="text-lg font-semibold">{content.topic}</h2>
+                    <h2 className="text-lg font-semibold">
+                        {formatParagraph(content.topic)}
+                    </h2>
                 )}
                 {content.explain && <ExplainText text={content.explain} />}
                 {cleanCode && <CodeHighlighter code={cleanCode} />}
