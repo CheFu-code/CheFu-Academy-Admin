@@ -3,8 +3,8 @@
 import { db } from '@/lib/firebase'; // your firebase config
 import { collection, getDocs } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
-import HeaderAndSearch from '../_components/HeaderAndSearch';
-import ReportsTable from '../_components/ReportsTable';
+import HeaderAndSearch from '../_components/UI/HeaderAndSearch';
+import ReportsTable from '../_components/UI/ReportsTable';
 import { Report } from '@/types/reports';
 import { exportAllReportsToPDF } from '@/utils/exportAllReportsToPDF';
 

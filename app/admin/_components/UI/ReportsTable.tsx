@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/table';
 
 import { Report } from '@/types/reports';
-import { ReportsTableSkeleton } from './skeleton/ReportsTableSkeleton';
+import { ReportsTableSkeleton } from '../skeleton/ReportsTableSkeleton';
 
 const ReportsTable = ({
     reports,

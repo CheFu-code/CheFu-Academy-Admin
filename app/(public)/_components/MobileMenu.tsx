@@ -45,6 +45,15 @@ const MobileMenu = ({ user, loading }: MobileMenuProps) => {
                             </Link>
                         ))}
 
+                        {user?.roles.includes('admin') && (
+                            <Link
+                                href={'/admin/dashboard'}
+                                className="text-sm font-semibold transition-colors hover:text-primary"
+                            >
+                               Admin Dashboard
+                            </Link>
+                        )}
+
                         <div className="pt-4 border-t flex items-center justify-between">
                             <ThemeToggle />
 

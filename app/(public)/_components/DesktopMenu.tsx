@@ -25,6 +25,15 @@ const DesktopMenu = ({ user, loading }: DesktopMenuProps) => {
                         {item.name}
                     </Link>
                 ))}
+
+                {user?.roles.includes('admin') && (
+                    <Link
+                        className="text-sm font-medium transition-colors hover:text-primary"
+                        href={'/admin/dashboard'}
+                    >
+                        Admin Dashboard
+                    </Link>
+                )}
             </div>
 
             <div className="flex items-center space-x-4 justify-end">

@@ -46,7 +46,7 @@ export const testimonials = [
         role: 'Frontend Developer',
         message:
             'CheFu Academy transformed the way I learn. The courses are clear, interactive, and practical!',
-        avatar: '/avatars/alice.jpg',
+        avatar: '/logo.png',
     },
     {
         name: 'Brian Smith',
@@ -60,7 +60,7 @@ export const testimonials = [
         role: 'Data Analyst',
         message:
             'I love the community support. I could always get help when I was stuck.',
-        avatar: '/avatars/catherine.jpg',
+        avatar: '/logo.png',
     },
 ];
 

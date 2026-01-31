@@ -28,14 +28,14 @@ const DeleteReviewModal = ({
                             setDeleteReviewModal(false);
                             setEditingReviewId(null);
                         }}
-                        className="px-3 py-1 bg-gray-300 text-black rounded-md"
+                        className="px-3 cursor-pointer py-1 bg-gray-300 text-black rounded-md"
                     >
                         Cancel
                     </button>
                     <button
                         onClick={handleDeleteReview}
                         disabled={loading}
-                        className="px-3 py-1 bg-red-600 text-white rounded-md disabled:opacity-50"
+                        className="px-3 cursor-pointer py-1 hover:bg-red-700 bg-red-600 text-white rounded-md disabled:opacity-50"
                     >
                         {loading ? 'Deleting...' : 'Delete'}
                     </button>
