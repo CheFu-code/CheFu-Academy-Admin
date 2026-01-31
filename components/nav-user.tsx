@@ -6,6 +6,7 @@ import {
     CreditCard,
     Loader,
     LogOut,
+    Settings,
     Sparkles,
 } from 'lucide-react';
 
@@ -137,6 +138,19 @@ export function NavUser({ user }: { user: User }) {
                                 </Link>
                             </DropdownMenuItem>
                         </DropdownMenuGroup>
+                        {user.roles.includes('admin') && (
+                            <DropdownMenuSeparator />
+                        )}
+                        {user.roles.includes('admin') && (
+                            <DropdownMenuGroup asChild>
+                                <Link href="/admin/dashboard">
+                                    <DropdownMenuItem className="hover:bg-primary cursor-pointer">
+                                        <Settings />
+                                        Admin Panel
+                                    </DropdownMenuItem>
+                                </Link>
+                            </DropdownMenuGroup>
+                        )}
                         <DropdownMenuSeparator />
                         <Button
                             className="m-2"
