@@ -124,3 +124,53 @@ export const DEFAULT_PREFS = {
     activity: false,
     security: true,
 };
+
+
+
+type TicketStatus = 'open' | 'pending' | 'resolved' | 'closed';
+type TicketPriority = 'low' | 'medium' | 'high' | 'urgent';
+
+ type Ticket = {
+    id: string;
+    title: string;
+    status: TicketStatus;
+    priority: TicketPriority;
+    userName: string;
+    updatedAt: string; // e.g., "2h ago" or a formatted date string
+    overdue?: boolean;
+};
+
+export const tickets: Ticket[] = [
+    {
+        id: 'tk_2312',
+        title: 'Cannot access purchased course',
+        status: 'open',
+        priority: 'high',
+        userName: 'Alice M.',
+        updatedAt: '2h ago',
+        overdue: true,
+    },
+    {
+        id: 'tk_2313',
+        title: 'Video buffering on mobile',
+        status: 'pending',
+        priority: 'medium',
+        userName: 'Thabo K.',
+        updatedAt: '1h ago',
+    },
+    {
+        id: 'tk_2314',
+        title: 'Billing receipt not received',
+        status: 'resolved',
+        priority: 'low',
+        userName: 'Nadia S.',
+        updatedAt: 'Just now',
+    },
+];
+
+export const supportKpis = {
+    open: 12,
+    pendingResponses: 5,
+    resolvedToday: 8,
+    overdue: 3,
+};
