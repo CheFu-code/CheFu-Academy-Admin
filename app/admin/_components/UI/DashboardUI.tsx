@@ -4,8 +4,11 @@ import Header from '@/components/Shared/Header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DashboardUIProps } from '@/types';
-import { Bell, BookOpen, Loader, Lock, Users, Video } from 'lucide-react';
+import { Bell } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import Stats from './Dashboard/Stats';
+import Summary from './Dashboard/Summary';
+import TicketsList from './Dashboard/TicketsList';
 
 export default function DashboardUI({
     totalUsers,
@@ -32,126 +35,26 @@ export default function DashboardUI({
                     <Bell className="h-5 w-5" />
                 </Button>
             </div>
-
             {/* Stats */}
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                <Card className="shadow-lg">
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">
-                            Total Users
-                        </CardTitle>
-                        <Users className="h-5 w-5 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        {loading ? (
-                            <Loader className="animate-spin size-4" />
-                        ) : (
-                            <div className="text-2xl font-bold">
-                                {totalUsers}
-                            </div>
-                        )}
-                        <p className="text-xs text-muted-foreground">
-                            {monthlyUsers !== null
-                                ? `+${monthlyUsers} this month`
-                                : '—'}
-                        </p>
-                    </CardContent>
-                </Card>
+            <Stats
+                loading={loading}
+                totalUsers={totalUsers}
+                monthlyUsers={monthlyUsers}
+                totalCourses={totalCourses}
+                monthlyCourses={monthlyCourses}
+                totalVideos={totalVideos}
+                monthlyVideos={monthlyVideos}
+                totalAPIKeys={totalAPIKeys}
+                monthlyAPIKeys={monthlyAPIKeys}
+            />
 
-                <Card className="shadow-lg">
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">
-                            Courses
-                        </CardTitle>
-                        <BookOpen className="h-5 w-5 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        {loading ? (
-                            <Loader className="animate-spin size-4" />
-                        ) : (
-                            <div className="text-2xl font-bold">
-                                {totalCourses}
-                            </div>
-                        )}
-                        <p className="text-xs text-muted-foreground">
-                            {monthlyCourses !== null
-                                ? `+${monthlyCourses} this month`
-                                : '—'}
-                        </p>
-                    </CardContent>
-                </Card>
-
-                <Card className="shadow-lg">
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">
-                            Videos
-                        </CardTitle>
-                        <Video className="h-5 w-5 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        {loading ? (
-                            <Loader className="animate-spin size-4" />
-                        ) : (
-                            <div className="text-2xl font-bold">
-                                {totalVideos}
-                            </div>
-                        )}
-                        <p className="text-xs text-muted-foreground">
-                            {monthlyVideos !== null
-                                ? `+${monthlyVideos} this month`
-                                : '—'}
-                        </p>
-                    </CardContent>
-                </Card>
-
-                <Card className="shadow-lg">
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">
-                            API Keys
-                        </CardTitle>
-                        <Lock className="h-5 w-5 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        {loading ? (
-                            <Loader className="animate-spin size-4" />
-                        ) : (
-                            <div className="text-2xl font-bold">
-                                {totalAPIKeys}
-                            </div>
-                        )}
-                        <p className="text-xs text-muted-foreground">
-                            {monthlyAPIKeys !== null
-                                ? `+${monthlyAPIKeys} this month`
-                                : '—'}
-                        </p>
-                    </CardContent>
-                </Card>
-            </div>
-
-            {/* Activity Section */}
+            {/* Support Tickets / Issues Section */}
             <div className="mt-8 grid gap-6 lg:grid-cols-3">
-                <Card className="lg:col-span-2 shadow-xl">
-                    <CardHeader>
-                        <CardTitle>Recent Activity</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        {[
-                            'New user registered',
-                            'Course "React Native" published',
-                            'Subscription upgraded',
-                        ].map((item, i) => (
-                            <div
-                                key={i}
-                                className="flex items-center justify-between rounded-lg border bg-background p-3"
-                            >
-                                <span className="text-sm">{item}</span>
-                                <span className="text-xs text-muted-foreground">
-                                    Just now
-                                </span>
-                            </div>
-                        ))}
-                    </CardContent>
-                </Card>
+                {/* Summary / KPI Cards */}
+                <Summary loading={loading} />
+
+                {/* Tickets List */}
+                <TicketsList loading={loading} />
 
                 <Card className="shadow-xl">
                     <CardHeader>
