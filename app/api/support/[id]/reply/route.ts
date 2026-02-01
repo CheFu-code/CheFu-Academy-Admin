@@ -1,5 +1,4 @@
 // app/api/support/[id]/reply/route.ts
-import { auth, db } from '@/lib/firebase';
 import { NextResponse } from 'next/server';
 
 type RouteContext = { params: { id: string } };
@@ -14,8 +13,11 @@ export async function POST(req: Request, { params }: RouteContext) {
             return NextResponse.json({ error: 'Message is required' }, { status: 400 });
         }
 
-        const userId  = auth.currentUser?.uid;
-        if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        const authHeader = req.headers.get('authorization') ?? '';
+        const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+        if (!token) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
 
         // TODO: persist reply, update ticket updatedAt/status
         // await db.ticketMessage.create({ data: { ticketId: id, from: 'support', text: message } });

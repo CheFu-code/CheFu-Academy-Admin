@@ -3,19 +3,21 @@ import { Suspense } from 'react';
 import TicketDetailClient, { Ticket } from './ticket-detail-client';
 
 type PageProps = {
-    params: { id: string };
-    searchParams: { action?: string };
+    params: Promise<{ id: string }>;
+    searchParams: Promise<{ action?: string }>;
 };
 
 export default async function TicketDetailPage({
     params,
     searchParams,
 }: PageProps) {
+    const { id } = await params;
+    const { action } = await searchParams;
     // TODO: Replace with real fetch (server-side) to get ticket detail by ID
     // Example:
-    // const ticket = await getTicketById(params.id);
+    // const ticket = await getTicketById(id);
     const ticket: Ticket = {
-        id: params.id,
+        id: id,
         title: 'Cannot access purchased course',
         status: 'open',
         priority: 'high',
@@ -44,7 +46,7 @@ export default async function TicketDetailPage({
             }
         >
             {/* Pass data and action to a client component to handle interactive UI */}
-            <TicketDetailClient ticket={ticket} action={searchParams.action} />
+            <TicketDetailClient ticket={ticket} action={action} />
         </Suspense>
     );
 }

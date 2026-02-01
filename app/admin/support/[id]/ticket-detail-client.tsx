@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea'; // If you have one; else use <textarea>
 import { Loader } from 'lucide-react';
+import { auth } from '@/lib/firebase';
 
 type TicketMessage = { from: 'user' | 'support'; text: string; at: string };
 export type Ticket = {
@@ -49,9 +50,13 @@ export default function TicketDetailClient({
         setSubmitting(true);
         try {
             // Call your API route to persist the reply
+            const token = await auth.currentUser?.getIdToken?.();
             const res = await fetch(`/api/support/${ticket.id}/reply`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                },
                 body: JSON.stringify({ message: replyText }),
             });
             if (!res.ok) throw new Error('Failed to send reply');
@@ -125,7 +130,8 @@ export default function TicketDetailClient({
                     {isReplyMode && (
                         <div className="mt-4 space-y-2">
                             {/* Use your own Textarea or plain textarea */}
-                            {'Textarea' in (globalThis as Record<string, unknown>) ? (
+                            {'Textarea' in
+                            (globalThis as Record<string, unknown>) ? (
                                 // If you have your ShadCN Textarea component
                                 <Textarea
                                     value={replyText}

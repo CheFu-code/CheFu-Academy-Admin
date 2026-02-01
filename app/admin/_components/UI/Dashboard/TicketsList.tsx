@@ -77,7 +77,8 @@ const TicketsList = ({ loading }: { loading: boolean }) => {
                                 >
                                     View
                                 </Button>
-                                {t.status !== 'resolved' && (
+                                {(t.status === 'open' ||
+                                    t.status === 'pending') && (
                                     <Button
                                         size="sm"
                                         className="cursor-pointer"

@@ -27,7 +27,9 @@ const Stats = ({
                     {loading ? (
                         <Loader className="animate-spin size-4" />
                     ) : (
-                        <div className="text-2xl font-bold">{totalUsers}</div>
+                        <div className="text-2xl font-bold">
+                            {totalUsers ?? '—'}
+                        </div>
                     )}
                     <p className="text-xs text-muted-foreground">
                         {monthlyUsers !== null
