@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { getFriendlyAuthMessage } from '@/helpers/authErrors';
 import { useAuthUser } from '@/hooks/useAuthUser';
 import { auth } from '@/lib/firebase';
 import { saveUser } from '@/services/authService';
@@ -94,7 +95,8 @@ export default function LoginForm() {
                 await signInWithEmailAndPassword(auth, email, password);
                 toast.success('Login successful!');
             } catch (error) {
-                toast.error('Login failed. Please try again later.');
+                const message = getFriendlyAuthMessage(error);
+                toast.error(message);
                 console.error('Email login failed:', error);
             }
         });
@@ -160,12 +162,16 @@ export default function LoginForm() {
                         </div>
                         <Button
                             disabled={
-                                emailPending || !email || !password || loading
+                                emailPending ||
+                                !email ||
+                                !password ||
+                                loading ||
+                                googlePending
                             }
                             onClick={handleEmailLogin}
                             className="cursor-pointer"
                         >
-                            {emailPending ? (
+                            {emailPending || googlePending ? (
                                 <>
                                     <Loader className="size-4 animate-spin" />
                                     <span>Loading...</span>
