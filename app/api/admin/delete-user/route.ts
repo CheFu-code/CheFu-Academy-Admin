@@ -10,6 +10,7 @@ if (!admin.apps.length) {
     admin.initializeApp({
         credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
     });
+    console.log('Firebase Admin Initialized');
 }
 
 export async function POST(req: Request) {
