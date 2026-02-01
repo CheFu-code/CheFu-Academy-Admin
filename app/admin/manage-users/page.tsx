@@ -4,7 +4,7 @@ import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { db } from '@/lib/firebase';
 import { User } from '@/types/user';
 import { userMatches } from '@/utils/userSearch';
-import { collection, deleteDoc, doc, onSnapshot } from 'firebase/firestore';
+import { collection, onSnapshot } from 'firebase/firestore';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
 import ManageUsersUI from '../_components/UI/ManageUsersUI';
@@ -33,15 +33,38 @@ const ManageUsers = () => {
         return () => unsubscribe();
     }, []);
 
-    const handleDelete = async (user: User) => {
-        // 1) Delete Firestore doc
+    const handleDelete = async (user: {
+        uid: string;
+        email: string;
+        id: string;
+    }) => {
         try {
             setDeleting(true);
-            await deleteDoc(doc(db, 'users', user.id));
+
+            // 1️⃣ Call your Next.js API route
+            const res = await fetch('/api/admin/delete-user', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    uid: user.uid,
+                    email: user.email, // ensure this matches your Firestore doc ID
+                }),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                throw new Error(data.error || 'Failed to delete user');
+            }
+
             toast.success('User deleted successfully.');
-        } catch (error) {
+        } catch (error: unknown) {
             console.error('Error deleting user:', error);
-            toast.error('Failed to delete user. Please try again.');
+            let message = 'Failed to delete user. Please try again.';
+            if (error instanceof Error) {
+                message = error.message;
+            }
+            toast.error(message);
         } finally {
             setDeleting(false);
         }

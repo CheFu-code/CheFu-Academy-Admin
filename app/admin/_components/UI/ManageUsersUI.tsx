@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { Loader2, Pencil, Search, Trash2, Users, X } from 'lucide-react';
+import { Loader2, Search, Trash2, Users, X } from 'lucide-react';
 import * as React from 'react';
 
 import Header from '@/components/Shared/Header';
@@ -24,7 +24,6 @@ const ManageUsersUI: React.FC<ManageUsersProps> = ({
     search,
     setSearch,
     filteredUsers,
-    onEdit,
     onDelete,
     total,
     confirmOpen,
@@ -249,20 +248,6 @@ const ManageUsersUI: React.FC<ManageUsersProps> = ({
                                                 ) && (
                                                     <TableCell className="text-right">
                                                         <div className="inline-flex items-center gap-2">
-                                                            <Button
-                                                                variant="outline"
-                                                                size="sm"
-                                                                className="gap-2 cursor-pointer"
-                                                                onClick={() =>
-                                                                    onEdit?.(
-                                                                        user,
-                                                                    )
-                                                                }
-                                                            >
-                                                                <Pencil className="h-4 w-4" />
-                                                                Edit
-                                                            </Button>
-
                                                             <Button
                                                                 disabled={
                                                                     deleting

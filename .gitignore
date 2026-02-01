@@ -19,7 +19,6 @@
 
 # production
 /build
-lib/serviceAccountKey.json
 
 # misc
 .DS_Store

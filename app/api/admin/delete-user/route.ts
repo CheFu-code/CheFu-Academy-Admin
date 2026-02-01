@@ -1,9 +1,12 @@
-import { NextResponse } from 'next/server';
+//app/api/admin/delete-user/route.ts
+
 import admin from 'firebase-admin';
-import serviceAccount from '@/lib/serviceAccountKey.json';
+import { NextResponse } from 'next/server';
 
 // 🔐 Initialize Admin SDK safely
 if (!admin.apps.length) {
+    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT!);
+
     admin.initializeApp({
         credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
     });
