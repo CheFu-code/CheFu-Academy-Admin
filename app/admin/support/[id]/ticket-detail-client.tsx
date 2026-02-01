@@ -1,3 +1,5 @@
+// app/admin/support/[id]/ticket-detail-client.tsx
+
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
@@ -8,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea'; // If you have one; else us
 import { Loader } from 'lucide-react';
 
 type TicketMessage = { from: 'user' | 'support'; text: string; at: string };
-type Ticket = {
+export type Ticket = {
     id: string;
     title: string;
     status: 'open' | 'pending' | 'resolved' | 'closed';

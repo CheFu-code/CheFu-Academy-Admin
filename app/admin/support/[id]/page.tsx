@@ -1,6 +1,6 @@
 // app/admin/support/[id]/page.tsx
 import { Suspense } from 'react';
-import TicketDetailClient from './ticket-detail-client';
+import TicketDetailClient, { Ticket } from './ticket-detail-client';
 
 type PageProps = {
     params: { id: string };
@@ -14,7 +14,7 @@ export default async function TicketDetailPage({
     // TODO: Replace with real fetch (server-side) to get ticket detail by ID
     // Example:
     // const ticket = await getTicketById(params.id);
-    const ticket = {
+    const ticket: Ticket = {
         id: params.id,
         title: 'Cannot access purchased course',
         status: 'open',
@@ -33,7 +33,7 @@ export default async function TicketDetailPage({
                 at: '2026-02-01 10:20',
             },
         ],
-    } as const;
+    };
 
     return (
         <Suspense

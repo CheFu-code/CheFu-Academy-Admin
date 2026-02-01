@@ -130,7 +130,7 @@ export const DEFAULT_PREFS = {
 type TicketStatus = 'open' | 'pending' | 'resolved' | 'closed';
 type TicketPriority = 'low' | 'medium' | 'high' | 'urgent';
 
-export type Ticket = {
+ type Ticket = {
     id: string;
     title: string;
     status: TicketStatus;
