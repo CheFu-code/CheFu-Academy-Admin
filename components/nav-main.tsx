@@ -11,9 +11,9 @@ import {
     SidebarMenuItem,
     SidebarMenuSub,
     SidebarMenuSubButton,
-    SidebarMenuSubItem
+    SidebarMenuSubItem,
 } from '@/components/ui/sidebar';
-import { ChevronRight, type LucideIcon } from 'lucide-react';
+import { ChevronRight, Ticket, type LucideIcon } from 'lucide-react';
 
 export function NavMain({
     items,
@@ -28,9 +28,7 @@ export function NavMain({
 }) {
     return (
         <SidebarGroup>
-            <SidebarGroupLabel>
-                Study Center
-            </SidebarGroupLabel>
+            <SidebarGroupLabel>Study Center</SidebarGroupLabel>
             <SidebarMenu>
                 {items.map((item) => {
                     const hasSubItems = !!item.items?.length;
@@ -89,6 +87,18 @@ export function NavMain({
                     );
                 })}
             </SidebarMenu>
+
+            <SidebarMenuSubItem key="support">
+                <SidebarMenuSubButton asChild>
+                    <a
+                        href="/support/tickets"
+                        className="flex items-center gap-2 font-bold"
+                    >
+                        <Ticket size={16} />
+                        <span>Support Tickets</span>
+                    </a>
+                </SidebarMenuSubButton>
+            </SidebarMenuSubItem>
         </SidebarGroup>
     );
 }

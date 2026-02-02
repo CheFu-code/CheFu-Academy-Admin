@@ -1,6 +1,6 @@
-import { Separator } from "@/components/ui/separator";
-import { SidebarTrigger } from "@/components/ui/sidebar";
-import { ThemeToggle } from "../ui/themeToggle";
+import { Separator } from '@/components/ui/separator';
+import { SidebarTrigger } from '@/components/ui/sidebar';
+import { ThemeToggle } from '../ui/themeToggle';
 
 export function SiteHeader() {
     return (
@@ -11,7 +11,9 @@ export function SiteHeader() {
                     orientation="vertical"
                     className="mx-2 data-[orientation=vertical]:h-4"
                 />
-                <h1 className="text-base font-medium">CheFu Academy</h1>
+                <a href="/courses" className="text-base font-medium">
+                    CheFu Academy
+                </a>
                 <div className="ml-auto flex items-center gap-2">
                     <ThemeToggle />
                 </div>
