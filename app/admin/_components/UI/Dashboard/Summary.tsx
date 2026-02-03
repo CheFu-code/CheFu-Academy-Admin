@@ -2,12 +2,22 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { supportKpis } from '@/constants/Data';
 import { Loader } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import React from 'react';
 
-const Summary = ({ loading }: { loading: boolean }) => {
+const Summary = ({
+    loading,
+    openTickets,
+    pendingTickets,
+    resolvedTickets,
+    overdueTickets,
+}: {
+    loading: boolean;
+    openTickets: number;
+    pendingTickets: number;
+    resolvedTickets: number;
+    overdueTickets: number;
+}) => {
     const router = useRouter();
     return (
         <Card className="shadow-xl">
@@ -24,7 +34,7 @@ const Summary = ({ loading }: { loading: boolean }) => {
                             {loading ? (
                                 <Loader className="size-4 animate-spin" />
                             ) : (
-                                supportKpis.open
+                                (openTickets ?? '—')
                             )}
                         </p>
                     </div>
@@ -36,7 +46,7 @@ const Summary = ({ loading }: { loading: boolean }) => {
                             {loading ? (
                                 <Loader className="size-4 animate-spin" />
                             ) : (
-                                supportKpis.pendingResponses
+                                (pendingTickets ?? '—')
                             )}
                         </p>
                     </div>
@@ -48,7 +58,7 @@ const Summary = ({ loading }: { loading: boolean }) => {
                             {loading ? (
                                 <Loader className="size-4 animate-spin" />
                             ) : (
-                                supportKpis.resolvedToday
+                                (resolvedTickets ?? '—')
                             )}
                         </p>
                     </div>
@@ -60,7 +70,7 @@ const Summary = ({ loading }: { loading: boolean }) => {
                             {loading ? (
                                 <Loader className="size-4 animate-spin" />
                             ) : (
-                                supportKpis.overdue
+                                (overdueTickets ?? '—')
                             )}
                         </p>
                     </div>
@@ -71,14 +81,6 @@ const Summary = ({ loading }: { loading: boolean }) => {
                     <Button
                         size="sm"
                         variant="secondary"
-                        className="cursor-pointer"
-                        onClick={() => router.push('/admin/support/new')}
-                    >
-                        New Ticket
-                    </Button>
-                    <Button
-                        size="sm"
-                        variant="outline"
                         className="cursor-pointer"
                         onClick={() => router.push('/admin/support')}
                     >

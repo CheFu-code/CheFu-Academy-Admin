@@ -10,25 +10,30 @@ import {
 } from './card';
 import { Input } from './input';
 import { Textarea } from './textarea';
+import { TicketPriority } from '@/types/supportTicket';
 
 const SupportTicketsUI = ({
     ticketID,
-    generateTicketID,
+    handleGenerateTicketID,
     submittingTicket,
     submitTicket,
     title,
     setTitle,
     message,
     setMessage,
+    priority,
+    setPriority,
 }: {
     ticketID: string;
-    generateTicketID: () => void;
+    handleGenerateTicketID: () => void;
     submittingTicket: boolean;
     submitTicket: () => void;
     title: string;
     setTitle: React.Dispatch<React.SetStateAction<string>>;
     message: string;
     setMessage: React.Dispatch<React.SetStateAction<string>>;
+    priority: TicketPriority;
+    setPriority: React.Dispatch<React.SetStateAction<TicketPriority>>;
 }) => {
     return (
         <div className="min-h-screen bg-background p-8">
@@ -53,8 +58,15 @@ const SupportTicketsUI = ({
                                 <span className="text-red-400">*</span>
                             </div>
                             <select
-                                className="border rounded-md px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full rounded-lg border border-gray-300  px-4 py-2 shadow-sm 
+               focus:border-blue-500 focus:ring-2 focus:ring-blue-400 transition-all duration-200"
                                 required
+                                value={priority}
+                                onChange={(e) =>
+                                    setPriority(
+                                        e.target.value as TicketPriority,
+                                    )
+                                }
                             >
                                 <option value="">Select priority</option>
                                 <option value="low">Low</option>
@@ -89,7 +101,9 @@ const SupportTicketsUI = ({
                             />
                         </div>
 
-                        <div className="font-semibold">Ticket ID:</div>
+                        <div className="font-semibold">
+                            Ticket ID: <span className="text-red-400">*</span>
+                        </div>
                         <div className="flex items-center gap-4">
                             <Input
                                 disabled
@@ -97,12 +111,12 @@ const SupportTicketsUI = ({
                                 placeholder={ticketID || 'Generate Ticket ID'}
                                 value={ticketID}
                             />
-                            <div className="bg-muted-foreground p-1 rounded">
+                            <button className="bg-muted-foreground p-1 rounded">
                                 <KeyRound
-                                    onClick={generateTicketID}
+                                    onClick={handleGenerateTicketID}
                                     className="w-5 h-5 text-white hover:text-primary cursor-pointer"
                                 />
-                            </div>
+                            </button>
                         </div>
 
                         <Button
@@ -111,6 +125,7 @@ const SupportTicketsUI = ({
                             disabled={
                                 submittingTicket ||
                                 !ticketID ||
+                                !priority ||
                                 !title.trim() ||
                                 !message.trim()
                             }

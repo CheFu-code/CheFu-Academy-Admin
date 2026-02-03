@@ -70,3 +70,28 @@ export const getMonthlyAPIKeys = async () => {
     const snapshot = await getCountFromServer(q);
     return snapshot.data().count;
 };
+
+export const getOpenTickets = async () => {
+    const ticketRef = collection(db, 'support-tickets')
+    const q = query(ticketRef, where('status', '==', 'open'))
+    const snapshot = await getCountFromServer(q)
+    return snapshot.data().count
+}
+export const getPendingTickets = async () => {
+    const ticketRef = collection(db, 'support-tickets')
+    const q = query(ticketRef, where('status', '==', 'pending'))
+    const snapshot = await getCountFromServer(q)
+    return snapshot.data().count
+}
+export const getResolvedTickets = async () => {
+    const ticketRef = collection(db, 'support-tickets')
+    const q = query(ticketRef, where('status', '==', 'resolved'))
+    const snapshot = await getCountFromServer(q)
+    return snapshot.data().count
+}
+export const getOverdueTickets = async () => {
+    const ticketRef = collection(db, 'support-tickets')
+    const q = query(ticketRef, where('overdue', '==', true))
+    const snapshot = await getCountFromServer(q)
+    return snapshot.data().count
+}

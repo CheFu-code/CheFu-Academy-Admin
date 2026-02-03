@@ -2,24 +2,14 @@
 
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea'; // If you have one; else use <textarea>
-import { Loader } from 'lucide-react';
 import { auth } from '@/lib/firebase';
-
-type TicketMessage = { from: 'user' | 'support'; text: string; at: string };
-export type Ticket = {
-    id: string;
-    title: string;
-    status: 'open' | 'pending' | 'resolved' | 'closed';
-    priority: 'low' | 'medium' | 'high' | 'urgent';
-    userName: string;
-    updatedAt: string;
-    messages: TicketMessage[];
-};
+import { Ticket } from '@/types/supportTicket';
+import { Loader } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useMemo, useState } from 'react';
 
 export default function TicketDetailClient({
     ticket,
@@ -106,24 +96,6 @@ export default function TicketDetailClient({
                         From:{' '}
                         <span className="font-medium">{ticket.userName}</span> •
                         Priority: {ticket.priority} • Status: {ticket.status}
-                    </div>
-
-                    {/* Conversation */}
-                    <div className="space-y-3">
-                        {ticket.messages.map((m, idx) => (
-                            <div
-                                key={idx}
-                                className={`rounded-lg border p-3 text-sm ${m.from === 'support' ? 'bg-emerald-50/40 dark:bg-emerald-900/20' : 'bg-slate-50/60 dark:bg-slate-800/50'}`}
-                            >
-                                <div className="mb-1 text-xs text-muted-foreground">
-                                    {m.from === 'support'
-                                        ? 'Support'
-                                        : ticket.userName}{' '}
-                                    • {m.at}
-                                </div>
-                                <div>{m.text}</div>
-                            </div>
-                        ))}
                     </div>
 
                     {/* Reply UI (inline) */}

@@ -1,6 +1,7 @@
 // app/admin/support/[id]/page.tsx
 import { Suspense } from 'react';
-import TicketDetailClient, { Ticket } from './ticket-detail-client';
+import TicketDetailClient from './ticket-detail-client';
+import { getTicketById } from '@/services/tickets';
 
 type PageProps = {
     params: Promise<{ id: string }>;
@@ -13,29 +14,7 @@ export default async function TicketDetailPage({
 }: PageProps) {
     const { id } = await params;
     const { action } = await searchParams;
-    // TODO: Replace with real fetch (server-side) to get ticket detail by ID
-    // Example:
-    // const ticket = await getTicketById(id);
-    const ticket: Ticket = {
-        id: id,
-        title: 'Cannot access purchased course',
-        status: 'open',
-        priority: 'high',
-        userName: 'Alice M.',
-        updatedAt: '2h ago',
-        messages: [
-            {
-                from: 'user',
-                text: 'I bought React course but it’s locked',
-                at: '2026-02-01 10:12',
-            },
-            {
-                from: 'support',
-                text: 'We’re checking—thanks!',
-                at: '2026-02-01 10:20',
-            },
-        ],
-    };
+    const ticket = await getTicketById(id);
 
     return (
         <Suspense

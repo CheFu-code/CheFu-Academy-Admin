@@ -2,13 +2,20 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { tickets } from '@/constants/Data';
+import { cn } from '@/lib/utils';
+import { Ticket } from '@/types/supportTicket';
 import { Loader } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import React from 'react';
 
-const TicketsList = ({ loading }: { loading: boolean }) => {
+const TicketsList = ({
+    loading,
+    recentTickets,
+}: {
+    loading: boolean;
+    recentTickets?: Ticket[];
+}) => {
     const router = useRouter();
+
     return (
         <Card className="lg:col-span-2 shadow-xl">
             <CardHeader>
@@ -20,13 +27,12 @@ const TicketsList = ({ loading }: { loading: boolean }) => {
                         <Loader className="size-4 animate-spin" />
                         Loading tickets…
                     </div>
-                ) : tickets.length === 0 ? (
+                ) : recentTickets?.length === 0 ? (
                     <div className="rounded-lg border p-6 text-center text-sm text-muted-foreground">
-                        No tickets yet. Create your first support ticket to get
-                        started.
+                        No tickets yet.
                     </div>
                 ) : (
-                    tickets.map((t) => (
+                    recentTickets?.map((t) => (
                         <div
                             key={t.id}
                             className="flex flex-col gap-2 rounded-lg border bg-background p-3 sm:flex-row sm:items-center sm:justify-between"
@@ -59,10 +65,24 @@ const TicketsList = ({ loading }: { loading: boolean }) => {
                                 </div>
                                 <div className="mt-1 line-clamp-1 text-xs text-muted-foreground">
                                     {t.userName} • Priority:{' '}
-                                    <span className="font-bold">
+                                    <span
+                                        className={cn(
+                                            'font-bold',
+                                            t.priority === 'urgent'
+                                                ? 'text-red-500'
+                                                : t.priority === 'high'
+                                                  ? 'text-amber-500'
+                                                  : t.priority === 'medium'
+                                                    ? 'text-blue-500'
+                                                    : 'text-green-500',
+                                        )}
+                                    >
                                         {t.priority}{' '}
                                     </span>
-                                    • Updated {t.updatedAt}
+                                    • Created{' '}
+                                    {t.createdAt
+                                        ? t.createdAt.toLocaleDateString()
+                                        : 'Unknown'}
                                 </div>
                             </div>
 
