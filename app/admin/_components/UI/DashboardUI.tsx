@@ -60,17 +60,21 @@ export default function DashboardUI({
                     pendingTickets &&
                     resolvedTickets &&
                     overdueTickets && ( */}
-                        <Summary
-                            openTickets={openTickets}
-                            pendingTickets={pendingTickets}
-                            resolvedTickets={resolvedTickets}
-                            overdueTickets={overdueTickets}
-                            loading={loading}
-                        />
-                    {/* )} */}
+                <Summary
+                    openTickets={openTickets}
+                    pendingTickets={pendingTickets}
+                    resolvedTickets={resolvedTickets}
+                    overdueTickets={overdueTickets}
+                    loading={loading}
+                />
+                {/* )} */}
 
                 {/* Tickets List */}
-                <TicketsList loading={loading} recentTickets={recentTickets} />
+                <TicketsList
+                    router={router}
+                    loading={loading}
+                    recentTickets={recentTickets}
+                />
 
                 <Card className="shadow-xl">
                     <CardHeader>

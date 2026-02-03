@@ -82,7 +82,7 @@ const Summary = ({
                         size="sm"
                         variant="secondary"
                         className="cursor-pointer"
-                        onClick={() => router.push('/admin/support')}
+                        onClick={() => router.push('/admin/support-tickets')}
                     >
                         View All
                     </Button>

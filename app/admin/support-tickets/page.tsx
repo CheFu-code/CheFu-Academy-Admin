@@ -1,0 +1,33 @@
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import GetAllSupportTickets from '../_components/UI/Dashboard/GetAllSupportTickets';
+import { subscribeToAllTickets } from '@/services/tickets';
+import { Ticket } from '@/types/supportTicket';
+import { useRouter } from 'next/navigation';
+
+const SupportTickets = () => {
+    const router = useRouter();
+    const [loading, setLoading] = useState<boolean>(true);
+    const [allTickets, setAllTickets] = useState<Ticket[]>([]);
+
+    useEffect(() => {
+        try {
+            const unsubscribe = subscribeToAllTickets(setAllTickets);
+            return () => unsubscribe(); // cleanup on unmount
+        } catch (error) {
+            console.error('error fetching all tickets', error);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+    return (
+        <GetAllSupportTickets
+            allTickets={allTickets}
+            router={router}
+            loading={loading}
+        />
+    );
+};
+
+export default SupportTickets;

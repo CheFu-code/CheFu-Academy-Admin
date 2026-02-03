@@ -1,21 +1,19 @@
-'use client';
-
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { Ticket } from '@/types/supportTicket';
 import { Loader } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import NoTicket from '../Tickets/NoTicket';
 
 const TicketsList = ({
     loading,
     recentTickets,
+    router,
 }: {
     loading: boolean;
     recentTickets?: Ticket[];
+    router: ReturnType<typeof import('next/navigation').useRouter>;
 }) => {
-    const router = useRouter();
-
     return (
         <Card className="lg:col-span-2 shadow-xl">
             <CardHeader>
@@ -28,9 +26,7 @@ const TicketsList = ({
                         Loading tickets…
                     </div>
                 ) : recentTickets?.length === 0 ? (
-                    <div className="rounded-lg border p-6 text-center text-sm text-muted-foreground">
-                        No tickets yet.
-                    </div>
+                    <NoTicket />
                 ) : (
                     recentTickets?.map((t) => (
                         <div
