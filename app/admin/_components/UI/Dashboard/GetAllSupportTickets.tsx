@@ -96,7 +96,7 @@ const GetAllSupportTickets = ({
                                         className="cursor-pointer"
                                         onClick={() =>
                                             router.push(
-                                                `/admin/support/reply/${t.id}`,
+                                                `/admin/support-tickets/reply/${t.id}`,
                                             )
                                         }
                                     >
@@ -109,7 +109,7 @@ const GetAllSupportTickets = ({
                                             className="cursor-pointer"
                                             onClick={() =>
                                                 router.push(
-                                                    `/admin/support/reply/${t.id}?action=reply`,
+                                                    `/admin/support-tickets/reply/${t.id}?action=reply`,
                                                 )
                                             }
                                         >

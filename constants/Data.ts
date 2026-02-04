@@ -169,5 +169,5 @@ export const documents = [
         url: '/admin/reports',
         icon: IconReport,
     },
-    { name: 'Support Tickets', url: '/admin/support-tickets', icon: Ticket },
+    { name: 'Support Tickets', url: '/admin/support-tickets/all', icon: Ticket },
 ];

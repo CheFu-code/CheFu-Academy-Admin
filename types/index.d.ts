@@ -9,10 +9,10 @@ export interface DashboardUIProps {
     totalAPIKeys: number | null;
     monthlyAPIKeys: number | null;
     recentTickets?: Ticket[];
-    openTickets?: number | null
-    pendingTickets?: number | null
-    resolvedTickets?: number | null
-    overdueTickets?: number | null
+    openTickets?: number | null;
+    pendingTickets?: number | null;
+    resolvedTickets?: number | null;
+    overdueTickets?: number | null;
 }
 
 export type ManageUsersProps = {

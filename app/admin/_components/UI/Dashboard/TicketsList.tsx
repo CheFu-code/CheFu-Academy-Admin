@@ -88,7 +88,7 @@ const TicketsList = ({
                                     variant="outline"
                                     className="cursor-pointer"
                                     onClick={() =>
-                                        router.push(`/admin/support/reply/${t.id}`)
+                                        router.push(`/admin/support-tickets/reply/${t.id}`)
                                     }
                                 >
                                     View
@@ -100,7 +100,7 @@ const TicketsList = ({
                                         className="cursor-pointer"
                                         onClick={() =>
                                             router.push(
-                                                `/admin/support/reply/${t.id}?action=reply`,
+                                                `/admin/support-tickets/reply/${t.id}?action=reply`,
                                             )
                                         }
                                     >

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import GetAllSupportTickets from '../_components/UI/Dashboard/GetAllSupportTickets';
+import GetAllSupportTickets from '../../_components/UI/Dashboard/GetAllSupportTickets';
 import { subscribeToAllTickets } from '@/services/tickets';
 import { Ticket } from '@/types/supportTicket';
 import { useRouter } from 'next/navigation';

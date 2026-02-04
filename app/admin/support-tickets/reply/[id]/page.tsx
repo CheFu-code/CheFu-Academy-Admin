@@ -1,4 +1,4 @@
-// app/admin/support/[id]/page.tsx
+// app/admin/support-tickets/[id]/page.tsx
 import { Suspense } from 'react';
 import TicketDetailClient from './ticket-detail-client';
 import { getTicketById } from '@/services/tickets';
