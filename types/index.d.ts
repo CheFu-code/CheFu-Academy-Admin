@@ -1,3 +1,5 @@
+
+import { Ticket } from './supportTicket';
 export interface DashboardUIProps {
     totalUsers: number | null;
     monthlyUsers: number | null;

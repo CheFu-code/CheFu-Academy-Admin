@@ -17,56 +17,53 @@ export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [emailPending, startEmailTransition] = useTransition();
-    const [googlePending, startGoogleTransition] = useTransition();
+    const [googlePending, setGooglePending] = useState(false);
 
     const handleGoogle = async () => {
-        startGoogleTransition(async () => {
-            try {
-                const provider = new GoogleAuthProvider();
+        setGooglePending(true);
+        try {
+            const provider = new GoogleAuthProvider();
 
-                provider.setCustomParameters({
-                    client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
-                });
+            provider.setCustomParameters({
+                client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
+            });
 
-                // Sign in with Google
-                const result = await signInWithPopup(auth, provider);
-                const user = result.user;
-                if (!user.email) {
-                    throw new Error('No email found in Google account.');
-                }
-                const fullname = user.displayName?.trim() || 'Google User';
-                const email = user.email || '';
-
-                const savedData = await saveUser(user, fullname, email);
-                if (!savedData) throw new Error('Failed to save user data.');
-            } catch (error: unknown) {
-                if (error instanceof Error) {
-                    console.error('Google login failed:', error);
-
-                    const firebaseError = error as {
-                        code?: string;
-                        message?: string;
-                    };
-
-                    if (firebaseError.code === 'auth/popup-closed-by-user') {
-                        toast.error('Login cancelled by user.');
-                    } else if (
-                        firebaseError.code === 'auth/invalid-credential'
-                    ) {
-                        toast.error(
-                            'Invalid credentials. Check your Google OAuth setup.',
-                        );
-                    } else {
-                        toast.error(
-                            'Google login failed. Please try again later.',
-                        );
-                    }
-                } else {
-                    console.error('Unknown error during Google login:', error);
-                    toast.error('Unexpected error occurred. Please try again.');
-                }
+            // Sign in with Google
+            const result = await signInWithPopup(auth, provider);
+            const user = result.user;
+            if (!user.email) {
+                throw new Error('No email found in Google account.');
             }
-        });
+            const fullname = user.displayName?.trim() || 'Google User';
+            const email = user.email || '';
+
+            const savedData = await saveUser(user, fullname, email);
+            if (!savedData) throw new Error('Failed to save user data.');
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                console.error('Google login failed:', error);
+
+                const firebaseError = error as {
+                    code?: string;
+                    message?: string;
+                };
+
+                if (firebaseError.code === 'auth/popup-closed-by-user') {
+                    toast.error('Login cancelled by user.');
+                } else if (firebaseError.code === 'auth/invalid-credential') {
+                    toast.error(
+                        'Invalid credentials. Check your Google OAuth setup.',
+                    );
+                } else {
+                    toast.error('Google login failed. Please try again later.');
+                }
+            } else {
+                console.error('Unknown error during Google login:', error);
+                toast.error('Unexpected error occurred. Please try again.');
+            }
+        } finally {
+            setGooglePending(false);
+        }
     };
 
     const handleEmailLogin = async () => {
