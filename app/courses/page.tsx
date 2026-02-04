@@ -1,10 +1,14 @@
 'use client';
 
 import AllCoursesUI from '@/components/Courses/UI/AllCoursesUI';
+import { useCourseNavigation } from '@/hooks/useCourseNavigation';
+import { useSafeNavigation } from '@/hooks/useSearchNavigation';
 import { CoursesQuery } from '@/lib/firestore/courseQueries';
-import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export default function CoursesPage() {
+    const router = useRouter();
     const {
         user,
         fetchCourses,
@@ -14,6 +18,10 @@ export default function CoursesPage() {
         hasMore,
         loadingMore,
     } = CoursesQuery();
+    const [search, setSearch] = useState('');
+    const { goToSearchRes } = useSafeNavigation(search);
+    const { goToCourseView } = useCourseNavigation();
+
 
     // Initial fetch
     useEffect(() => {
@@ -45,6 +53,11 @@ export default function CoursesPage() {
             fetchingCourses={fetchingCourses}
             courses={courses}
             loadingMore={loadingMore}
+            search={search}
+            setSearch={setSearch}
+            goToSearchRes={goToSearchRes}
+            router={router}
+            goToCourseView={goToCourseView}
         />
     );
 }

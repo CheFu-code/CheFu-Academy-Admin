@@ -66,6 +66,7 @@ const CourseView = ({ course: initialCourse }: { course?: Course }) => {
             progress={progress}
             handleChapterClick={handleChapterClick}
             completedChaptersState={completedChaptersState}
+            router={router}
         />
     );
 };

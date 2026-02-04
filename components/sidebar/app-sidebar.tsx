@@ -1,12 +1,5 @@
 'use client';
 
-import {
-    IconDashboard,
-    IconListDetails,
-    IconMessage,
-    IconReport,
-    IconVideo,
-} from '@tabler/icons-react';
 import * as React from 'react';
 
 import { NavDocuments } from '@/components/sidebar/nav-documents';
@@ -28,37 +21,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
-
-const navMain = [
-    {
-        title: 'Dashboard',
-        url: '/admin/dashboard',
-        icon: IconDashboard,
-    },
-    {
-        title: 'Messages',
-        url: '/admin/messages',
-        icon: IconMessage,
-    },
-    {
-        title: 'Courses',
-        url: '/admin/courses',
-        icon: IconListDetails,
-    },
-    {
-        title: 'Videos',
-        url: '/admin/videos',
-        icon: IconVideo,
-    },
-];
-
-const documents = [
-    {
-        name: 'Reports',
-        url: '/admin/reports',
-        icon: IconReport,
-    },
-];
+import { documents, navMain } from '@/constants/Data';
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const [user, setUser] = useState<User | null>(null);
@@ -104,6 +67,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                     alt="CheFu Academy"
                                     width={30}
                                     height={30}
+                                    className='bg-muted-foreground/20 rounded-full'
                                 />
                                 <span className="text-base font-semibold">
                                     CheFu Academy

@@ -4,7 +4,6 @@ import { downloadCoursePDF_Office } from '@/helpers/downloadCourse';
 import { Course } from '@/types/course';
 import { Download } from 'lucide-react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { Badge } from '../ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 
@@ -13,13 +12,14 @@ const CourseBanner = ({
     courseTitle,
     category,
     course,
+    router,
 }: {
     banner_image: string;
     courseTitle: string;
     category: string;
     course: Course;
+    router: ReturnType<typeof import('next/navigation').useRouter>;
 }) => {
-    const router = useRouter();
     const goToSearch = (category: string) => {
         router.push(`/courses/search?query=${encodeURIComponent(category)}`);
     };

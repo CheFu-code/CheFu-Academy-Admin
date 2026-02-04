@@ -5,25 +5,23 @@ import {
     getMonthlyCourses,
     getMonthlyUsers,
     getMonthlyVideos,
+    getOpenTickets,
+    getOverdueTickets,
+    getPendingTickets,
+    getResolvedTickets,
     getTotalAPIKeys,
     getTotalCourses,
     getTotalUsers,
     getTotalVideos,
 } from '@/helpers/getAnalytics';
+import { subscribeToRecentTickets } from '@/services/tickets';
+import { Analytics } from '@/types/analytics';
+import { Ticket } from '@/types/supportTicket';
 import { useEffect, useState } from 'react';
 import DashboardUI from '../_components/UI/DashboardUI';
 
 const Dashboard = () => {
-    type Analytics = {
-        totalUsers: number | null;
-        monthlyUsers: number | null;
-        totalCourses: number | null;
-        monthlyCourses: number | null;
-        totalVideos: number | null;
-        monthlyVideos: number | null;
-        totalAPIKeys: number | null;
-        monthlyAPIKeys: number | null;
-    };
+    const [recentTickets, setRecentTickets] = useState<Ticket[]>([]);
 
     const [analytics, setAnalytics] = useState<Analytics>({
         totalUsers: null,
@@ -34,6 +32,10 @@ const Dashboard = () => {
         monthlyVideos: null,
         totalAPIKeys: null,
         monthlyAPIKeys: null,
+        openTickets: null,
+        pendingTickets: null,
+        resolvedTickets: null,
+        overdueTickets: null,
     });
     const [loading, setLoading] = useState(true);
 
@@ -49,6 +51,10 @@ const Dashboard = () => {
                     monthlyVideos,
                     totalAPIKeys,
                     monthlyAPIKeys,
+                    openTickets,
+                    pendingTickets,
+                    resolvedTickets,
+                    overdueTickets,
                 ] = await Promise.all([
                     getTotalUsers(),
                     getMonthlyUsers(),
@@ -58,6 +64,10 @@ const Dashboard = () => {
                     getMonthlyVideos(),
                     getTotalAPIKeys(),
                     getMonthlyAPIKeys(),
+                    getOpenTickets(),
+                    getPendingTickets(),
+                    getResolvedTickets(),
+                    getOverdueTickets(),
                 ]);
 
                 setAnalytics({
@@ -69,6 +79,10 @@ const Dashboard = () => {
                     monthlyVideos,
                     totalAPIKeys,
                     monthlyAPIKeys,
+                    openTickets,
+                    pendingTickets,
+                    resolvedTickets,
+                    overdueTickets,
                 });
             } catch (err) {
                 console.error('Dashboard fetch error:', err);
@@ -79,6 +93,12 @@ const Dashboard = () => {
 
         fetchAll();
     }, []);
+
+    useEffect(() => {
+        const unsubscribe = subscribeToRecentTickets(setRecentTickets);
+        return () => unsubscribe(); // cleanup on unmount
+    }, []);
+
     return (
         <DashboardUI
             totalUsers={analytics.totalUsers}
@@ -90,6 +110,11 @@ const Dashboard = () => {
             monthlyVideos={analytics.monthlyVideos}
             totalAPIKeys={analytics.totalAPIKeys}
             monthlyAPIKeys={analytics.monthlyAPIKeys}
+            recentTickets={recentTickets}
+            openTickets={analytics.openTickets}
+            pendingTickets={analytics.pendingTickets}
+            resolvedTickets={analytics.resolvedTickets}
+            overdueTickets={analytics.overdueTickets}
         />
     );
 };

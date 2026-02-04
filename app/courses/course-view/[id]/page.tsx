@@ -130,6 +130,7 @@ const CourseView = () => {
                     courseTitle={course.courseTitle}
                     category={course.category}
                     course={course}
+                    router={router}
                 />
             )}
 

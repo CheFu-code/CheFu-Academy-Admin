@@ -61,7 +61,7 @@ const ManageUsersUI: React.FC<ManageUsersProps> = ({
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                 <Header
                     header=" Manage Users"
-                    description="Search, view, and manage user access across your
+                    description="Manage user access across your
                         platform."
                 />
 

@@ -1,8 +1,6 @@
 'use client';
 
-import {
-    type Icon
-} from '@tabler/icons-react';
+import { type LucideIcon } from 'lucide-react';
 
 import {
     SidebarGroup,
@@ -18,7 +16,7 @@ export function NavDocuments({
     items: {
         name: string;
         url: string;
-        icon: Icon;
+        icon: LucideIcon;
     }[];
 }) {
 

@@ -1,8 +1,8 @@
 import React from 'react';
-import AdminDashboard from './_components/UI/AdminDashboard';
+import Dashboard from './dashboard/page';
 
 const AdminIndexPage = () => {
-    return <AdminDashboard />;
+    return <Dashboard />;
 };
 
 export default AdminIndexPage;

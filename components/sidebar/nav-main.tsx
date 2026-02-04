@@ -42,7 +42,7 @@ export function NavMain({
 
                         <Button
                             size="icon"
-                            className="size-8 group-data-[collapsible=icon]:opacity-0"
+                            className="size-8 group-data-[collapsible=icon]:opacity-0 cursor-pointer"
                             variant="outline"
                         >
                             <IconMail />
