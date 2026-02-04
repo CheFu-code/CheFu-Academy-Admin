@@ -50,7 +50,9 @@ const Stats = ({
                     {loading ? (
                         <Loader className="animate-spin size-4" />
                     ) : (
-                        <div className="text-2xl font-bold">{totalCourses}</div>
+                        <div className="text-2xl font-bold">
+                            {totalCourses ?? '—'}
+                        </div>
                     )}
                     <p className="text-xs text-muted-foreground">
                         {monthlyCourses !== null
@@ -71,7 +73,9 @@ const Stats = ({
                     {loading ? (
                         <Loader className="animate-spin size-4" />
                     ) : (
-                        <div className="text-2xl font-bold">{totalVideos}</div>
+                        <div className="text-2xl font-bold">
+                            {totalVideos ?? '—'}
+                        </div>
                     )}
                     <p className="text-xs text-muted-foreground">
                         {monthlyVideos !== null
@@ -92,7 +96,9 @@ const Stats = ({
                     {loading ? (
                         <Loader className="animate-spin size-4" />
                     ) : (
-                        <div className="text-2xl font-bold">{totalAPIKeys}</div>
+                        <div className="text-2xl font-bold">
+                            {totalAPIKeys ?? '—'}
+                        </div>
                     )}
                     <p className="text-xs text-muted-foreground">
                         {monthlyAPIKeys !== null

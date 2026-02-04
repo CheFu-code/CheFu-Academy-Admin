@@ -8,25 +8,32 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { useCourseNavigation } from '@/hooks/useCourseNavigation';
+import { Input } from '@/components/ui/input';
 import { Course } from '@/types/course';
-import { PlusSquare } from 'lucide-react';
+import { PlusSquare, Search } from 'lucide-react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { Dispatch, SetStateAction } from 'react';
 import EmptyCourse from './EmptyCourse';
 
 const AllCoursesUI = ({
     fetchingCourses,
     courses,
     loadingMore,
+    search,
+    setSearch,
+    goToSearchRes,
+    router,
+    goToCourseView,
 }: {
     fetchingCourses: boolean;
     courses: Course[];
     loadingMore: boolean;
+    search: string;
+    setSearch: Dispatch<SetStateAction<string>>;
+    goToSearchRes: () => void;
+    router: ReturnType<typeof import('next/navigation').useRouter>;
+    goToCourseView: (courseId: string) => void;
 }) => {
-    const router = useRouter();
-    const { goToCourseView } = useCourseNavigation();
-
     return (
         <div className="min-h-screen px-4">
             {/* Header */}
@@ -43,6 +50,25 @@ const AllCoursesUI = ({
                         <PlusSquare className="size-5" />
                     </button>
                 </div>
+            </div>
+            <div className="relative mt-1">
+                <Input
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Search courses by name, category..."
+                    aria-label="Search courses"
+                />
+
+                {search && (
+                    <button
+                        type="button"
+                        onClick={() => goToSearchRes()}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition"
+                        aria-label="Go to search"
+                    >
+                        <Search className="h-4 w-4 cursor-pointer" />
+                    </button>
+                )}
             </div>
 
             {fetchingCourses ? (

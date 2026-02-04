@@ -36,7 +36,14 @@ export default function DashboardUI({
                     description="Overview of CheFu Academy"
                 />
 
-                <Button variant="outline" size="icon">
+                <Button
+                    variant="outline"
+                    size="icon"
+                    className="cursor-pointer relative"
+                >
+                    <span className="absolute left-5 -top-1 text-sm font-bold text-green-500">
+                        {openTickets ?? ''}
+                    </span>
                     <Bell className="h-5 w-5" />
                 </Button>
             </div>

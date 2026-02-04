@@ -1,42 +1,19 @@
-'use client';
-
-import { fetchUploadedVideos } from '@/services/videoService';
-import { Video } from '@/types/video';
 import Image from 'next/image';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
 import Header from './Shared/Header';
 import VideoCardSkeleton from './skeletons/VideoCardSkeleton';
+import { Video } from '@/types/video';
 
-const SearchContent = () => {
-    const searchParams = useSearchParams();
-    const query = searchParams.get('query') || '';
-    const router = useRouter();
-    const [videos, setVideos] = useState<Video[]>([]);
-    const [loading, setLoading] = useState(false);
-
-    useEffect(() => {
-        const fetchFilteredVideos = async () => {
-            setLoading(true);
-            try {
-                const allVideos = await fetchUploadedVideos();
-                const filtered = allVideos.filter((v) => v.category === query);
-                setVideos(filtered);
-            } catch (err) {
-                console.error('Failed to fetch videos:', err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchFilteredVideos();
-    }, [query]);
-
-    const goToVidDetails = (videoId?: string) => {
-        if (!videoId) return;
-        router.push(`/videos/details/${videoId}`);
-    };
-
+const SearchContent = ({
+    loading,
+    videos,
+    goToVidDetails,
+    query,
+}: {
+    loading: boolean;
+    videos: Video[];
+    goToVidDetails: (videoId?: string | undefined) => void;
+    query: string;
+}) => {
     if (loading) return <VideoCardSkeleton />;
 
     return (

@@ -1,10 +1,18 @@
 import { featureProps } from '@/types/feature';
 import {
+    IconDashboard,
+    IconListDetails,
+    IconMessage,
+    IconReport,
+    IconVideo,
+} from '@tabler/icons-react';
+import {
     BookMarked,
     Puzzle,
     ShieldCheck,
     ChartSpline,
     HandFist,
+    Ticket,
 } from 'lucide-react';
 
 export const features: featureProps[] = [
@@ -131,3 +139,35 @@ export const supportKpis = {
     resolvedToday: 8,
     overdue: 3,
 };
+
+export const navMain = [
+    {
+        title: 'Dashboard',
+        url: '/admin/dashboard',
+        icon: IconDashboard,
+    },
+    {
+        title: 'Messages',
+        url: '/admin/messages',
+        icon: IconMessage,
+    },
+    {
+        title: 'Courses',
+        url: '/admin/courses',
+        icon: IconListDetails,
+    },
+    {
+        title: 'Videos',
+        url: '/admin/videos',
+        icon: IconVideo,
+    },
+];
+
+export const documents = [
+    {
+        name: 'Reports',
+        url: '/admin/reports',
+        icon: IconReport,
+    },
+    { name: 'Support Tickets', url: '/admin/support-tickets', icon: Ticket },
+];
