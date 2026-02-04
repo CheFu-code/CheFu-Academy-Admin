@@ -19,6 +19,7 @@ const CourseViewUI = ({
     progress,
     handleChapterClick,
     completedChaptersState,
+    router,
 }: {
     course: Course;
     completedChapters: number;
@@ -26,6 +27,7 @@ const CourseViewUI = ({
     progress: number;
     handleChapterClick: (idx: number) => Promise<void>;
     completedChaptersState: string[];
+    router: ReturnType<typeof import('next/navigation').useRouter>;
 }) => {
     return (
         <div className="p-4 max-w-5xl mx-auto space-y-6">
@@ -35,6 +37,7 @@ const CourseViewUI = ({
                     courseTitle={course.courseTitle}
                     category={course.category}
                     course={course}
+                    router={router}
                 />
             )}
 
