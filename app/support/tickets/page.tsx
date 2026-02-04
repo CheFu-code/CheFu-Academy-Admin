@@ -67,20 +67,20 @@ const SupportTickets = () => {
                     Math.random().toString(36).substr(2, 9).toUpperCase();
 
             const status: TicketStatus = 'open';
-            const updatedAt = new Date().toISOString();
+            const updatedAt = new Date()
 
             const ticket: Ticket = {
                 id,
                 title: title.trim(),
                 message: message.trim(),
-                createdAt: new Date().toISOString(),
+                createdAt: new Date(),
                 email: user?.email || '',
                 userId: user?.uid || '',
                 status,
                 priority,
                 userName: user?.fullname || 'Anonymous',
                 updatedAt,
-                overdue: computeOverdue(updatedAt, priority, status),
+                overdue: computeOverdue(updatedAt.toISOString(), priority, status),
             };
 
             const ticketRef = doc(db, 'support-tickets', id);
