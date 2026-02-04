@@ -13,14 +13,17 @@ const SupportTickets = () => {
 
     useEffect(() => {
         setLoading(true);
-        try {
-            const unsubscribe = subscribeToAllTickets(setAllTickets);
-            return () => unsubscribe(); // cleanup on unmount
-        } catch (error) {
-            console.error('error fetching all tickets', error);
-        } finally {
-            setLoading(false);
-        }
+        const unsubscribe = subscribeToAllTickets(
+            (tickets) => {
+                setAllTickets(tickets);
+                setLoading(false);
+            },
+            (error) => {
+                console.error('error fetching all tickets', error);
+                setLoading(false);
+            },
+        );
+        return () => unsubscribe();
     }, []);
     return (
         <GetAllSupportTickets

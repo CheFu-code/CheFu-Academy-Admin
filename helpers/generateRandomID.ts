@@ -1,4 +1,6 @@
-
 export const generateTicketID = () => {
-    return 'TICKET-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+    const alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const bytes = crypto.getRandomValues(new Uint8Array(9));
+    const id = Array.from(bytes, (b) => alphabet[b % alphabet.length]).join('');
+    return `TICKET-${id}`;
 };

@@ -13,16 +13,14 @@ type Theme = {
 };
 
 const lightTheme: Theme = {
-    primary: '#2563EB',   // blue-600
-    text: '#111827',      // gray-900
-    subtleText: '#6B7280',// gray-500
-    divider: '#E5E7EB',   // gray-200
-    chipBg: '#EFF6FF',    // blue-50
-    chipText: '#1E40AF',  // blue-800
+    primary: '#2563EB', // blue-600
+    text: '#111827', // gray-900
+    subtleText: '#6B7280', // gray-500
+    divider: '#E5E7EB', // gray-200
+    chipBg: '#EFF6FF', // blue-50
+    chipText: '#1E40AF', // blue-800
     bg: '#FFFFFF',
 };
-
-
 
 type PdfOptions = {
     theme?: Theme;
@@ -52,7 +50,9 @@ export function downloadTicketPDF(ticket: Ticket, options: PdfOptions = {}) {
 
     // Helpers
     const addPageNumberFooter = () => {
-        const internalWithPager = doc as unknown as { internal: { getNumberOfPages: () => number } };
+        const internalWithPager = doc as unknown as {
+            internal: { getNumberOfPages: () => number };
+        };
         const pageCount = internalWithPager.internal.getNumberOfPages();
         for (let i = 1; i <= pageCount; i++) {
             doc.setPage(i);
@@ -60,7 +60,11 @@ export function downloadTicketPDF(ticket: Ticket, options: PdfOptions = {}) {
             doc.setTextColor(theme.subtleText);
             const text = `Page ${i} of ${pageCount}`;
             const textWidth = doc.getTextWidth(text);
-            doc.text(text, doc.internal.pageSize.getWidth() - margin - textWidth, pageHeight - margin / 2);
+            doc.text(
+                text,
+                doc.internal.pageSize.getWidth() - margin - textWidth,
+                pageHeight - margin / 2,
+            );
         }
     };
 
@@ -89,7 +93,8 @@ export function downloadTicketPDF(ticket: Ticket, options: PdfOptions = {}) {
         y: number,
         width: number,
     ) => {
-        const safe = (v: string | number | null | undefined) => (v === null || v === undefined || v === '' ? '—' : String(v));
+        const safe = (v: string | number | null | undefined) =>
+            v === null || v === undefined || v === '' ? '—' : String(v);
         const labelSize = 10;
         const valueSize = 12;
 
@@ -111,20 +116,23 @@ export function downloadTicketPDF(ticket: Ticket, options: PdfOptions = {}) {
 
         return valueY + (wrapped.length - 1) * lineHeight + 8; // next Y
     };
+    const fillBackground = () => {
+        if (theme.bg !== '#FFFFFF') {
+            doc.setFillColor(theme.bg);
+            doc.rect(0, 0, doc.internal.pageSize.getWidth(), pageHeight, 'F');
+        }
+    };
 
     const ensureSpace = (y: number, needed: number) => {
         if (y + needed > pageHeight - margin) {
             doc.addPage();
+            fillBackground();
             return margin;
         }
         return y;
     };
 
-    // Background (for dark theme or subtle tinting)
-    if (theme.bg !== '#FFFFFF') {
-        doc.setFillColor(theme.bg);
-        doc.rect(0, 0, doc.internal.pageSize.getWidth(), pageHeight, 'F');
-    }
+    fillBackground();
 
     // Header
     let y = margin;
@@ -134,7 +142,16 @@ export function downloadTicketPDF(ticket: Ticket, options: PdfOptions = {}) {
     // Logo (optional)
     if (logoDataUrl) {
         try {
-            doc.addImage(logoDataUrl, 'PNG', margin, y - 8, logoSize, logoSize, '', 'FAST');
+            doc.addImage(
+                logoDataUrl,
+                'PNG',
+                margin,
+                y - 8,
+                logoSize,
+                logoSize,
+                '',
+                'FAST',
+            );
         } catch {
             // If image fails, skip gracefully
         }
@@ -185,7 +202,13 @@ export function downloadTicketPDF(ticket: Ticket, options: PdfOptions = {}) {
 
     // Right column: User, Assigned (if present), Created/Updated (if you have these)
     let rightY = y;
-    rightY = drawLabelValue('User', (ticket as Ticket).userName || '—', margin + colWidth + colGap, rightY, colWidth);
+    rightY = drawLabelValue(
+        'User',
+        (ticket as Ticket).userName || '—',
+        margin + colWidth + colGap,
+        rightY,
+        colWidth,
+    );
 
     // Optional fields (uncomment if your Ticket type has them)
     // rightY = drawLabelValue('Assigned To', (ticket as any).assignee || '—', margin + colWidth + colGap, rightY, colWidth);
@@ -227,7 +250,11 @@ export function downloadTicketPDF(ticket: Ticket, options: PdfOptions = {}) {
     doc.setFont('Helvetica', 'italic');
     doc.setFontSize(10);
     doc.setTextColor(theme.subtleText);
-    doc.text('This document was generated automatically from the support system.', margin, y);
+    doc.text(
+        'This document was generated automatically from the support system.',
+        margin,
+        y,
+    );
 
     // Page numbers
     addPageNumberFooter();

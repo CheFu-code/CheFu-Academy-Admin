@@ -32,7 +32,7 @@ const GetAllSupportTickets = ({
                             <Loader className="size-4 animate-spin" />
                             Loading tickets…
                         </div>
-                    ) : allTickets?.length === 0 && loading ? (
+                    ) : allTickets?.length === 0 ? (
                         <NoTicket />
                     ) : (
                         allTickets?.map((t) => (

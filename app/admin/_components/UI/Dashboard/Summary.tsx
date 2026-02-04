@@ -13,10 +13,10 @@ const Summary = ({
     overdueTickets,
 }: {
     loading: boolean;
-    openTickets: number;
-    pendingTickets: number;
-    resolvedTickets: number;
-    overdueTickets: number;
+    openTickets: number | null; 
+    pendingTickets: number | null;
+    resolvedTickets: number | null;
+    overdueTickets: number | null;
 }) => {
     const router = useRouter();
     return (
