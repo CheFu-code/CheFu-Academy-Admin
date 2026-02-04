@@ -136,7 +136,7 @@ const Feedback = () => {
 
                             <Button
                                 type="submit"
-                                className="w-full cursor-pointer sm:w-auto bg-blue-600 hover:bg-blue-700 text-sm sm:text-base"
+                                className="w-full cursor-pointer sm:w-auto text-sm sm:text-base"
                                 disabled={
                                     loading ||
                                     !name.trim() ||
@@ -144,7 +144,7 @@ const Feedback = () => {
                                     !message.trim()
                                 }
                             >
-                                {loading ? 'Submitting...' : 'Submit Feedback'}
+                                {loading ? 'Submitting...' : 'Submit'}
                             </Button>
                         </form>
                     </CardContent>

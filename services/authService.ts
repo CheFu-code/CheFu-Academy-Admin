@@ -1,4 +1,4 @@
-import { BACKEND_URL, DEFAULT_PREFS } from "@/constants/Data";
+import { BACKEND_URL, DEFAULT_PREFERENCES } from "@/constants/Data";
 import { db } from "@/lib/firebase";
 import { User } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
@@ -45,7 +45,7 @@ export const saveUser = async (user: User, fullname: string, email: string) => {
                 createdAt: now,
                 updatedAt: now,
                 uid: user.uid,
-                emailPreferences: DEFAULT_PREFS,
+                emailPreferences: DEFAULT_PREFERENCES,
                 profilePicture: userPhoto,
                 lastLogin: now,
                 provider: userProvider,

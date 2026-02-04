@@ -118,7 +118,7 @@ export const SDK_URL = 'https://chefu-academy-sdk.onrender.com';
 export const WEBSITE_URL = 'https://chefu-academy.vercel.app';
 export const BACKEND_URL = 'https://chefu-academy-tmzx.onrender.com';
 
-export const DEFAULT_PREFS = {
+export const DEFAULT_PREFERENCES = {
     general: false,
     marketing: false,
     activity: false,
