@@ -8,10 +8,11 @@ import { useRouter } from 'next/navigation';
 
 const SupportTickets = () => {
     const router = useRouter();
-    const [loading, setLoading] = useState<boolean>(true);
+    const [loading, setLoading] = useState<boolean>(false);
     const [allTickets, setAllTickets] = useState<Ticket[]>([]);
 
     useEffect(() => {
+        setLoading(true);
         try {
             const unsubscribe = subscribeToAllTickets(setAllTickets);
             return () => unsubscribe(); // cleanup on unmount

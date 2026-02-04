@@ -52,7 +52,7 @@ export default function TicketDetailClient({
             if (!res.ok) throw new Error('Failed to send reply');
             // After success: clear input, remove ?action=reply, and/or refresh data
             setReplyText('');
-            const newUrl = `/admin/support/${ticket.id}`; // strip query
+            const newUrl = `/admin/support/reply/${ticket.id}`; // strip query
             router.replace(newUrl); // or router.refresh() if you prefer
         } catch (e) {
             console.error(e);
@@ -63,12 +63,12 @@ export default function TicketDetailClient({
     }
 
     function openReply() {
-        const url = `/admin/support/${ticket.id}?action=reply`;
+        const url = `/admin/support/reply/${ticket.id}?action=reply`;
         router.replace(url);
     }
 
     function cancelReply() {
-        const url = `/admin/support/${ticket.id}`;
+        const url = `/admin/support/reply/${ticket.id}`;
         router.replace(url);
     }
 

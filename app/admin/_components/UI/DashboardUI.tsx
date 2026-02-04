@@ -63,18 +63,18 @@ export default function DashboardUI({
             {/* Support Tickets / Issues Section */}
             <div className="mt-8 grid gap-6 lg:grid-cols-3">
                 {/* Summary / KPI Cards */}
-                {/* {openTickets &&
+                {openTickets &&
                     pendingTickets &&
                     resolvedTickets &&
-                    overdueTickets && ( */}
-                <Summary
-                    openTickets={openTickets}
-                    pendingTickets={pendingTickets}
-                    resolvedTickets={resolvedTickets}
-                    overdueTickets={overdueTickets}
-                    loading={loading}
-                />
-                {/* )} */}
+                    overdueTickets && (
+                        <Summary
+                            openTickets={openTickets}
+                            pendingTickets={pendingTickets}
+                            resolvedTickets={resolvedTickets}
+                            overdueTickets={overdueTickets}
+                            loading={loading}
+                        />
+                    )}
 
                 {/* Tickets List */}
                 <TicketsList

@@ -32,7 +32,7 @@ const GetAllSupportTickets = ({
                             <Loader className="size-4 animate-spin" />
                             Loading tickets…
                         </div>
-                    ) : allTickets?.length === 0 ? (
+                    ) : allTickets?.length === 0 && loading ? (
                         <NoTicket />
                     ) : (
                         allTickets?.map((t) => (
@@ -96,7 +96,7 @@ const GetAllSupportTickets = ({
                                         className="cursor-pointer"
                                         onClick={() =>
                                             router.push(
-                                                `/admin/support/${t.id}`,
+                                                `/admin/support/reply/${t.id}`,
                                             )
                                         }
                                     >
@@ -109,7 +109,7 @@ const GetAllSupportTickets = ({
                                             className="cursor-pointer"
                                             onClick={() =>
                                                 router.push(
-                                                    `/admin/support/${t.id}?action=reply`,
+                                                    `/admin/support/reply/${t.id}?action=reply`,
                                                 )
                                             }
                                         >
