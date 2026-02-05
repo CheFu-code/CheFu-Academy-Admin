@@ -61,13 +61,17 @@ const SetupModal = ({
                         <p className="text-xs text-gray-500 flex items-center">
                             Secret (fallback):{' '}
                             <span className="font-mono">{secretText}</span>
-                            <Copy
+                            <button
+                                type="button"
+                                aria-label="Copy TOTP secret"
                                 onClick={() => {
                                     navigator.clipboard.writeText(secretText);
                                     toast.success('Copied to clipboard');
                                 }}
-                                className="size-3 ml-2 hover:text-primary cursor-pointer"
-                            />
+                                className="ml-2"
+                            >
+                                <Copy className="size-3 hover:text-primary" />
+                            </button>
                         </p>
                     )}
 

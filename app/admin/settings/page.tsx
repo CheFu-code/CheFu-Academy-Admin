@@ -125,6 +125,7 @@ const SystemSettings = () => {
             } else {
                 toast.error(fbError.message);
             }
+            throw error;
         }
     };
 
@@ -139,7 +140,12 @@ const SystemSettings = () => {
                 await TotpMultiFactorGenerator.generateSecret(session);
 
             // Build QR URI & image
-            const uri = secret.generateQrCodeUrl(u.email!, 'CheFu Academy'); // show in authenticator
+            if (!u.email) {
+                throw new Error(
+                    'Email is required to generate the TOTP QR code.',
+                );
+            }
+            const uri = secret.generateQrCodeUrl(u.email, 'CheFu Academy'); // show in authenticator
             const dataUrl = await QRCode.toDataURL(uri);
 
             setTotpSecret(secret);
