@@ -1,5 +1,4 @@
 // utils/download-pdf.ts
-import { now } from '@/constants/Data';
 import { Ticket } from '@/types/supportTicket';
 import jsPDF from 'jspdf';
 
@@ -164,7 +163,7 @@ export function downloadTicketPDF(ticket: Ticket, options: PdfOptions = {}) {
     doc.setFontSize(18);
     doc.setTextColor(theme.text);
     doc.text(title, titleX, y + 8);
-
+    const now = new Date();
     doc.setFont('Helvetica', 'normal');
     doc.setFontSize(11);
     doc.setTextColor(theme.subtleText);

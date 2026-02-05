@@ -17,7 +17,6 @@ import {
     Ticket,
 } from 'lucide-react';
 
-export const now = new Date();
 export const features: featureProps[] = [
     {
         title: 'Comprehensive Courses',

@@ -1,5 +1,4 @@
 // utils/exportAllReportsToPDF.ts
-import { now } from '@/constants/Data';
 import type { Report } from '@/types/reports';
 
 export const exportAllReportsToPDF = async (
@@ -30,7 +29,7 @@ export const exportAllReportsToPDF = async (
     });
     doc.save('report.pdf');
 
-
+const now=new Date();
 
     const formattedDate = now.toLocaleString(undefined, {
         year: 'numeric',

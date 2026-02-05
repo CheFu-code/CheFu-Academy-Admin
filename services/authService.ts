@@ -1,29 +1,29 @@
-import { BACKEND_URL, DEFAULT_PREFERENCES, now } from "@/constants/Data";
-import { db } from "@/lib/firebase";
-import { User } from "firebase/auth";
-import { doc, getDoc, setDoc } from "firebase/firestore";
-import os from "os";
-import { toast } from "sonner";
+import { BACKEND_URL, DEFAULT_PREFERENCES } from '@/constants/Data';
+import { db } from '@/lib/firebase';
+import { User } from 'firebase/auth';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import os from 'os';
+import { toast } from 'sonner';
 
 export const saveUser = async (user: User, fullname: string, email: string) => {
     try {
         const deviceInfo = {
-            platform: os.platform(),        // 'darwin', 'win32', 'linux'
-            osType: os.type(),              // 'Linux', 'Darwin', 'Windows_NT'
-            osRelease: os.release(),        // OS version
-            arch: os.arch(),                // 'x64', 'arm', etc.
+            platform: os.platform(), // 'darwin', 'win32', 'linux'
+            osType: os.type(), // 'Linux', 'Darwin', 'Windows_NT'
+            osRelease: os.release(), // OS version
+            arch: os.arch(), // 'x64', 'arm', etc.
         };
 
         const userEmail = (user.email ?? email)?.trim();
 
-        const userFullName = user.displayName || fullname || "";
+        const userFullName = user.displayName || fullname || '';
         const userPhoto = user?.photoURL ?? null;
         const userProvider =
-            user?.providerData?.[0]?.providerId ?? user?.providerId ?? "email";
+            user?.providerData?.[0]?.providerId ?? user?.providerId ?? 'email';
 
-        const userDocRef = doc(db, "users", userEmail);
+        const userDocRef = doc(db, 'users', userEmail);
         const userDoc = await getDoc(userDocRef);
-
+        const now = new Date();
 
         if (userDoc.exists()) {
             const existingData = userDoc.data();
@@ -33,7 +33,7 @@ export const saveUser = async (user: User, fullname: string, email: string) => {
                 updatedAt: now,
             };
             await setDoc(userDocRef, updatedData, { merge: true });
-            toast.success("Welcome back!");
+            toast.success('Welcome back!');
             return updatedData;
         } else {
             const data = {
@@ -49,39 +49,37 @@ export const saveUser = async (user: User, fullname: string, email: string) => {
                 lastLogin: now,
                 provider: userProvider,
                 onboardingComplete: false,
-                roles: ["Student"],
-                bio: "",
-                language: "en",
-                subscriptionStatus: "free",
+                roles: ['Student'],
+                bio: '',
+                language: 'en',
+                subscriptionStatus: 'free',
                 deviceInfo,
             };
 
             const cleanData = Object.fromEntries(
-                Object.entries(data).filter(([_, v]) => v !== undefined)
+                Object.entries(data).filter(([_, v]) => v !== undefined),
             );
 
             await setDoc(userDocRef, cleanData);
             await sendWelcomeEmail(userEmail, userFullName);
-            toast.success("Welcome! Your account has been created.");
+            toast.success('Welcome! Your account has been created.');
             return cleanData;
         }
     } catch (e) {
-        throw new Error(`Failed to save your data. Please try again later. ${e}`);
+        throw new Error(
+            `Failed to save your data. Please try again later. ${e}`,
+        );
     }
 };
 
-
 const sendWelcomeEmail = async (email: string, name: string) => {
     try {
-        await fetch(
-            `${BACKEND_URL}/api/email/send-welcome`,
-            {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, name }),
-            }
-        );
+        await fetch(`${BACKEND_URL}/api/email/send-welcome`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, name }),
+        });
     } catch (error) {
-        console.error("Failed to send welcome email:", error);
+        console.error('Failed to send welcome email:', error);
     }
 };

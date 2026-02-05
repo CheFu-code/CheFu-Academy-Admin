@@ -1,7 +1,6 @@
 'use client';
 
 import TicketDetailUI from '@/app/admin/_components/UI/Tickets/TicketDetailUI';
-import { now } from '@/constants/Data';
 import { useAuthUser } from '@/hooks/useAuthUser';
 import { db } from '@/lib/firebase';
 import { TicketStatus } from '@/types/supportTicket';
@@ -98,7 +97,8 @@ export default function TicketDetailClient({ ticket, action }: Props) {
             });
 
             const ticketRef = doc(db, 'support-tickets', ticket.id);
-            const nextStatus: TicketStatus = ticket.status; // no change
+            const nextStatus: TicketStatus = ticket.status;
+            const now = new Date(); // no change
             const nowISO = now.toISOString();
             const nextOverdue = computeOverdue(
                 nowISO,
@@ -111,7 +111,7 @@ export default function TicketDetailClient({ ticket, action }: Props) {
                 updatedAtServer: serverTimestamp(),
                 updatedAt: new Date(), // optional if you already show serverTimestamp in UI
                 overdue: nextOverdue,
-                asAgentReply: true,
+                hasAgentReply: true,
                 lastAgentReplyAt: now,
             });
 

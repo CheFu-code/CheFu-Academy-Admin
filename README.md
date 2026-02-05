@@ -65,7 +65,7 @@ This is a high-level view of the repository. The exact structure may vary as the
 
 Ensure you have the following installed:
 
-- Node.js v18 or higher
+- Node.js 18.18.0 or higher
 - npm or yarn
 
 ### Installation
