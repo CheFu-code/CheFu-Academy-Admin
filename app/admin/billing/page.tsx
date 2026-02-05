@@ -14,7 +14,6 @@ import { JSX } from 'react';
 const Billing = () => {
     return (
         <div className=" w-full flex flex-col gap-10">
-            {/* PAGE HEADER */}
             <div className="flex items-center justify-between">
                 <Header
                     header="Billing Administration"
@@ -27,8 +26,7 @@ const Billing = () => {
                 </Button>
             </div>
 
-            {/* TOP ANALYTICS STRIP (NEW STYLE) */}
-            <Card className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <AnalyticsItem
                     icon={<DollarSign className="h-6 w-6 text-green-400" />}
                     title="Total Revenue"
@@ -49,9 +47,8 @@ const Billing = () => {
                     value="$4,920.00"
                     subtitle="Instructor & partner earnings"
                 />
-            </Card>
+            </div>
 
-            {/* HORIZONTAL PANEL – 100% WIDTH SECTION */}
             <Card className="p-6">
                 <div className="flex items-center justify-between">
                     <h2 className="text-xl font-semibold flex items-center gap-2">
@@ -71,9 +68,7 @@ const Billing = () => {
                 </div>
             </Card>
 
-            {/* TWO COLUMN ADMIN BLOCKS */}
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                {/* TRANSACTIONS TABLE */}
                 <Card className="p-6">
                     <h2 className="text-xl font-semibold mb-4">
                         Recent Transactions
@@ -90,7 +85,6 @@ const Billing = () => {
                     </div>
                 </Card>
 
-                {/* ALERTS / BILLING STATUS */}
                 <Card className=" p-6">
                     <h2 className="text-xl font-semibold mb-4">
                         Billing Alerts
@@ -109,17 +103,13 @@ const Billing = () => {
 
 export default Billing;
 
-/* --------------------------------------
-   SUB COMPONENTS (UNIQUE NEW DESIGN)
---------------------------------------- */
-
 const AnalyticsItem = ({ icon, title, value, subtitle }:{
     icon: JSX.Element;
     title: string;
     value: string;
     subtitle: string;
 }) => (
-    <div className="p-4 rounded-xl shadow-sm">
+    <div className="p-4 dark:bg-gray-900 bg-primary-foreground rounded-xl shadow-sm">
         <div className="flex items-center gap-3 mb-4">
             {icon}
             <div>
