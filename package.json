@@ -5,6 +5,9 @@
     "scripts": {
         "dev": "next dev --turbopack",
         "build": "next build --turbopack",
+        "enable:totp": "tsx services/enable-totp-mfa.ts",
+        "enable": "ts-node services/enable-totp-mfa.ts",
+        "disable:totp": "tsx services/disable-totp-mfa.ts",
         "start": "next start",
         "lint": "eslint"
     },
@@ -73,6 +76,8 @@
         "@types/react": "^19",
         "@types/react-dom": "^19",
         "@types/react-syntax-highlighter": "^15.5.13",
+        "ts-node": "^10.9.2",
+        "tsx": "^4.21.0",
         "autoprefixer": "^10.4.21",
         "eslint": "^9",
         "eslint-config-next": "15.5.2",
