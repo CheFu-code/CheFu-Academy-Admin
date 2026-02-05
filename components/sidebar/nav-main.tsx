@@ -11,6 +11,10 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import { getTotalUnreadTickets } from '@/helpers/getAnalytics';
+import { Analytics2 } from '@/types/analytics';
+import { Loader } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 export function NavMain({
     items,
@@ -21,6 +25,30 @@ export function NavMain({
         icon?: Icon;
     }[];
 }) {
+    const [loading, setLoading] = useState(true);
+    const [analytics, setAnalytics] = useState<Analytics2>({
+        unreadTicket: null,
+    });
+
+    useEffect(() => {
+        const fetchAll = async () => {
+            try {
+                const [unreadTicket] = await Promise.all([
+                    getTotalUnreadTickets(),
+                ]);
+
+                setAnalytics({
+                    unreadTicket,
+                });
+            } catch (err) {
+                console.error('oops fetch error:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchAll();
+    }, []);
     return (
         <SidebarGroup>
             <SidebarGroupContent className="flex flex-col gap-2">
@@ -42,11 +70,25 @@ export function NavMain({
 
                         <Button
                             size="icon"
-                            className="size-8 group-data-[collapsible=icon]:opacity-0 cursor-pointer"
+                            className="size-8 relative group-data-[collapsible=icon]:opacity-0"
                             variant="outline"
                         >
                             <IconMail />
-                            <span className="sr-only">Inbox</span>
+                            {loading ? (
+                                <Loader
+                                    className="inline-block size-4 animate-spin text-muted-foreground"
+                                    aria-label="Loading unread tickets"
+                                />
+                            ) : Number(analytics.unreadTicket) > 0 ? (
+                                <span
+                                    className="text-green-500 font-semibold absolute -top-1.5 left-5"
+                                    aria-label={`${analytics.unreadTicket} unread tickets`}
+                                >
+                                    {Number(analytics.unreadTicket) > 99
+                                        ? '99+'
+                                        : analytics.unreadTicket}
+                                </span>
+                            ) : null}
                         </Button>
                     </SidebarMenuItem>
                 </SidebarMenu>

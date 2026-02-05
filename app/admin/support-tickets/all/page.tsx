@@ -1,12 +1,11 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import GetAllSupportTickets from '../../_components/UI/Dashboard/GetAllSupportTickets';
+import { PRIORITY_VALUES } from '@/constants/Data';
 import { subscribeToAllTickets } from '@/services/tickets';
 import { Ticket } from '@/types/supportTicket';
 import { useRouter } from 'next/navigation';
-import { PRIORITY_VALUES } from '@/constants/Data';
-
+import React, { useEffect, useState } from 'react';
+import GetAllSupportTickets from '../../_components/UI/Dashboard/GetAllSupportTickets';
 
 export type StatusFilter = Ticket['status'] | 'all';
 export type PriorityFilter = (typeof PRIORITY_VALUES)[number];
@@ -97,6 +96,9 @@ const SupportTickets = () => {
         );
         return () => unsubscribe();
     }, []);
+
+
+    
     return (
         <GetAllSupportTickets
             filteredTickets={filteredTickets}

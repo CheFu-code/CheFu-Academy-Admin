@@ -95,3 +95,10 @@ export const getOverdueTickets = async () => {
     const snapshot = await getCountFromServer(q)
     return snapshot.data().count
 }
+
+export const getTotalUnreadTickets = async () => {
+    const ticketRef = collection(db, 'support-tickets')
+    const q = query(ticketRef, where('hasAgentReply', '==', false))
+    const snapshot = await getCountFromServer(q)
+    return snapshot.data().count
+}

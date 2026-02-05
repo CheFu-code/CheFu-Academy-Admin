@@ -254,7 +254,7 @@ const ManageUsersUI: React.FC<ManageUsersProps> = ({
                                                                 }
                                                                 variant="destructive"
                                                                 size="sm"
-                                                                className="gap-2 cursor-pointer"
+                                                                className="cursor-pointer"
                                                                 onClick={() =>
                                                                     openDeleteModal(
                                                                         user,

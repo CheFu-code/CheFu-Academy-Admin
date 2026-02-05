@@ -11,6 +11,7 @@ import {
     getResolvedTickets,
     getTotalAPIKeys,
     getTotalCourses,
+    getTotalUnreadTickets,
     getTotalUsers,
     getTotalVideos,
 } from '@/helpers/getAnalytics';
@@ -68,6 +69,7 @@ const Dashboard = () => {
                     getPendingTickets(),
                     getResolvedTickets(),
                     getOverdueTickets(),
+                    getTotalUnreadTickets(),
                 ]);
 
                 setAnalytics({
