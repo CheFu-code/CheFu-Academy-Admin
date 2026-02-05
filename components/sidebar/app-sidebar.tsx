@@ -21,7 +21,8 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
-import { documents, navMain } from '@/constants/Data';
+import { advanced, documents, navMain } from '@/constants/Data';
+import { NavAdvanced } from './nav-advanced';
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const [user, setUser] = useState<User | null>(null);
@@ -81,6 +82,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarContent>
                 <NavMain items={navMain} />
                 <NavDocuments items={documents} />
+                <NavAdvanced items={advanced}/>
             </SidebarContent>
 
             <SidebarFooter>
