@@ -3,15 +3,17 @@ import {
     IconDashboard,
     IconListDetails,
     IconMessage,
+    IconMoneybag,
     IconReport,
+    IconSettings,
     IconVideo,
 } from '@tabler/icons-react';
 import {
     BookMarked,
-    Puzzle,
-    ShieldCheck,
     ChartSpline,
     HandFist,
+    Puzzle,
+    ShieldCheck,
     Ticket,
 } from 'lucide-react';
 
@@ -133,13 +135,6 @@ export const DEFAULT_PREFERENCES = {
     security: true,
 };
 
-export const supportKpis = {
-    open: 12,
-    pendingResponses: 5,
-    resolvedToday: 8,
-    overdue: 3,
-};
-
 export const navMain = [
     {
         title: 'Dashboard',
@@ -169,5 +164,40 @@ export const documents = [
         url: '/admin/reports',
         icon: IconReport,
     },
-    { name: 'Support Tickets', url: '/admin/support-tickets/all', icon: Ticket },
+    {
+        name: 'Support Tickets',
+        url: '/admin/support-tickets/all',
+        icon: Ticket,
+    },
 ];
+
+export const advanced = [
+    {
+        name: 'Billing Section',
+        url: '/admin/billing',
+        icon: IconMoneybag,
+    },
+    {
+        name: 'System Settings',
+        url: '/admin/settings',
+        icon: IconSettings,
+    },
+    {
+        name: 'Automation & Tools',
+        url: '/admin/automation',
+        icon: Puzzle,
+    },
+    {
+        name: 'Community / Engagement',
+        url: '/admin/community',
+        icon: ShieldCheck,
+    },
+];
+
+export const PRIORITY_VALUES = [
+    'all',
+    'urgent',
+    'high',
+    'medium',
+    'low',
+] as const;

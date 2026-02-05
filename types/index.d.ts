@@ -15,6 +15,7 @@ export interface DashboardUIProps {
     pendingTickets?: number | null;
     resolvedTickets?: number | null;
     overdueTickets?: number | null;
+    unreadTickets?: number | null;
 }
 
 export type ManageUsersProps = {

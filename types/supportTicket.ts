@@ -12,4 +12,6 @@ export type Ticket = {
     userName: string;
     updatedAt: Date | null;
     overdue?: boolean;
+    hasAgentReply?: boolean;
+    lastAgentReplyAt?: Date | null;
 };

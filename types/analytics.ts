@@ -12,3 +12,7 @@ export type Analytics = {
     resolvedTickets: number | null;
     overdueTickets: number | null;
 };
+
+export type Analytics2 = {
+    unreadTicket: number | null;
+}

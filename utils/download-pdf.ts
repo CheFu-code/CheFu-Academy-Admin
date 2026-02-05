@@ -163,11 +163,10 @@ export function downloadTicketPDF(ticket: Ticket, options: PdfOptions = {}) {
     doc.setFontSize(18);
     doc.setTextColor(theme.text);
     doc.text(title, titleX, y + 8);
-
+    const now = new Date();
     doc.setFont('Helvetica', 'normal');
     doc.setFontSize(11);
     doc.setTextColor(theme.subtleText);
-    const now = new Date();
     const dateStr = now.toLocaleString(undefined, {
         year: 'numeric',
         month: 'short',

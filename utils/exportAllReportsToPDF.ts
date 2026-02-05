@@ -29,9 +29,8 @@ export const exportAllReportsToPDF = async (
     });
     doc.save('report.pdf');
 
+const now=new Date();
 
-
-    const now = new Date();
     const formattedDate = now.toLocaleString(undefined, {
         year: 'numeric',
         month: 'short',
