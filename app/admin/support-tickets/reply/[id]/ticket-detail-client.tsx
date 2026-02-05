@@ -1,8 +1,19 @@
 'use client';
 
 import TicketDetailUI from '@/app/admin/_components/UI/Tickets/TicketDetailUI';
-import { auth } from '@/lib/firebase';
+import { now } from '@/constants/Data';
+import { useAuthUser } from '@/hooks/useAuthUser';
+import { db } from '@/lib/firebase';
+import { TicketStatus } from '@/types/supportTicket';
 import { autosize, charLimit, Props } from '@/utils/ticketDetailsUtils';
+import { computeOverdue } from '@/utils/ticketSLA';
+import {
+    addDoc,
+    collection,
+    doc,
+    serverTimestamp,
+    updateDoc,
+} from 'firebase/firestore';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
@@ -10,6 +21,7 @@ import { toast } from 'sonner';
 export default function TicketDetailClient({ ticket, action }: Props) {
     const router = useRouter();
     const searchParams = useSearchParams();
+    const { user } = useAuthUser();
     const [replyText, setReplyText] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -49,36 +61,68 @@ export default function TicketDetailClient({ ticket, action }: Props) {
     };
 
     const handleSubmitReply = async () => {
-        if (!replyText.trim()) return;
+        const text = replyText.trim();
+        if (!text) return;
+
+        if (text.length > charLimit) {
+            setErrorMsg(`Reply exceeds the ${charLimit} character limit.`);
+            toast.error(`Reply exceeds the ${charLimit} character limit.`);
+            return;
+        }
+
+        if (!user) {
+            setErrorMsg('You must be signed in to reply.');
+            toast.error('You must be signed in to reply.');
+            return;
+        }
+
         setSubmitting(true);
         setErrorMsg(null);
 
         try {
-            const token = await auth.currentUser?.getIdToken?.();
-            const res = await fetch(`/api/support/${ticket.id}/reply`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-                },
-                body: JSON.stringify({ message: replyText }),
+            const messagesColRef = collection(
+                db,
+                'support-tickets',
+                ticket.id,
+                'messages',
+            );
+
+            await addDoc(messagesColRef, {
+                text,
+                senderId: user.uid,
+                senderEmail: user.email ?? '',
+                senderName: user.fullname ?? 'Agent',
+                direction: 'agent', // or 'user' if you reuse this UI for end-user replies
+                createdAtServer: serverTimestamp(),
+                // isInternal: false,
             });
 
-            if (!res.ok) throw new Error('Failed to send reply');
+            const ticketRef = doc(db, 'support-tickets', ticket.id);
+            const nextStatus: TicketStatus = ticket.status; // no change
+            const nowISO = now.toISOString();
+            const nextOverdue = computeOverdue(
+                nowISO,
+                ticket.priority,
+                nextStatus,
+            );
 
+            await updateDoc(ticketRef, {
+                status: nextStatus,
+                updatedAtServer: serverTimestamp(),
+                updatedAt: new Date(), // optional if you already show serverTimestamp in UI
+                overdue: nextOverdue,
+                asAgentReply: true,
+                lastAgentReplyAt: now,
+            });
+
+            toast.success('Reply sent');
             setReplyText('');
-            // toast?.({ title: 'Reply sent', description: 'Your response was posted.' });
             router.replace(getBasePath()); // strip query
-            // Optionally refresh if server actions update data immediately
-            // router.refresh();
+            router.refresh();
         } catch (e) {
             console.error(e);
             setErrorMsg('Could not send your reply. Please try again.');
-            // toast?.({
-            //   title: 'Failed to send reply',
-            //   description: 'Please check your connection and try again.',
-            //   variant: 'destructive',
-            // });
+            toast.error('Could not send your reply. Please try again.');
         } finally {
             setSubmitting(false);
         }

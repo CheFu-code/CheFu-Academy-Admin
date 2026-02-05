@@ -17,12 +17,14 @@ export function subscribeToRecentTickets(
             const data = doc.data({ serverTimestamps: 'estimate' }) as Partial<Ticket> & {
                 createdAt?: Timestamp | number | Date | string | null;
                 updatedAt?: Timestamp | number | Date | string | null;
+                lastAgentReplyAt?: Timestamp | number | Date | string | null; // ✅
+                hasAgentReply?: boolean | string;
             };
 
 
             const createdAt = toJsDate(data.createdAt);
             const updatedAt = toJsDate(data.updatedAt);
-
+            const lastAgentReplyAt = toJsDate(data.lastAgentReplyAt); // ✅
 
             return {
                 id: doc.id,
@@ -36,6 +38,17 @@ export function subscribeToRecentTickets(
                 userId: data.userId ?? '',
                 updatedAt,
                 createdAt,
+
+                hasAgentReply:
+                    typeof data.hasAgentReply === 'boolean'
+                        ? data.hasAgentReply
+                        : data.hasAgentReply === 'true'
+                            ? true
+                            : data.hasAgentReply === 'false'
+                                ? false
+                                : undefined,
+                lastAgentReplyAt,
+
             };
         });
 
@@ -92,12 +105,13 @@ export function subscribeToAllTickets(
             const data = doc.data({ serverTimestamps: 'estimate' }) as Partial<Ticket> & {
                 createdAt?: Timestamp | number | Date | string | null;
                 updatedAt?: Timestamp | number | Date | string | null;
+                lastAgentReplyAt?: Timestamp | number | Date | string | null;
+                hasAgentReply?: boolean | string;
             };
-
 
             const createdAt = toJsDate(data.createdAt);
             const updatedAt = toJsDate(data.updatedAt);
-
+            const lastAgentReplyAt = toJsDate(data.lastAgentReplyAt);
 
             return {
                 id: doc.id,
@@ -111,6 +125,16 @@ export function subscribeToAllTickets(
                 userId: data.userId ?? '',
                 updatedAt,
                 createdAt,
+                hasAgentReply:
+                    typeof data.hasAgentReply === 'boolean'
+                        ? data.hasAgentReply
+                        : data.hasAgentReply === 'true'  // in case some old doc stored as string
+                            ? true
+                            : data.hasAgentReply === 'false'
+                                ? false
+                                : undefined,
+                lastAgentReplyAt,
+
             };
         });
 

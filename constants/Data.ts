@@ -171,3 +171,8 @@ export const documents = [
     },
     { name: 'Support Tickets', url: '/admin/support-tickets/all', icon: Ticket },
 ];
+
+
+export const now = new Date();
+
+export const PRIORITY_VALUES = ['all', 'urgent', 'high', 'medium', 'low'] as const;

@@ -129,6 +129,7 @@ const TicketDetailUI = ({
                                     onClick={cancelReply}
                                     className="cursor-pointer"
                                     size="sm"
+                                    disabled={submitting}
                                 >
                                     <X className="size-4" />
                                     Cancel

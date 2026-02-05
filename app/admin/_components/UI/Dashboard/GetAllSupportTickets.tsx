@@ -1,26 +1,138 @@
-import Header from '@/components/Shared/Header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { Ticket } from '@/types/supportTicket';
+import { Ticket, TicketPriority } from '@/types/supportTicket';
 import { Loader } from 'lucide-react';
 import NoTicket from '../Tickets/NoTicket';
+import {
+    PriorityFilter,
+    StatusFilter,
+} from '@/app/admin/support-tickets/all/page';
+import { PRIORITY_VALUES } from '@/constants/Data';
 
 const GetAllSupportTickets = ({
-    allTickets,
+    filteredTickets,
     router,
     loading,
+    search,
+    setSearch,
+    status,
+    setStatus,
+    priority,
+    setPriority,
+    onlyOverdue,
+    setOnlyOverdue,
+    agentReply,
+    setAgentReply,
+    isStatusFilter,
 }: {
-    allTickets: Ticket[];
+    filteredTickets: Ticket[];
     router: ReturnType<typeof import('next/navigation').useRouter>;
     loading: boolean;
+    search: string;
+    setSearch: React.Dispatch<React.SetStateAction<string>>;
+    status: Ticket['status'] | 'all';
+    setStatus: React.Dispatch<React.SetStateAction<Ticket['status'] | 'all'>>;
+    priority: Ticket['priority'] | 'all';
+    setPriority: React.Dispatch<React.SetStateAction<'all' | TicketPriority>>;
+    onlyOverdue: boolean;
+    setOnlyOverdue: React.Dispatch<React.SetStateAction<boolean>>;
+    agentReply: 'all' | 'agent' | 'none';
+    setAgentReply: React.Dispatch<
+        React.SetStateAction<'all' | 'agent' | 'none'>
+    >;
+    isStatusFilter: (v: string) => v is StatusFilter;
 }) => {
     return (
         <div>
-            <Header
-                header="All Support Tickets"
-                description="See all support tickets"
-            />
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-wrap items-center gap-2">
+                    <input
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        placeholder="Search title, user, or ID…"
+                        className="h-9 w-55 rounded-md border bg-background px-3 text-sm shadow-sm"
+                    />
+
+                    <select
+                        value={status}
+                        onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                            const v = e.target.value;
+                            if (isStatusFilter(v)) setStatus(v); // now v is correctly typed
+                        }}
+                        className="h-9 rounded-md border bg-background px-2 text-sm shadow-sm"
+                        aria-label="Filter by status"
+                    >
+                        <option value="all">Status: All</option>
+                        <option value="open">Open</option>
+                        <option value="pending">Pending</option>
+                        <option value="resolved">Resolved</option>
+                        <option value="closed">Closed</option>
+                    </select>
+
+                    <select
+                        value={priority}
+                        onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                            const v = e.target.value;
+
+                            if (PRIORITY_VALUES.includes(v as PriorityFilter)) {
+                                setPriority(v as PriorityFilter);
+                            }
+                        }}
+                        className="h-9 rounded-md border bg-background px-2 text-sm shadow-sm"
+                        aria-label="Filter by priority"
+                    >
+                        <option value="all">Priority: All</option>
+                        <option value="urgent">Urgent</option>
+                        <option value="high">High</option>
+                        <option value="medium">Medium</option>
+                        <option value="low">Low</option>
+                    </select>
+
+                    <select
+                        value={agentReply}
+                        onChange={(e) =>
+                            setAgentReply(
+                                e.target.value as 'all' | 'agent' | 'none',
+                            )
+                        }
+                        className="h-9 rounded-md border bg-background px-2 text-sm shadow-sm"
+                        aria-label="Filter by agent reply"
+                    >
+                        <option value="all">Reply: All</option>
+                        <option value="agent">Replied</option>
+                        <option value="none">Not replied</option>
+                    </select>
+
+                    <label className="inline-flex items-center gap-2 text-sm">
+                        <input
+                            type="checkbox"
+                            checked={onlyOverdue}
+                            onChange={(e) => setOnlyOverdue(e.target.checked)}
+                            className="h-4 w-4 accent-rose-600"
+                        />
+                        Overdue only
+                    </label>
+
+                    {/* Reset */}
+                    <Button
+                        onClick={() => {
+                            setSearch('');
+                            setStatus('all');
+                            setPriority('all');
+                            setOnlyOverdue(false);
+                            setAgentReply('all');
+                        }}
+                        size="sm"
+                        variant="destructive"
+                        className="cursor-pointer"
+                        title="Reset filters"
+                    >
+                        Reset
+                    </Button>
+                </div>
+            </div>
+
             <Card className="shadow-xl mt-6">
                 <CardHeader>
                     <CardTitle>Support Tickets</CardTitle>
@@ -32,10 +144,10 @@ const GetAllSupportTickets = ({
                             <Loader className="size-4 animate-spin" />
                             Loading tickets…
                         </div>
-                    ) : allTickets?.length === 0 ? (
+                    ) : filteredTickets?.length === 0 ? (
                         <NoTicket />
                     ) : (
-                        allTickets?.map((t) => (
+                        filteredTickets?.map((t) => (
                             <div
                                 key={t.id}
                                 className="flex flex-col gap-2 rounded-lg border bg-background p-3 sm:flex-row sm:items-center sm:justify-between"

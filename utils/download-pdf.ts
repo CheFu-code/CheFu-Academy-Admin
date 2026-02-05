@@ -1,4 +1,5 @@
 // utils/download-pdf.ts
+import { now } from '@/constants/Data';
 import { Ticket } from '@/types/supportTicket';
 import jsPDF from 'jspdf';
 
@@ -167,7 +168,6 @@ export function downloadTicketPDF(ticket: Ticket, options: PdfOptions = {}) {
     doc.setFont('Helvetica', 'normal');
     doc.setFontSize(11);
     doc.setTextColor(theme.subtleText);
-    const now = new Date();
     const dateStr = now.toLocaleString(undefined, {
         year: 'numeric',
         month: 'short',

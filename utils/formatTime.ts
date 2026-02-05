@@ -1,3 +1,5 @@
+import { now } from "@/constants/Data";
+
 export interface FormatTimeOptions {
     date?: string | number | Date;
 }
@@ -5,7 +7,6 @@ export interface FormatTimeOptions {
 export function formatTime(date: string | number | Date | undefined | null): string {
     if (!date) return "";
     const d = new Date(date);
-    const now = new Date();
     const diff = now.getTime() - d.getTime();
 
     if (diff < 60000) return "now";
