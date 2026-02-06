@@ -7,6 +7,7 @@ export interface User {
     profilePicture?: string;
     bio?: string;
     country: string;
+    countryCode?: string;
     createdAt: Timestamp;
     updatedAt: Timestamp;
     fcmToken?: string;

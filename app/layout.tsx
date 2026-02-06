@@ -7,6 +7,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import Script from 'next/script';
 import './globals.css';
 import { TrackPageView } from '@/components/Cookies/TrackPageView';
+import RedirectIfNoCountry from '@/components/RedirectIfNoCountry';
 
 const geistSans = Geist({
     variable: '--font-geist-sans',
@@ -57,10 +58,11 @@ export default function RootLayout({
                 >
                     <ConsentProvider>
                         <TrackPageView />
+                        <RedirectIfNoCountry />
                         {children}
                         <CookieBanner />
                     </ConsentProvider>
-                    
+
                     <Toaster />
                 </ThemeProvider>
             </body>
