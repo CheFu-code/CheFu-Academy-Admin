@@ -1,4 +1,4 @@
-import { KeyRound } from 'lucide-react';
+import { Copy, KeyRound } from 'lucide-react';
 import Header from '../Shared/Header';
 import { Button } from './button';
 import {
@@ -10,7 +10,8 @@ import {
 } from './card';
 import { Input } from './input';
 import { Textarea } from './textarea';
-import { TicketPriority } from '@/types/supportTicket';
+import { Ticket, TicketPriority } from '@/types/supportTicket';
+import { copyToClipboard } from '@/helpers/copyToClipboard';
 
 const SupportTicketsUI = ({
     ticketID,
@@ -23,6 +24,8 @@ const SupportTicketsUI = ({
     setMessage,
     priority,
     setPriority,
+    userTickets,
+    loadingTickets,
 }: {
     ticketID: string;
     handleGenerateTicketID: () => void;
@@ -34,6 +37,8 @@ const SupportTicketsUI = ({
     setMessage: React.Dispatch<React.SetStateAction<string>>;
     priority: TicketPriority;
     setPriority: React.Dispatch<React.SetStateAction<TicketPriority>>;
+    userTickets: Ticket[];
+    loadingTickets: boolean;
 }) => {
     return (
         <div className="min-h-screen bg-background p-8">
@@ -137,6 +142,93 @@ const SupportTicketsUI = ({
                     </div>
                 </CardContent>
             </Card>
+
+            {loadingTickets ? (
+                <p className="text-center text-gray-500 mt-6">
+                    Loading your tickets...
+                </p>
+            ) : userTickets.length === 0 ? (
+                <p className="text-center text-gray-500 mt-6">
+                    You have not submitted a ticket yet.
+                </p>
+            ) : (
+                <div className="mt-10">
+                    <h2 className="text-xl font-semibold mb-4">
+                        Your Previous Tickets
+                    </h2>
+
+                    <div className="space-y-4">
+                        {userTickets.map((ticket) => (
+                            <Card
+                                key={ticket.id}
+                                className="border rounded-lg shadow-sm"
+                            >
+                                {/* Header */}
+                                <CardHeader className="pb-3">
+                                    <CardTitle className="text-base">
+                                        <div className="flex justify-between items-start">
+                                            <span className="line-clamp-2">
+                                                {ticket.title}
+                                            </span>
+
+                                            {/* Priority badge */}
+                                            <span
+                                                className={`
+                                text-xs px-2 py-1 rounded-md ml-2 capitalize
+                                ${
+                                    ticket.priority === 'high'
+                                        ? 'bg-red-100 text-red-700'
+                                        : ticket.priority === 'medium'
+                                          ? 'bg-yellow-100 text-yellow-700'
+                                          : 'bg-gray-400 text-gray-700'
+                                }
+                            `}
+                                            >
+                                                {ticket.priority}
+                                            </span>
+                                        </div>
+                                    </CardTitle>
+
+                                    <CardDescription className="flex items-center gap-2 text-sm text-muted-foreground">
+                                        Ticket ID: {ticket.id}
+                                        <Copy
+                                            className="size-4 hover:text-primary cursor-pointer"
+                                            onClick={() =>
+                                                copyToClipboard(ticket.id)
+                                            }
+                                        />
+                                    </CardDescription>
+                                </CardHeader>
+
+                                {/* Content */}
+                                <CardContent className="space-y-3">
+                                    <p className="text-sm line-clamp-3">
+                                        {ticket.message}
+                                    </p>
+
+                                    <div className="text-xs text-gray-500 flex flex-col gap-1">
+                                        <span>
+                                            Status:{' '}
+                                            <span className="capitalize font-medium">
+                                                {ticket.status}
+                                            </span>
+                                        </span>
+
+                                        <span>
+                                            Created:{' '}
+                                            {ticket.createdAt
+                                                ? new Date(
+                                                      ticket.createdAt,
+                                                  ).toLocaleString()
+                                                : 'Unknown'}
+                                        </span>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
