@@ -15,7 +15,7 @@ import {
     CommandList,
     CommandSeparator,
 } from '@/components/ui/command';
-import { Check, ChevronsUpDown, X } from 'lucide-react';
+import { Check, ChevronsUpDown, X, Lock } from 'lucide-react'; // ← Lock added
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
@@ -47,6 +47,9 @@ type EditableRolesCellProps = {
     onSave: (userEmail: string, newRoles: string[]) => Promise<void>; // persist changes (Firestore/API)
 };
 
+const PROTECTED_ROLE: Role = 'admin';
+const isProtected = (r: string) => r === PROTECTED_ROLE;
+
 // (Optional) keep a stable display order based on allRoles
 const sortByAllRoles = (roles: string[], allRoles: string[]) => {
     const rank = new Map(allRoles.map((r, i) => [r, i]));
@@ -69,12 +72,18 @@ export const EditableRolesCell: React.FC<EditableRolesCellProps> = ({
     );
     const [saving, setSaving] = React.useState(false);
     const [error, setError] = React.useState<string | null>(null);
-    const [removingRole, setRemovingRole] = React.useState<string | null>(null); // NEW: which role is being removed right now
+    const [removingRole, setRemovingRole] = React.useState<string | null>(null);
+
+    // Track if this user initially had admin; used to guard commit()
+    const hadAdminInitiallyRef = React.useRef<boolean>(
+        roles?.includes(PROTECTED_ROLE) ?? false,
+    );
 
     // keep in sync if parent updates the roles from outside
     React.useEffect(() => {
         const next = Array.from(new Set(roles ?? []));
         setValue(sortByAllRoles(next, allRoles));
+        hadAdminInitiallyRef.current = roles?.includes(PROTECTED_ROLE) ?? false;
     }, [roles, allRoles]);
 
     const ensureAtLeastOne = (next: string[]) => {
@@ -85,25 +94,14 @@ export const EditableRolesCell: React.FC<EditableRolesCellProps> = ({
         return true;
     };
 
-    const toggleRole = (r: string) => {
-        setValue((prev) => {
-            const exists = prev.includes(r);
-            if (exists) {
-                // If it's the only selected role, block removal
-                if (prev.length === 1) {
-                    toast.error('At least one role is required.');
-                    return prev;
-                }
-                const next = prev.filter((x) => x !== r);
-                return sortByAllRoles(next, allRoles);
-            }
-            const next = Array.from(new Set([...prev, r]));
-            return sortByAllRoles(next, allRoles);
-        });
-    };
-
-    // CHANGED: This version persists immediately (optimistic update + rollback)
+    // Remove immediately with optimistic update + rollback
     const removeRole = async (r: string) => {
+        // 🚫 Block removing protected role
+        if (isProtected(r)) {
+            toast.error('Admin role cannot be removed.');
+            return;
+        }
+
         const prev = value;
         if (!prev.includes(r)) return;
 
@@ -140,13 +138,18 @@ export const EditableRolesCell: React.FC<EditableRolesCellProps> = ({
     };
 
     const clearAll = () => {
-        // Block clearing to empty
+        // If admin is present, disallow "clear"
+        if (value.includes(PROTECTED_ROLE)) {
+            toast.error('Cannot clear roles while admin is assigned.');
+            return;
+        }
+        // Also block clearing to empty for non-admin sets if it would result in 0
         if (value.length <= 1) {
             toast.error('At least one role is required.');
             return;
         }
         toast.error('Clearing all roles is not allowed.');
-        // setValue([]) // (intentionally blocked)
+        // setValue([]) // intentionally blocked
     };
 
     const cancel = () => {
@@ -155,11 +158,21 @@ export const EditableRolesCell: React.FC<EditableRolesCellProps> = ({
         setError(null);
     };
 
-    // Save button stays for bulk changes from the list (non-instant)
+    // Save button stays for non-instant changes made via the list
     const commit = async () => {
         const unique = Array.from(new Set(value));
         if (!ensureAtLeastOne(unique)) {
             setError('Select at least one role before saving.');
+            return;
+        }
+
+        // 🛡️ If user originally had admin, ensure admin is still present
+        if (hadAdminInitiallyRef.current && !unique.includes(PROTECTED_ROLE)) {
+            // Re-add admin automatically and block save
+            const fixed = sortByAllRoles([...unique, PROTECTED_ROLE], allRoles);
+            setValue(fixed);
+            setError('Admin role cannot be removed.');
+            toast.error('Admin role cannot be removed.');
             return;
         }
 
@@ -190,12 +203,10 @@ export const EditableRolesCell: React.FC<EditableRolesCellProps> = ({
     };
 
     const onKeyDownRoot: React.KeyboardEventHandler<HTMLDivElement> = (e) => {
-        // make cell accessible: Enter/Space opens editor
         if (!open && (e.key === 'Enter' || e.key === ' ')) {
             e.preventDefault();
             if (!disabled) setOpen(true);
         }
-        // Esc while open cancels
         if (open && e.key === 'Escape') {
             e.preventDefault();
             cancel();
@@ -225,6 +236,7 @@ export const EditableRolesCell: React.FC<EditableRolesCellProps> = ({
                                 value.map((r) => {
                                     const isRemoving =
                                         removingRole === r && saving;
+                                    const protectedRole = isProtected(r);
                                     return (
                                         <Badge
                                             key={r}
@@ -232,30 +244,46 @@ export const EditableRolesCell: React.FC<EditableRolesCellProps> = ({
                                             className="capitalize pl-2 pr-1"
                                         >
                                             <span>{r}</span>
-                                            <button
-                                                type="button"
-                                                title={`Remove ${r}`}
-                                                className={cn(
-                                                    'ml-1 -mr-0.5 inline-flex h-4 w-4 items-center justify-center rounded hover:bg-black/10 dark:hover:bg-white/10 cursor-pointer',
-                                                    saving &&
-                                                        isRemoving &&
-                                                        'opacity-50 cursor-not-allowed',
-                                                )}
-                                                onClick={async (e) => {
-                                                    e.preventDefault();
-                                                    e.stopPropagation(); // prevent opening popover
-                                                    if (saving && isRemoving)
-                                                        return;
-                                                    await removeRole(r); // instant persist
-                                                }}
-                                                disabled={saving && isRemoving}
-                                            >
-                                                {isRemoving ? (
-                                                    <span className="block h-2 w-2 rounded-full animate-pulse bg-current" />
-                                                ) : (
-                                                    <X className="size-3 cursor-pointer" />
-                                                )}
-                                            </button>
+
+                                            {/* Admin: show lock, no X */}
+                                            {protectedRole ? (
+                                                <span
+                                                    title="Admin role cannot be removed"
+                                                    className="ml-1 -mr-0.5 inline-flex h-4 w-4 items-center justify-center opacity-70"
+                                                >
+                                                    <Lock className="h-3 w-3" />
+                                                </span>
+                                            ) : (
+                                                <button
+                                                    type="button"
+                                                    title={`Remove ${r}`}
+                                                    className={cn(
+                                                        'ml-1 -mr-0.5 inline-flex h-4 w-4 items-center justify-center rounded hover:bg-black/10 dark:hover:bg-white/10 cursor-pointer',
+                                                        saving &&
+                                                            isRemoving &&
+                                                            'opacity-50 cursor-not-allowed',
+                                                    )}
+                                                    onClick={async (e) => {
+                                                        e.preventDefault();
+                                                        e.stopPropagation(); // prevent opening popover
+                                                        if (
+                                                            saving &&
+                                                            isRemoving
+                                                        )
+                                                            return;
+                                                        await removeRole(r); // instant persist
+                                                    }}
+                                                    disabled={
+                                                        saving && isRemoving
+                                                    }
+                                                >
+                                                    {isRemoving ? (
+                                                        <span className="block h-2 w-2 rounded-full animate-pulse bg-current" />
+                                                    ) : (
+                                                        <X className="size-3 cursor-pointer" />
+                                                    )}
+                                                </button>
+                                            )}
                                         </Badge>
                                     );
                                 })
@@ -291,20 +319,30 @@ export const EditableRolesCell: React.FC<EditableRolesCellProps> = ({
                             <CommandGroup heading="Available roles">
                                 {allRoles.map((r) => {
                                     const checked = value.includes(r);
-
                                     return (
                                         <CommandItem
                                             key={r}
                                             value={r}
                                             onSelect={() => {
                                                 if (checked) {
+                                                    // Already selected — keep same UX
                                                     toast.message(
                                                         `${r} is already selected.`,
                                                     );
                                                     return;
                                                 }
-                                                // This path is still "edit then Save"
-                                                toggleRole(r);
+                                                // Add role via list; user still needs to press Save
+                                                setValue((prev) =>
+                                                    sortByAllRoles(
+                                                        Array.from(
+                                                            new Set([
+                                                                ...prev,
+                                                                r,
+                                                            ]),
+                                                        ),
+                                                        allRoles,
+                                                    ),
+                                                );
                                             }}
                                             className={cn(
                                                 'flex items-center gap-2',
