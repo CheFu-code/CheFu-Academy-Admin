@@ -13,7 +13,6 @@ import {
 } from '@/components/ui/sidebar';
 import { getTotalUnreadTickets } from '@/helpers/getAnalytics';
 import { Analytics2 } from '@/types/analytics';
-import { Loader } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 export function NavMain({
@@ -74,12 +73,7 @@ export function NavMain({
                             variant="outline"
                         >
                             <IconMail />
-                            {loading ? (
-                                <Loader
-                                    className="inline-block size-4 animate-spin text-muted-foreground"
-                                    aria-label="Loading unread tickets"
-                                />
-                            ) : Number(analytics.unreadTicket) > 0 ? (
+                            {Number(analytics.unreadTicket) > 0 ? (
                                 <span
                                     className="text-green-500 font-semibold absolute -top-1.5 left-5"
                                     aria-label={`${analytics.unreadTicket} unread tickets`}

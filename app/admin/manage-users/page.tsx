@@ -4,25 +4,26 @@ import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { db } from '@/lib/firebase';
 import { User } from '@/types/user';
 import { userMatches } from '@/utils/userSearch';
-import { collection, onSnapshot } from 'firebase/firestore';
+import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
 import ManageUsersUI from '../_components/UI/ManageUsersUI';
 
 const ManageUsers = () => {
     const [users, setUsers] = useState<User[]>([]);
-    const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
+    const [loading, setLoading] = useState(true);
+    const [deleting, setDeleting] = React.useState(false);
+    const [deletingId, setDeletingId] = React.useState<string | null>(null);
     const [confirmOpen, setConfirmOpen] = React.useState(false);
     const [selectedUser, setSelectedUser] = React.useState<User | null>(null);
-    const [deletingId, setDeletingId] = React.useState<string | null>(null);
-    const [deleting, setDeleting] = React.useState(false);
-
     const debouncedSearch = useDebouncedValue(search, 250);
     const deferredSearch = React.useDeferredValue(debouncedSearch);
 
     React.useEffect(() => {
-        const unsubscribe = onSnapshot(collection(db, 'users'), (snap) => {
+        const q = query(collection(db, 'users'), orderBy('createdAt', 'desc'));
+
+        const unsubscribe = onSnapshot(q, (snap) => {
             const data = snap.docs.map(
                 (d) => ({ id: d.id, ...d.data() }) as User,
             );
@@ -91,6 +92,22 @@ const ManageUsers = () => {
     }, [users, deferredSearch]);
     const total = filteredUsers.length;
 
+    const confirmDelete = async () => {
+        if (!selectedUser || !handleDelete) return;
+        const id = selectedUser.uid ?? selectedUser.id;
+        try {
+            setDeletingId(id);
+            handleDelete(selectedUser); // ✅ actual delete happens here
+            setConfirmOpen(false);
+            setSelectedUser(null);
+        } catch (err) {
+            console.error('Failed to delete user:', err);
+            toast.error('Failed to delete user. Please try again.');
+        } finally {
+            setDeletingId(null);
+        }
+    };
+
     return (
         <ManageUsersUI
             filteredUsers={filteredUsers}
@@ -109,6 +126,7 @@ const ManageUsers = () => {
             deleting={deleting}
             openDeleteModal={openDeleteModal}
             closeDeleteModal={closeDeleteModal}
+            confirmDelete={confirmDelete}
         />
     );
 };

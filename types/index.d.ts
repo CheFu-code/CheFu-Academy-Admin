@@ -36,4 +36,5 @@ export type ManageUsersProps = {
     deleting: boolean;
     openDeleteModal: (user: User) => void;
     closeDeleteModal: () => void;
+    confirmDelete: () => Promise<void>
 };
