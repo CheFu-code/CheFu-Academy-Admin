@@ -31,6 +31,7 @@ const RP_ID = process.env.RP_ID || undefined; // leave undefined to accept the H
 // WEBAUTHN_ALLOWED_ORIGINS="https://admin.example.com,https://cheforumreal.web.app,http://localhost:3000"
 const defaultOrigins = [
     'https://cheforumreal.web.app',
+    'https://chefu-academy.vercel.app',
     'http://localhost:3000',
 ];
 const envOrigins = (process.env.WEBAUTHN_ALLOWED_ORIGINS || '')
@@ -38,6 +39,18 @@ const envOrigins = (process.env.WEBAUTHN_ALLOWED_ORIGINS || '')
     .map((v) => v.trim())
     .filter(Boolean);
 const ORIGINS = new Set<string>([...defaultOrigins, ...envOrigins]);
+const ALLOW_VERCEL_PREVIEWS = process.env.WEBAUTHN_ALLOW_VERCEL_PREVIEWS === 'true';
+
+const isAllowedOrigin = (origin: string) => {
+    if (ORIGINS.has(origin)) return true;
+    if (!ALLOW_VERCEL_PREVIEWS) return false;
+    try {
+        const host = new URL(origin).hostname.toLowerCase();
+        return host.endsWith('.vercel.app');
+    } catch {
+        return false;
+    }
+};
 
 // Store users & credentials in Firestore
 const USERS = db.collection('webauthnUsers');
@@ -45,7 +58,7 @@ const USERS = db.collection('webauthnUsers');
 // Basic CORS for same-origin Hosting rewrite + local dev
 const cors = corsLib({
     origin: (origin, callback) => {
-        if (!origin || ORIGINS.has(origin)) {
+        if (!origin || isAllowedOrigin(origin)) {
             callback(null, true);
             return;
         }
@@ -85,7 +98,7 @@ const resolveUid = async (identifier: string): Promise<string> => {
 };
 
 const ensureOrigin = (origin: string) => {
-    if (!ORIGINS.has(origin)) throw new Error(`Origin not allowed: ${origin}`);
+    if (!isAllowedOrigin(origin)) throw new Error(`Origin not allowed: ${origin}`);
     return origin;
 };
 
