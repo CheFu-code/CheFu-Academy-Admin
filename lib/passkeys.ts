@@ -12,7 +12,13 @@ import { auth } from './firebase'; // your initialized client SDK
 
 // Same-origin endpoint via Firebase Hosting rewrite
 // See firebase.json: { "source": "/firebase-web-authn-api", "function": "webauthnApi" }
-const API = '/firebase-web-authn-api';
+const API =
+    process.env.NODE_ENV === 'development' &&
+    process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID
+        ? 'https://us-central1-' +
+          process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID +
+          '.cloudfunctions.net/webauthnApi'
+        : '/firebase-web-authn-api';
 
 const getRpId = () => window.location.hostname;
 
@@ -26,7 +32,7 @@ async function post<T = unknown>(
         headers: { 'Content-Type': 'application/json' },
         // Include the operation key expected by our backend
         body: JSON.stringify({ operation, ...body }),
-        credentials: 'include', // harmless here; shows intent if you later use cookies
+        credentials: 'omit', // cross-origin function call in local dev; no cookies needed
     });
 
     if (!res.ok) {
@@ -159,3 +165,6 @@ export function toPasskeyMessage(err: unknown): string {
 export async function signInWithFirebasePasskey(uid: string) {
     return signInWithPasskey(uid);
 }
+
+
+
