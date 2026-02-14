@@ -9,6 +9,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader } from 'lucide-react';
+import { KeyRound } from 'lucide-react'; // new icon
 import { Dispatch, SetStateAction } from 'react';
 import { FcGoogle } from 'react-icons/fc';
 
@@ -17,6 +18,8 @@ export default function LoginForm({
     handleEmailLogin,
     googlePending,
     handleGoogle,
+    handlePasskey, // ✅ add this
+    passkeyPending, // ✅ add this
     email,
     setEmail,
     password,
@@ -27,12 +30,16 @@ export default function LoginForm({
     handleEmailLogin: () => Promise<void>;
     googlePending: boolean;
     emailPending: boolean;
+    passkeyPending: boolean;               // ✅ new
     email: string;
     password: string;
     handleGoogle: () => Promise<void>;
+    handlePasskey: () => Promise<void>;    // ✅ new
     setEmail: Dispatch<SetStateAction<string>>;
     setPassword: Dispatch<SetStateAction<string>>;
 }) {
+    const anyPending = loading || emailPending || googlePending || passkeyPending;
+
     return (
         <Card>
             <CardHeader>
@@ -41,14 +48,16 @@ export default function LoginForm({
                     Login to access your courses and continue learning.
                 </CardDescription>
             </CardHeader>
+
             <form onSubmit={handleEmailLogin}>
                 <CardContent className="flex flex-col gap-4">
                     <div className="flex flex-row justify-center gap-4">
                         <Button
-                            disabled={googlePending}
+                            disabled={googlePending || anyPending}
                             onClick={handleGoogle}
                             variant="outline"
                             className="cursor-pointer"
+                            type="button"
                         >
                             {googlePending ? (
                                 <>
@@ -59,6 +68,27 @@ export default function LoginForm({
                                 <>
                                     <FcGoogle className="size-4" />
                                     <span>Google</span>
+                                </>
+                            )}
+                        </Button>
+
+                        {/* ✅ Passkey sign-in button */}
+                        <Button
+                            disabled={passkeyPending || anyPending}
+                            onClick={handlePasskey}
+                            variant="outline"
+                            className="cursor-pointer"
+                            type="button"
+                        >
+                            {passkeyPending ? (
+                                <>
+                                    <Loader className="size-4 animate-spin" />
+                                    <span>Loading...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <KeyRound className="size-4" />
+                                    <span>Passkey</span>
                                 </>
                             )}
                         </Button>
@@ -79,6 +109,7 @@ export default function LoginForm({
                                 placeholder="email@example.com"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
+                                autoComplete="email"
                             />
                         </div>
                         <div className="grid gap-2">
@@ -89,18 +120,14 @@ export default function LoginForm({
                                 placeholder="********"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
+                                autoComplete="current-password"
                             />
                         </div>
                         <Button
-                            disabled={
-                                emailPending ||
-                                !email ||
-                                !password ||
-                                loading ||
-                                googlePending
-                            }
+                            disabled={!email || !password || anyPending}
                             onClick={handleEmailLogin}
                             className="cursor-pointer"
+                            type="submit"
                         >
                             {emailPending || googlePending ? (
                                 <>

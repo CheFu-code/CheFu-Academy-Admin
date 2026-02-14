@@ -1,0 +1,33 @@
+{
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "disallowLegacyRuntimeConfig": true,
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ],
+      "predeploy": [
+        "npm --prefix \"$RESOURCE_DIR\" run lint",
+        "npm --prefix \"$RESOURCE_DIR\" run build"
+      ]
+    }
+  ],
+  "hosting": {
+    "public": "public",
+    "rewrites": [
+      {
+        "source": "/firebase-web-authn-api",
+        "function": "webauthnApi"
+      }
+    ]
+  },
+  "extensions": {
+    "firebase-web-authn": "gavinsawyer/firebase-web-authn@10.4.2",
+    "firebase-web-authn-2tdn": "./node_modules/@firebase-web-authn/extension"
+  }
+}
