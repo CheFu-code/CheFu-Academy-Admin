@@ -10,9 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader } from 'lucide-react';
 import { Dispatch, SetStateAction } from 'react';
-import { FaGithub } from 'react-icons/fa';
 import { FcGoogle } from 'react-icons/fc';
-import { toast } from 'sonner';
 
 export default function LoginForm({
     loading,
@@ -64,18 +62,6 @@ export default function LoginForm({
                                 </>
                             )}
                         </Button>
-
-                        {/* <Button
-                            onClick={() => {
-                                toast('Coming soon!');
-                                return;
-                            }}
-                            variant="outline"
-                            className="cursor-pointer"
-                        >
-                            <FaGithub className="size-4" />
-                            <span>Github</span>
-                        </Button> */}
                     </div>
 
                     <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
