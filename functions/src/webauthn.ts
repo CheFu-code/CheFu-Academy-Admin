@@ -51,7 +51,7 @@ type Passkey = {
 
 type WebAuthnUserDoc = {
     username: string;
-    challenge?: string;
+    challenge?: string | null;
     credentials: Passkey[];
 };
 
@@ -115,10 +115,14 @@ export const webauthnApi = onRequest(
                     req.headers.host ||
                     '';
 
-                // Load or create user doc
-                const userDoc = (await getUserDoc(uid)) || {
-                    username: username || uid,
-                    credentials: [],
+                // Load and normalize user doc to avoid crashes on legacy/partial records
+                const loadedUserDoc = await getUserDoc(uid);
+                const userDoc: WebAuthnUserDoc = {
+                    username: loadedUserDoc?.username || username || uid,
+                    challenge: loadedUserDoc?.challenge,
+                    credentials: Array.isArray(loadedUserDoc?.credentials)
+                        ? loadedUserDoc.credentials
+                        : [],
                 };
 
                 if (operation === 'reg-options') {
@@ -183,7 +187,7 @@ export const webauthnApi = onRequest(
                     };
 
                     await setUserDoc(uid, {
-                        challenge: null as any,
+                        challenge: null,
                         credentials: [
                             ...userDoc.credentials.filter(
                                 (c) => c.id !== newPasskey.id,
@@ -196,6 +200,12 @@ export const webauthnApi = onRequest(
                 }
 
                 if (operation === 'authn-options') {
+                    if (userDoc.credentials.length === 0) {
+                        return res
+                            .status(404)
+                            .json({ error: 'no-passkeys-enrolled' });
+                    }
+
                     const allowCredentials = userDoc.credentials.map(
                         (cred) => ({
                             id: cred.id,
@@ -253,7 +263,7 @@ export const webauthnApi = onRequest(
                     const { newCounter } = verification.authenticationInfo;
                     match.counter = newCounter;
                     await setUserDoc(uid, {
-                        challenge: null as any,
+                        challenge: null,
                         credentials: userDoc.credentials,
                     });
 
@@ -265,11 +275,13 @@ export const webauthnApi = onRequest(
                 }
 
                 return res.status(400).json({ error: 'unknown-operation' });
-            } catch (err: any) {
+            } catch (err: unknown) {
+                const message =
+                    err instanceof Error ? err.message : 'Unknown error';
                 logger.error('webauthnApi error', err);
                 return res
                     .status(500)
-                    .json({ error: 'internal', message: err?.message });
+                    .json({ error: 'internal', message });
             }
         });
     },

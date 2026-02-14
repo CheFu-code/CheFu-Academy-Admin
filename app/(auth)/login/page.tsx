@@ -22,11 +22,13 @@ export default function LoginPage() {
 
     async function handlePasskey() {
         try {
-            const identifier = email.trim();
-            if (!identifier) {
-                toast.error('Enter your email before using passkey sign-in.');
-                return;
-            }
+            const currentEmail = email.trim();
+            const promptedEmail = !currentEmail
+                ? window.prompt('Enter your email to continue with passkey sign-in.')
+                : null;
+            const identifier = (currentEmail || promptedEmail || '').trim();
+            if (!identifier) return;
+            if (!currentEmail) setEmail(identifier);
             setPasskeyPending(true);
             await signInWithFirebasePasskey(identifier);
             console.log('Signed in with passkey');

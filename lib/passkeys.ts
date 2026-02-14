@@ -14,6 +14,8 @@ import { auth } from './firebase'; // your initialized client SDK
 // See firebase.json: { "source": "/firebase-web-authn-api", "function": "webauthnApi" }
 const API = '/firebase-web-authn-api';
 
+const getRpId = () => window.location.hostname;
+
 // ---------- Utils ----------
 async function post<T = unknown>(
     operation: string,
@@ -78,6 +80,7 @@ export async function registerPasskey(
         uid,
         username,
         origin: window.location.origin, // the server validates this
+        rpId: getRpId(),
     });
 
     // 2) Trigger WebAuthn ceremony in the browser
@@ -87,6 +90,7 @@ export async function registerPasskey(
     const { verified } = await post<VerifyRegResponse>('reg-verify', {
         uid,
         origin: window.location.origin,
+        rpId: getRpId(),
         response: attestation,
     });
 
@@ -107,8 +111,9 @@ export async function signInWithPasskey(uid: string): Promise<UserCredential> {
     const { options } = await post<AuthenticationOptionsResponse>(
         'authn-options',
         {
-        uid,
-        origin: window.location.origin,
+            uid,
+            origin: window.location.origin,
+            rpId: getRpId(),
         },
     );
 
@@ -121,6 +126,7 @@ export async function signInWithPasskey(uid: string): Promise<UserCredential> {
         {
             uid,
             origin: window.location.origin,
+            rpId: getRpId(),
             response: assertion,
         },
     );

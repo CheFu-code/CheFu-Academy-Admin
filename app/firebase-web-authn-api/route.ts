@@ -14,24 +14,41 @@ export async function POST(request: Request) {
         );
     }
 
-    const endpoint = `https://${region}-${projectId}.cloudfunctions.net/ext-firebase-web-authn-api`;
+    const base = `https://${region}-${projectId}.cloudfunctions.net`;
+    const endpoints = [`${base}/webauthnApi`, `${base}/ext-firebase-web-authn-api`];
 
     try {
         const body = await request.text();
-        const upstream = await fetch(endpoint, {
-            method: 'POST',
-            headers: {
-                'content-type': request.headers.get('content-type') || 'application/json',
-            },
-            body,
-            cache: 'no-store',
-        });
+        const contentType = request.headers.get('content-type') || 'application/json';
+        let lastResponse: Response | null = null;
 
-        const responseBody = await upstream.text();
-        return new NextResponse(responseBody, {
-            status: upstream.status,
+        for (const endpoint of endpoints) {
+            const upstream = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'content-type': contentType },
+                body,
+                cache: 'no-store',
+            });
+            if (upstream.status !== 404) {
+                const responseBody = await upstream.text();
+                return new NextResponse(responseBody, {
+                    status: upstream.status,
+                    headers: {
+                        'content-type':
+                            upstream.headers.get('content-type') ||
+                            'application/json',
+                    },
+                });
+            }
+            lastResponse = upstream;
+        }
+
+        const fallbackBody = lastResponse ? await lastResponse.text() : '';
+        return new NextResponse(fallbackBody || 'Passkey endpoint not found.', {
+            status: lastResponse?.status || 404,
             headers: {
-                'content-type': upstream.headers.get('content-type') || 'application/json',
+                'content-type':
+                    lastResponse?.headers.get('content-type') || 'text/plain',
             },
         });
     } catch (error) {
