@@ -10,15 +10,19 @@ import {
 import { signInWithCustomToken, UserCredential } from 'firebase/auth';
 import { auth } from './firebase'; // your initialized client SDK
 
-// Same-origin endpoint via Firebase Hosting rewrite
-// See firebase.json: { "source": "/firebase-web-authn-api", "function": "webauthnApi" }
-const API =
-    process.env.NODE_ENV === 'development' &&
+// Preferred: explicit endpoint for all environments.
+// Fallbacks:
+// 1) local dev direct function URL
+// 2) Firebase Hosting rewrite path
+const API = (
+    process.env.NEXT_PUBLIC_WEBAUTHN_API_URL ||
+    (process.env.NODE_ENV === 'development' &&
     process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID
         ? 'https://us-central1-' +
           process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID +
           '.cloudfunctions.net/webauthnApi'
-        : '/firebase-web-authn-api';
+        : '/firebase-web-authn-api')
+).replace(/\/+$/, '');
 
 // ---------- Utils ----------
 async function post<T = unknown>(
