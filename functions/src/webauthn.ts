@@ -36,7 +36,15 @@ const ORIGINS = new Set<string>([
 const USERS = db.collection('webauthnUsers');
 
 // Basic CORS for same-origin Hosting rewrite + local dev
-const cors = corsLib({ origin: true });
+const cors = corsLib({
+    origin: (origin, callback) => {
+        if (!origin || ORIGINS.has(origin)) {
+            callback(null, true);
+            return;
+        }
+        callback(new Error('Not allowed by CORS'));
+    },
+});
 
 // --- Types ---
 type Passkey = {
@@ -91,8 +99,6 @@ const BodySchema = z.object({
     ]),
     uid: z.string().min(1),
     username: z.string().optional(), // for registration
-    rpId: z.string().optional(), // override
-    origin: z.string().url().optional(),
     response: z.any().optional(), // RegistrationResponseJSON | AuthenticationResponseJSON
 });
 
@@ -113,22 +119,27 @@ export const webauthnApi = onRequest(
                 if (!parsed.success) {
                     return res.status(400).json({ error: 'invalid-request' });
                 }
-                const { operation, uid, username, rpId, origin, response } =
-                    parsed.data;
+                const { operation, uid, username, response } = parsed.data;
                 const resolvedUid = await resolveUid(uid);
 
-                const expectedOrigin =
-                    origin?.trim() || (req.headers.origin as string) || '';
+                const expectedOrigin = (req.headers.origin as string) || '';
                 ensureOrigin(expectedOrigin);
 
                 // Decide RPID
+                const forwardedHost =
+                    ((req.headers['x-forwarded-host'] as string | undefined) ||
+                        req.headers.host ||
+                        '')
+                        .split(',')[0]
+                        .trim()
+                        .toLowerCase();
                 const effectiveRPID =
-                    rpId?.trim() ||
-                    RP_ID ||
-                    // fallback to Host header (same-origin Hosting rewrite):
-                    (req.headers['x-forwarded-host'] as string) ||
-                    req.headers.host ||
-                    '';
+                    (RP_ID || forwardedHost.split(':')[0] || '')
+                        .trim()
+                        .toLowerCase();
+                if (!effectiveRPID) {
+                    return res.status(500).json({ error: 'rp-id-not-configured' });
+                }
 
                 // Load and normalize user doc to avoid crashes on legacy/partial records
                 const loadedUserDoc = await getUserDoc(resolvedUid);
@@ -195,7 +206,12 @@ export const webauthnApi = onRequest(
                     }
 
                     const cred = response as RegistrationResponseJSON;
-                    const expectedChallenge = userDoc.challenge || '';
+                    if (!userDoc.challenge) {
+                        return res.status(400).json({
+                            error: 'missing stored challenge for verification',
+                        });
+                    }
+                    const expectedChallenge = userDoc.challenge;
                     const verification = await verifyRegistrationResponse({
                         response: cred,
                         expectedChallenge,
@@ -263,7 +279,12 @@ export const webauthnApi = onRequest(
 
                 if (operation === 'authn-verify') {
                     const cred = response as AuthenticationResponseJSON;
-                    const expectedChallenge = userDoc.challenge || '';
+                    if (!userDoc.challenge) {
+                        return res.status(400).json({
+                            error: 'missing stored challenge for verification',
+                        });
+                    }
+                    const expectedChallenge = userDoc.challenge;
 
                     // Lookup by credential ID
                     const credID = cred.rawId;
@@ -313,12 +334,10 @@ export const webauthnApi = onRequest(
 
                 return res.status(400).json({ error: 'unknown-operation' });
             } catch (err: unknown) {
-                const message =
-                    err instanceof Error ? err.message : 'Unknown error';
                 logger.error('webauthnApi error', err);
                 return res
                     .status(500)
-                    .json({ error: 'internal', message });
+                    .json({ error: 'internal', message: 'Internal server error' });
             }
         });
     },

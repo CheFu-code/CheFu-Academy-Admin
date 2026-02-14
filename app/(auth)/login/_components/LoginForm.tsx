@@ -8,8 +8,7 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader } from 'lucide-react';
-import { KeyRound } from 'lucide-react'; // new icon
+import { KeyRound, Loader } from 'lucide-react';
 import { Dispatch, SetStateAction } from 'react';
 import { FcGoogle } from 'react-icons/fc';
 
@@ -18,8 +17,8 @@ export default function LoginForm({
     handleEmailLogin,
     googlePending,
     handleGoogle,
-    handlePasskey, // ✅ add this
-    passkeyPending, // ✅ add this
+    handlePasskey,
+    passkeyPending,
     email,
     setEmail,
     password,
@@ -30,11 +29,11 @@ export default function LoginForm({
     handleEmailLogin: () => Promise<void>;
     googlePending: boolean;
     emailPending: boolean;
-    passkeyPending: boolean;               // ✅ new
+    passkeyPending: boolean;
     email: string;
     password: string;
     handleGoogle: () => Promise<void>;
-    handlePasskey: () => Promise<void>;    // ✅ new
+    handlePasskey: () => Promise<void>;
     setEmail: Dispatch<SetStateAction<string>>;
     setPassword: Dispatch<SetStateAction<string>>;
 }) {
@@ -72,7 +71,6 @@ export default function LoginForm({
                             )}
                         </Button>
 
-                        {/* ✅ Passkey sign-in button */}
                         <Button
                             disabled={passkeyPending || anyPending}
                             onClick={handlePasskey}

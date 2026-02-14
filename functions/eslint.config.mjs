@@ -9,12 +9,9 @@ export default [
             ecmaVersion: 2022,
             sourceType: 'module',
         },
-        rules: {
-            // Add any minimal rules you want for Cloud Functions code
-        },
+        rules: {},
     },
-    // Ignore build output and deps so lint stays fast
     {
-        ignores: ['lib/**', 'node_modules/**'],
+        ignores: ['lib/**', 'generated/**', 'node_modules/**'],
     },
 ];
