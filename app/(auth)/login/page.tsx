@@ -6,6 +6,7 @@ import { auth } from '@/lib/firebase';
 import { saveUser } from '@/services/authService';
 import {
     GoogleAuthProvider,
+    MultiFactorError,
     signInWithPopup
 } from 'firebase/auth';
 import { useRef, useState } from 'react';
@@ -91,9 +92,10 @@ export default function LoginPage() {
                     firebaseError.code === 'auth/multi-factor-auth-required'
                 ) {
                     try {
+                        const mfaError = error as MultiFactorError;
                         setMfaSubmitting(true);
                         const userCred = await completeMfaWithTotp(
-                            error,
+                            mfaError,
                             getTotpCodeViaModal,
                         );
                         const user = userCred.user;
