@@ -15,7 +15,7 @@ import {
     reauthenticateWithPopup,
     updatePassword,
 } from 'firebase/auth';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import SecurityTabUI from './UI/SecurityTabUI';
 
@@ -29,24 +29,38 @@ const SecurityTab = () => {
     const [loadingChange, setLoadingChange] = useState(false);
     const [loadingPasskey, setLoadingPasskey] = useState(false);
     const [passkeyEnrolled, setPasskeyEnrolled] = useState<boolean | null>(null);
+    const passkeyEnrollmentCheckTokenRef = useRef(0);
 
     useEffect(() => {
         const unsub = auth.onAuthStateChanged((user) => {
+            const token = ++passkeyEnrollmentCheckTokenRef.current;
+
             if (!user) {
-                setPasskeyEnrolled(null);
+                if (token === passkeyEnrollmentCheckTokenRef.current) {
+                    setPasskeyEnrolled(null);
+                }
                 return;
             }
 
             setPasskeyEnrolled(null);
             hasEnrolledPasskey(user.uid)
-                .then((enrolled) => setPasskeyEnrolled(enrolled))
+                .then((enrolled) => {
+                    if (token === passkeyEnrollmentCheckTokenRef.current) {
+                        setPasskeyEnrolled(enrolled);
+                    }
+                })
                 .catch((error: unknown) => {
                     console.error('Error checking passkey enrollment:', error);
-                    setPasskeyEnrolled(null);
+                    if (token === passkeyEnrollmentCheckTokenRef.current) {
+                        setPasskeyEnrolled(null);
+                    }
                 });
         });
 
-        return () => unsub();
+        return () => {
+            passkeyEnrollmentCheckTokenRef.current += 1;
+            unsub();
+        };
     }, []);
 
     // Utility: check if user has password provider linked

@@ -81,6 +81,7 @@ type AuthenticationOptionsResponse = {
 };
 type VerifyRegResponse = { verified: boolean };
 type VerifyAuthnResponse = { verified: boolean; customToken?: string };
+type HasPasskeysResponse = { enrolled: boolean };
 
 // ---------- Registration ----------
 /**
@@ -122,16 +123,10 @@ export async function registerPasskey(
 }
 
 export async function hasEnrolledPasskey(uid: string): Promise<boolean> {
-    try {
-        await post<AuthenticationOptionsResponse>('authn-options', { uid });
-        return true;
-    } catch (error: unknown) {
-        const message = (error as Error)?.message || '';
-        if (/no-passkeys-enrolled/i.test(message)) {
-            return false;
-        }
-        throw error;
-    }
+    const { enrolled } = await post<HasPasskeysResponse>('has-passkeys', {
+        uid,
+    });
+    return enrolled;
 }
 
 // ---------- Authentication (Sign in) ----------

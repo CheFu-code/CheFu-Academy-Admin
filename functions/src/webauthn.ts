@@ -94,6 +94,7 @@ const BodySchema = z.object({
     operation: z.enum([
         'reg-options',
         'reg-verify',
+        'has-passkeys',
         'authn-options',
         'authn-verify',
     ]),
@@ -281,6 +282,12 @@ export const webauthnApi = onRequest(
 
                     await setUserDoc(resolvedUid, { challenge: options.challenge });
                     return res.status(200).json({ options });
+                }
+
+                if (operation === 'has-passkeys') {
+                    return res
+                        .status(200)
+                        .json({ enrolled: userDoc.credentials.length > 0 });
                 }
 
                 if (operation === 'authn-verify') {
