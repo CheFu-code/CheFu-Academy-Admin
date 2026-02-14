@@ -153,6 +153,8 @@ export async function signInWithPasskey(uid: string): Promise<UserCredential> {
  */
 export function toPasskeyMessage(err: unknown): string {
     const msg = (err as Error)?.message || 'Unknown error';
+    if (/no-passkeys-enrolled/i.test(msg))
+        return 'No passkey is enrolled for this account yet.';
     if (/NotAllowedError|AbortError/i.test(msg))
         return 'Passkey prompt was cancelled.';
     if (/invalid|mismatch|challenge|origin|rp/i.test(msg))

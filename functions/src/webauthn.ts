@@ -62,6 +62,13 @@ const getUserDoc = async (uid: string) =>
 const setUserDoc = (uid: string, data: Partial<WebAuthnUserDoc>) =>
     USERS.doc(uid).set(data, { merge: true });
 
+const resolveUid = async (identifier: string): Promise<string> => {
+    const value = identifier.trim();
+    if (!value.includes('@')) return value;
+    const user = await auth.getUserByEmail(value);
+    return user.uid;
+};
+
 const ensureOrigin = (origin: string) => {
     if (!ORIGINS.has(origin)) throw new Error(`Origin not allowed: ${origin}`);
     return origin;
@@ -101,6 +108,7 @@ export const webauthnApi = onRequest(
                 }
                 const { operation, uid, username, rpId, origin, response } =
                     parsed.data;
+                const resolvedUid = await resolveUid(uid);
 
                 const expectedOrigin =
                     origin?.trim() || (req.headers.origin as string) || '';
@@ -116,9 +124,9 @@ export const webauthnApi = onRequest(
                     '';
 
                 // Load and normalize user doc to avoid crashes on legacy/partial records
-                const loadedUserDoc = await getUserDoc(uid);
+                const loadedUserDoc = await getUserDoc(resolvedUid);
                 const userDoc: WebAuthnUserDoc = {
-                    username: loadedUserDoc?.username || username || uid,
+                    username: loadedUserDoc?.username || username || resolvedUid,
                     challenge: loadedUserDoc?.challenge,
                     credentials: Array.isArray(loadedUserDoc?.credentials)
                         ? loadedUserDoc.credentials
@@ -140,7 +148,7 @@ export const webauthnApi = onRequest(
                         rpID: effectiveRPID,
                         userName: userDoc.username,
                         // Using uid as backing user handle is common
-                        userID: Buffer.from(uid),
+                        userID: Buffer.from(resolvedUid),
                         authenticatorSelection: {
                             // let the client attachment be flexible; you already chose defaults in UI
                             residentKey: 'preferred',
@@ -149,7 +157,7 @@ export const webauthnApi = onRequest(
                         excludeCredentials,
                     });
 
-                    await setUserDoc(uid, {
+                    await setUserDoc(resolvedUid, {
                         challenge: options.challenge,
                         username: userDoc.username,
                     });
@@ -183,10 +191,10 @@ export const webauthnApi = onRequest(
                         deviceType: credentialDeviceType,
                         backedUp: credentialBackedUp,
                         transports: credential.transports,
-                        webauthnUserID: Buffer.from(uid).toString('base64url'),
+                        webauthnUserID: Buffer.from(resolvedUid).toString('base64url'),
                     };
 
-                    await setUserDoc(uid, {
+                    await setUserDoc(resolvedUid, {
                         challenge: null,
                         credentials: [
                             ...userDoc.credentials.filter(
@@ -220,7 +228,7 @@ export const webauthnApi = onRequest(
                         userVerification: 'preferred',
                     });
 
-                    await setUserDoc(uid, { challenge: options.challenge });
+                    await setUserDoc(resolvedUid, { challenge: options.challenge });
                     return res.status(200).json({ options });
                 }
 
@@ -262,13 +270,13 @@ export const webauthnApi = onRequest(
                     // Update counter to prevent replays
                     const { newCounter } = verification.authenticationInfo;
                     match.counter = newCounter;
-                    await setUserDoc(uid, {
+                    await setUserDoc(resolvedUid, {
                         challenge: null,
                         credentials: userDoc.credentials,
                     });
 
                     // Sign into Firebase: mint custom token for this uid
-                    const token = await auth.createCustomToken(uid);
+                    const token = await auth.createCustomToken(resolvedUid);
                     return res
                         .status(200)
                         .json({ verified: true, customToken: token });

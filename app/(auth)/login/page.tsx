@@ -3,7 +3,7 @@ import { useAuthUser } from '@/hooks/useAuthUser';
 import { UseAuth } from '@/services/authService';
 import LoginForm from './_components/LoginForm';
 import { useState } from 'react';
-import { signInWithFirebasePasskey } from '@/lib/passkeys';
+import { signInWithFirebasePasskey, toPasskeyMessage } from '@/lib/passkeys';
 import { toast } from 'sonner';
 
 export default function LoginPage() {
@@ -34,8 +34,7 @@ export default function LoginPage() {
             console.log('Signed in with passkey');
             toast.success('Signed in with passkey');
         } catch (e: unknown) {
-            const message =
-                e instanceof Error ? e.message : 'Passkey sign-in failed.';
+            const message = toPasskeyMessage(e);
             toast.error(message);
             console.error('passkey error', e);
         } finally {
