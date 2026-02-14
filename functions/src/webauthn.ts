@@ -94,6 +94,7 @@ const BodySchema = z.object({
     operation: z.enum([
         'reg-options',
         'reg-verify',
+        'has-passkeys',
         'authn-options',
         'authn-verify',
     ]),
@@ -133,8 +134,14 @@ export const webauthnApi = onRequest(
                         .split(',')[0]
                         .trim()
                         .toLowerCase();
+                let originHost = '';
+                try {
+                    originHost = new URL(expectedOrigin).hostname.toLowerCase();
+                } catch {
+                    originHost = '';
+                }
                 const effectiveRPID =
-                    (RP_ID || forwardedHost.split(':')[0] || '')
+                    (originHost || RP_ID || forwardedHost.split(':')[0] || '')
                         .trim()
                         .toLowerCase();
                 if (!effectiveRPID) {
@@ -275,6 +282,12 @@ export const webauthnApi = onRequest(
 
                     await setUserDoc(resolvedUid, { challenge: options.challenge });
                     return res.status(200).json({ options });
+                }
+
+                if (operation === 'has-passkeys') {
+                    return res
+                        .status(200)
+                        .json({ enrolled: userDoc.credentials.length > 0 });
                 }
 
                 if (operation === 'authn-verify') {

@@ -37,6 +37,7 @@ const SecurityTabUI = ({
     handleChangePassword,
     handleEnrollPasskey,
     hasPasswordProvider,
+    passkeyEnrolled,
 }: {
     openDelete: boolean;
     setOpenDelete: (value: boolean) => void;
@@ -55,6 +56,7 @@ const SecurityTabUI = ({
     handleChangePassword: () => void;
     handleEnrollPasskey: () => void;
     hasPasswordProvider: boolean;
+    passkeyEnrolled: boolean | null;
 }) => {
 
     return (
@@ -73,10 +75,14 @@ const SecurityTabUI = ({
                         type="button"
                         variant="outline"
                         onClick={handleEnrollPasskey}
-                        disabled={loadingPasskey}
+                        disabled={loadingPasskey || passkeyEnrolled === true}
                     >
                         <KeyRound className="mr-2 h-4 w-4" />
-                        {loadingPasskey ? 'Enrolling...' : 'Enroll Passkey'}
+                        {loadingPasskey
+                            ? 'Enrolling...'
+                            : passkeyEnrolled === true
+                                ? 'Already enrolled'
+                                : 'Enroll Passkey'}
                     </Button>
 
                     {/* Change Password Modal */}
