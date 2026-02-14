@@ -37,7 +37,6 @@ const SecurityTabUI = ({
     handleChangePassword,
     handleEnrollPasskey,
     hasPasswordProvider,
-    passkeyEnrolled,
 }: {
     openDelete: boolean;
     setOpenDelete: (value: boolean) => void;
@@ -56,7 +55,6 @@ const SecurityTabUI = ({
     handleChangePassword: () => void;
     handleEnrollPasskey: () => void;
     hasPasswordProvider: boolean;
-    passkeyEnrolled: boolean | null;
 }) => {
 
     return (

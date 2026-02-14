@@ -2,10 +2,9 @@
 
 import { auth } from '@/lib/firebase';
 import {
-    hasEnrolledPasskey,
     isPasskeyReady,
     registerPasskey,
-    toPasskeyMessage,
+    toPasskeyMessage
 } from '@/lib/passkeys';
 import { FirebaseError } from 'firebase/app';
 import {
@@ -15,7 +14,7 @@ import {
     reauthenticateWithPopup,
     updatePassword,
 } from 'firebase/auth';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 import SecurityTabUI from './UI/SecurityTabUI';
 
@@ -28,40 +27,6 @@ const SecurityTab = () => {
     const [loadingDelete, setLoadingDelete] = useState(false);
     const [loadingChange, setLoadingChange] = useState(false);
     const [loadingPasskey, setLoadingPasskey] = useState(false);
-    const [passkeyEnrolled, setPasskeyEnrolled] = useState<boolean | null>(null);
-    const passkeyEnrollmentCheckTokenRef = useRef(0);
-
-    useEffect(() => {
-        const unsub = auth.onAuthStateChanged((user) => {
-            const token = ++passkeyEnrollmentCheckTokenRef.current;
-
-            if (!user) {
-                if (token === passkeyEnrollmentCheckTokenRef.current) {
-                    setPasskeyEnrolled(null);
-                }
-                return;
-            }
-
-            setPasskeyEnrolled(null);
-            hasEnrolledPasskey(user.uid)
-                .then((enrolled) => {
-                    if (token === passkeyEnrollmentCheckTokenRef.current) {
-                        setPasskeyEnrolled(enrolled);
-                    }
-                })
-                .catch((error: unknown) => {
-                    console.error('Error checking passkey enrollment:', error);
-                    if (token === passkeyEnrollmentCheckTokenRef.current) {
-                        setPasskeyEnrolled(null);
-                    }
-                });
-        });
-
-        return () => {
-            passkeyEnrollmentCheckTokenRef.current += 1;
-            unsub();
-        };
-    }, []);
 
     // Utility: check if user has password provider linked
     const userHasPasswordProvider = () => {
@@ -204,7 +169,6 @@ const SecurityTab = () => {
             }
 
             toast.success('Passkey enrolled successfully.');
-            setPasskeyEnrolled(true);
         } catch (error: unknown) {
             console.error('Error enrolling passkey:', error);
             toast.error(toPasskeyMessage(error));
@@ -232,7 +196,6 @@ const SecurityTab = () => {
             handleChangePassword={handleChangePassword}
             handleEnrollPasskey={handleEnrollPasskey}
             hasPasswordProvider={userHasPasswordProvider()}
-            passkeyEnrolled={passkeyEnrolled}
         />
     );
 };
