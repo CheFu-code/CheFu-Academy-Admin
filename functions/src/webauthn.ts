@@ -133,8 +133,14 @@ export const webauthnApi = onRequest(
                         .split(',')[0]
                         .trim()
                         .toLowerCase();
+                let originHost = '';
+                try {
+                    originHost = new URL(expectedOrigin).hostname.toLowerCase();
+                } catch {
+                    originHost = '';
+                }
                 const effectiveRPID =
-                    (RP_ID || forwardedHost.split(':')[0] || '')
+                    (originHost || RP_ID || forwardedHost.split(':')[0] || '')
                         .trim()
                         .toLowerCase();
                 if (!effectiveRPID) {

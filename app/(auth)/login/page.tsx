@@ -47,7 +47,9 @@ export default function LoginPage() {
         } catch (e: unknown) {
             if (isNoPasskeysEnrolledError(e)) {
                 toast.error(
-                    'No passkey enrolled for this account. Sign in with email/password first, then enroll in Settings > Security.',
+                    'No passkey enrolled for this account.', {
+                    description: 'Sign in first, then enroll in Settings > Security.'
+                }
                 );
                 return;
             }

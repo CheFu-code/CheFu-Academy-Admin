@@ -23,5 +23,5 @@
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "test.js", "services/enable-totp-mfa.ts"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "functions"]
 }
