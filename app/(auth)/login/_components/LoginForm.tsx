@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader } from 'lucide-react';
 import { Dispatch, SetStateAction } from 'react';
+import { FaFacebook } from 'react-icons/fa';
 import { FcGoogle } from 'react-icons/fc';
 
 export default function LoginForm({
@@ -61,6 +62,11 @@ export default function LoginForm({
                                     <span>Sign in with Google</span>
                                 </>
                             )}
+                        </Button>
+                        <Button variant="outline"
+                            className="cursor-pointer">
+                            <FaFacebook className="size-4" />
+                            <span>Sign in with Facebook</span>
                         </Button>
                     </div>
 

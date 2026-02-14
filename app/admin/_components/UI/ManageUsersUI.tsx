@@ -17,9 +17,9 @@ import { ManageUsersProps } from '@/types';
 import { doc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { Copy, Loader2, Search, Trash2, Users, X } from 'lucide-react';
 import * as React from 'react';
-import { EditableRolesCell } from '../EditableRoleCell ';
 import DeleteModal from './DeleteModal';
 import { copyToClipboard } from '@/helpers/copyToClipboard';
+import { EditableRolesCell } from '../EditableRoleCell';
 
 const ManageUsersUI: React.FC<ManageUsersProps> = ({
     loading,

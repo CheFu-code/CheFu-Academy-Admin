@@ -106,13 +106,23 @@ export default function LoginPage() {
                         if (!savedData)
                             throw new Error('Failed to save user data.');
                         toast.success('Login successful with MFA!');
-                    } catch (mfaErr) {
-                        console.error('MFA (TOTP) completion failed:', mfaErr);
-                        // Optionally reopen modal to let them try again:
-                        setShow2FAModal(true);
-                        toast.error(
-                            'The TOTP code was not accepted. Please try again.',
-                        );
+                    } catch (mfaError) {
+                        // Re-trigger the full MFA flow with a new promise
+                        try {
+                            const retryCred = await completeMfaWithTotp(
+                                mfaError as MultiFactorError,
+                                getTotpCodeViaModal,
+                            );
+                            const retryUser = retryCred.user;
+                            const fullname = retryUser.displayName?.trim() || 'Google User';
+                            const email = retryUser.email || '';
+                            const savedData = await saveUser(retryUser, fullname, email);
+                            if (!savedData) throw new Error('Failed to save user data.');
+                            toast.success('Login successful with MFA!');
+                        } catch (retryErr) {
+                            console.error('MFA retry also failed:', retryErr);
+                            toast.error('MFA verification failed. Please try logging in again.');
+                        }
                     } finally {
                         setMfaSubmitting(false);
                     }

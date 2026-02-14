@@ -260,22 +260,16 @@ export const EditableRolesCell: React.FC<EditableRolesCellProps> = ({
                                                     className={cn(
                                                         'ml-1 -mr-0.5 inline-flex h-4 w-4 items-center justify-center rounded hover:bg-black/10 dark:hover:bg-white/10 cursor-pointer',
                                                         saving &&
-                                                            isRemoving &&
-                                                            'opacity-50 cursor-not-allowed',
+                                                        isRemoving &&
+                                                        'opacity-50 cursor-not-allowed',
                                                     )}
                                                     onClick={async (e) => {
                                                         e.preventDefault();
                                                         e.stopPropagation(); // prevent opening popover
-                                                        if (
-                                                            saving &&
-                                                            isRemoving
-                                                        )
-                                                            return;
+                                                        if (saving) return;
                                                         await removeRole(r); // instant persist
                                                     }}
-                                                    disabled={
-                                                        saving && isRemoving
-                                                    }
+                                                    disabled={saving}
                                                 >
                                                     {isRemoving ? (
                                                         <span className="block h-2 w-2 rounded-full animate-pulse bg-current" />
@@ -347,7 +341,7 @@ export const EditableRolesCell: React.FC<EditableRolesCellProps> = ({
                                             className={cn(
                                                 'flex items-center gap-2',
                                                 checked &&
-                                                    'opacity-60 pointer-events-none select-none',
+                                                'opacity-60 pointer-events-none select-none',
                                             )}
                                             aria-disabled={checked}
                                         >

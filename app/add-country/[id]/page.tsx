@@ -39,10 +39,17 @@ const schema = z.object({
     countryCode: z.string().min(1, 'Please select your country'),
 });
 
-export default function AddCountryCode() {
+type AddCountryCodePageProps = {
+    params: {
+        id: string;
+    };
+};
+
+export default function AddCountryCode({ params }: AddCountryCodePageProps) {
     const router = useRouter();
     const countries = React.useMemo(() => countryList().getData(), []);
     const { user, loading } = useAuthUser();
+    const routeUserId = params?.id?.trim();
 
     const form = useForm<z.infer<typeof schema>>({
         resolver: zodResolver(schema),
@@ -54,6 +61,14 @@ export default function AddCountryCode() {
             toast.error('You must be signed in to save your country.');
             return;
         }
+        if (!routeUserId) {
+            toast.error('Invalid link. Missing user id.');
+            return;
+        }
+        if (user.uid !== routeUserId) {
+            toast.error('This link does not match your account.');
+            return;
+        }
         const selected = countries.find((c) => c.value === values.countryCode);
         const country = selected?.label ?? values.countryCode;
 
@@ -61,6 +76,7 @@ export default function AddCountryCode() {
             await setDoc(
                 doc(db, 'users', user?.email),
                 {
+                    uid: routeUserId,
                     countryCode: values.countryCode, // e.g., 'ZA'
                     country, // e.g., 'South Africa'
                     updatedAt: serverTimestamp(),
@@ -133,7 +149,7 @@ export default function AddCountryCode() {
                             <Button
                                 type="submit"
                                 className="w-full cursor-pointer"
-                                disabled={isSubmitting}
+                                disabled={isSubmitting || loading}
                             >
                                 {isSubmitting ? 'Saving...' : 'Save & Continue'}
                             </Button>
