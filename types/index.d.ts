@@ -1,4 +1,3 @@
-
 import { Ticket } from './supportTicket';
 export interface DashboardUIProps {
     totalUsers: number | null;
@@ -36,5 +35,21 @@ export type ManageUsersProps = {
     deleting: boolean;
     openDeleteModal: (user: User) => void;
     closeDeleteModal: () => void;
-    confirmDelete: () => Promise<void>
+    confirmDelete: () => Promise<void>;
+};
+
+// Firestore device as you described
+export type FirestoreTrustedDevice = {
+    brand?: string;
+    deviceType?: number; // 0=desktop, 1=phone, 2=tablet, etc. (your enum)
+    modelName?: string;
+    osName?: string;
+    osVersion?: string;
+
+    // Optional/enhancements if you later add them:
+    ip?: string;
+    location?: string;
+    lastActive?: string; // ISO string
+    current?: boolean; // mark current device
+    deviceId?: string; // recommended unique id if you move to subcollection or sessions
 };

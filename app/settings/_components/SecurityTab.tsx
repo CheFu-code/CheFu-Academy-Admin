@@ -1,16 +1,19 @@
 'use client';
 
 import { auth } from '@/lib/firebase';
+import { FirebaseError } from 'firebase/app';
 import {
     EmailAuthProvider,
+    GoogleAuthProvider,
     reauthenticateWithCredential,
+    reauthenticateWithPopup,
     updatePassword,
 } from 'firebase/auth';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import SecurityTabUI from './UI/SecurityTabUI';
 
 const SecurityTab = () => {
-    // states for modals + inputs
     const [openDelete, setOpenDelete] = useState(false);
     const [openChange, setOpenChange] = useState(false);
     const [currentPassword, setCurrentPassword] = useState('');
@@ -19,44 +22,86 @@ const SecurityTab = () => {
     const [loadingDelete, setLoadingDelete] = useState(false);
     const [loadingChange, setLoadingChange] = useState(false);
 
-    // 🔹 Delete account
+    // Utility: check if user has password provider linked
+    const userHasPasswordProvider = () => {
+        const user = auth.currentUser;
+        return (
+            user?.providerData.some((p) => p.providerId === 'password') ?? false
+        );
+    };
+
+    // 🔹 Delete account (supports password or Google re-auth)
     const handleDeleteAccount = async () => {
         const user = auth.currentUser;
-
-        if (!user) return alert('No user is logged in.');
-        if (!deletePassword) return alert('Enter your password first.');
+        if (!user) return toast.error('No user is logged in.');
 
         setLoadingDelete(true);
         try {
-            const credential = EmailAuthProvider.credential(
-                user.email!,
-                deletePassword,
-            );
-            await reauthenticateWithCredential(user, credential);
+            if (userHasPasswordProvider()) {
+                // Email/Password users -> reauth with password
+                if (!deletePassword) {
+                    setLoadingDelete(false);
+                    return alert('Enter your password first.');
+                }
+                const credential = EmailAuthProvider.credential(
+                    user.email!,
+                    deletePassword,
+                );
+                await reauthenticateWithCredential(user, credential);
+            } else {
+                // Google users -> reauth with Google
+                const provider = new GoogleAuthProvider();
+                await reauthenticateWithPopup(user, provider);
+            }
+
             await user.delete();
-            alert('Your account has been deleted.');
+            toast.success('Your account has been deleted.');
             setOpenDelete(false);
         } catch (error: unknown) {
-            if (error instanceof Error) {
-                console.error('Error deleting account:', error);
-                alert(error.message || 'Failed to delete account.');
+            console.error('Error deleting account:', error);
+
+            if (error instanceof FirebaseError) {
+                switch (error.code) {
+                    case 'auth/requires-recent-login':
+                        toast.error('Please re-authenticate and try again.');
+                        break;
+                    case 'auth/wrong-password':
+                        toast.error('Incorrect password.');
+                        break;
+                    case 'auth/too-many-requests':
+                        toast.error('Too many requests. Please try again later.');
+                        break;
+                    case 'auth/network-request-failed':
+                        toast.error('Network error. Please try again later.');
+                        break;
+                    case 'auth/popup-closed-by-user':
+                        toast.error('Popup closed by user.');
+                        break;
+                    default:
+                        toast.error(error.message || 'Failed to delete account.');
+                }
             } else {
-                console.error('Unexpected error:', error);
-                alert('Failed to delete account.');
+                toast.error('Failed to delete account.');
             }
         } finally {
             setLoadingDelete(false);
             setDeletePassword('');
         }
-    };
+    }
 
-    // 🔹 Change password
+    // 🔹 Change password (only for accounts that have password provider)
     const handleChangePassword = async () => {
         const user = auth.currentUser;
-
         if (!user) return alert('No user is logged in.');
+
+        if (!userHasPasswordProvider()) {
+            return alert(
+                'Your account is signed in with Google. Add a password to your account first to enable password changes.',
+            );
+        }
+
         if (!currentPassword || !newPassword)
-            return alert('Fill in both fields.');
+            return toast.error('Fill in both fields.');
 
         setLoadingChange(true);
         try {
@@ -66,17 +111,15 @@ const SecurityTab = () => {
             );
             await reauthenticateWithCredential(user, credential);
             await updatePassword(user, newPassword);
-
-            alert('Your password has been updated.');
+            toast.success('Your password has been updated.');
             setOpenChange(false);
+            setCurrentPassword('');
+            setNewPassword('');
         } catch (error: unknown) {
-            if (error instanceof Error) {
-                console.error('Error updating password:', error);
-                alert(error.message || 'Failed to change password.');
-            } else {
-                console.error('Unexpected error:', error);
-                alert('Failed to change password.');
-            }
+            console.error('Error changing password:', error);
+            toast.error('Failed to change password.');
+        } finally {
+            setLoadingChange(false);
         }
     };
 
@@ -96,6 +139,7 @@ const SecurityTab = () => {
             loadingChange={loadingChange}
             handleDeleteAccount={handleDeleteAccount}
             handleChangePassword={handleChangePassword}
+            hasPasswordProvider={userHasPasswordProvider()}
         />
     );
 };

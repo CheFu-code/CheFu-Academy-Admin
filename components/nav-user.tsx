@@ -26,29 +26,14 @@ import {
     SidebarMenuItem,
     useSidebar,
 } from '@/components/ui/sidebar';
-import { auth } from '@/lib/firebase';
+import { useSignOut } from '@/hooks/useSignOut';
 import { User } from '@/types/user';
 import Link from 'next/link';
-import { useState } from 'react';
-import { toast } from 'sonner';
 import { Button } from './ui/button';
-import { signOut } from 'firebase/auth';
 
 export function NavUser({ user }: { user: User }) {
     const { isMobile } = useSidebar();
-    const [loading, setLoading] = useState(false);
-
-    const handleLogout = async () => {
-        try {
-            setLoading(true);
-            await signOut(auth);
-        } catch (error) {
-            toast.error('Error signing out');
-            console.error('Error signing out:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
+    const { handleLogout,loggingOut } = useSignOut()
 
     return (
         <SidebarMenu>
@@ -159,7 +144,7 @@ export function NavUser({ user }: { user: User }) {
                             onClick={handleLogout}
                         >
                             <DropdownMenuItem>
-                                {loading ? (
+                                {loggingOut ? (
                                     <Loader />
                                 ) : (
                                     <div className="hover:text-shadow-red-500 hover:text-red-300 cursor-pointer flex items-center gap-1">
