@@ -23,6 +23,8 @@ export default function LoginForm({
     password,
     setPassword,
     emailPending,
+    signInWithFacebook,
+    facebookPending
 }: {
     loading: boolean;
     handleEmailLogin: () => Promise<void>;
@@ -33,6 +35,8 @@ export default function LoginForm({
     handleGoogle: () => Promise<void>;
     setEmail: Dispatch<SetStateAction<string>>;
     setPassword: Dispatch<SetStateAction<string>>;
+    signInWithFacebook: () => Promise<void>;
+    facebookPending: boolean;   
 }) {
     return (
         <Card>
@@ -59,14 +63,27 @@ export default function LoginForm({
                             ) : (
                                 <>
                                     <FcGoogle className="size-4" />
-                                    <span>Sign in with Google</span>
+                                    <span>Google</span>
                                 </>
                             )}
                         </Button>
-                        <Button variant="outline"
-                            className="cursor-pointer">
-                            <FaFacebook className="size-4" />
-                            <span>Sign in with Facebook</span>
+                        <Button
+                            onClick={signInWithFacebook}
+                            variant="outline"
+                            className="cursor-pointer"
+                            disabled={facebookPending}
+                        >
+                            {facebookPending ? (
+                                <>
+                                    <Loader className="size-4 animate-spin" />
+                                    <span>Loading...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <FaFacebook className="size-4 text-blue-500" />
+                                    <span>Facebook</span>
+                                </>
+                            )}
                         </Button>
                     </div>
 

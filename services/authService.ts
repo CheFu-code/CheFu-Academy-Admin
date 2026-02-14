@@ -83,3 +83,4 @@ const sendWelcomeEmail = async (email: string, name: string) => {
         console.error('Failed to send welcome email:', error);
     }
 };
+

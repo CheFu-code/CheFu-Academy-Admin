@@ -5,6 +5,7 @@ import { useEmailSignIn } from '@/hooks/useEmailSignIn';
 import { auth } from '@/lib/firebase';
 import { saveUser } from '@/services/authService';
 import {
+    FacebookAuthProvider,
     GoogleAuthProvider,
     MultiFactorError,
     signInWithPopup
@@ -25,6 +26,7 @@ export default function LoginPage() {
         emailPending,
     } = useEmailSignIn();
     const [googlePending, setGooglePending] = useState(false);
+    const [facebookPending, setFacebookPending] = useState(false);
     const [show2FAModal, setShow2FAModal] = useState(false);
     const [twoFACode, setTwoFACode] = useState('');
     const [mfaSubmitting, setMfaSubmitting] = useState(false);
@@ -52,6 +54,29 @@ export default function LoginPage() {
         mfaResolveRef.current?.(code);
         mfaResolveRef.current = null;
         mfaRejectRef.current = null;
+    };
+
+    const signInWithFacebook = async () => {
+        try {
+            setFacebookPending(true);
+            const provider = new FacebookAuthProvider();
+            const result = await signInWithPopup(auth, provider);
+
+            const user = result.user;
+            console.log("Facebook user:", user);
+            if (!user.email) {
+                throw new Error('No email found in Facebook account.');
+            }
+            const fullname = user.displayName?.trim() || 'Facebook User';
+            const email = user.email || '';
+
+            const savedData = await saveUser(user, fullname, email);
+            if (!savedData) throw new Error('Failed to save user data.');
+        } catch (error) {
+            console.error('Facebook login failed:',error);
+        }finally{
+            setFacebookPending(false);
+        }
     };
 
     const handleGoogle = async () => {
@@ -152,6 +177,8 @@ export default function LoginPage() {
                 googlePending={googlePending || mfaSubmitting}
                 emailPending={emailPending}
                 handleGoogle={handleGoogle}
+                signInWithFacebook={signInWithFacebook}
+                facebookPending={facebookPending}
             />
 
             <SetupModal
