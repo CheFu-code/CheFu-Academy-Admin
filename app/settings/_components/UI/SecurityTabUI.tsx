@@ -75,14 +75,12 @@ const SecurityTabUI = ({
                         type="button"
                         variant="outline"
                         onClick={handleEnrollPasskey}
-                        disabled={loadingPasskey || passkeyEnrolled === true}
+                        disabled={loadingPasskey}
                     >
                         <KeyRound className="mr-2 h-4 w-4" />
                         {loadingPasskey
                             ? 'Enrolling...'
-                            : passkeyEnrolled === true
-                                ? 'Already enrolled'
-                                : 'Enroll Passkey'}
+                            : 'Enroll Passkey'}
                     </Button>
 
                     {/* Change Password Modal */}
