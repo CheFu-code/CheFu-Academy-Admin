@@ -26,10 +26,16 @@ const getRpId = () => window.location.hostname;
 async function post<T = unknown>(
     operation: string,
     body: Record<string, unknown>,
+    authToken?: string,
 ): Promise<T> {
+    const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+    };
+    if (authToken) headers.Authorization = `Bearer ${authToken}`;
+
     const res = await fetch(API, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         // Include the operation key expected by our backend
         body: JSON.stringify({ operation, ...body }),
         credentials: 'omit', // cross-origin function call in local dev; no cookies needed
@@ -81,13 +87,19 @@ export async function registerPasskey(
     uid: string,
     username: string,
 ): Promise<boolean> {
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+        throw new Error('Sign in first to enroll a passkey.');
+    }
+    const idToken = await currentUser.getIdToken();
+
     // 1) Get registration options from server
     const { options } = await post<RegistrationOptionsResponse>('reg-options', {
         uid,
         username,
         origin: window.location.origin, // the server validates this
         rpId: getRpId(),
-    });
+    }, idToken);
 
     // 2) Trigger WebAuthn ceremony in the browser
     const attestation = await startRegistration({ optionsJSON: options });
@@ -98,7 +110,7 @@ export async function registerPasskey(
         origin: window.location.origin,
         rpId: getRpId(),
         response: attestation,
-    });
+    }, idToken);
 
     return verified;
 }

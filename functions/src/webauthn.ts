@@ -74,6 +74,13 @@ const ensureOrigin = (origin: string) => {
     return origin;
 };
 
+const getBearerToken = (authHeader?: string) => {
+    if (!authHeader) return null;
+    const [scheme, token] = authHeader.split(' ');
+    if (scheme !== 'Bearer' || !token) return null;
+    return token;
+};
+
 // API schema
 const BodySchema = z.object({
     operation: z.enum([
@@ -134,6 +141,17 @@ export const webauthnApi = onRequest(
                 };
 
                 if (operation === 'reg-options') {
+                    const idToken = getBearerToken(
+                        req.headers.authorization as string | undefined,
+                    );
+                    if (!idToken) {
+                        return res.status(401).json({ error: 'auth-required' });
+                    }
+                    const decoded = await auth.verifyIdToken(idToken);
+                    if (decoded.uid !== resolvedUid) {
+                        return res.status(403).json({ error: 'forbidden' });
+                    }
+
                     // Generate options for registration
                     const excludeCredentials = userDoc.credentials.map(
                         (cred) => ({
@@ -165,6 +183,17 @@ export const webauthnApi = onRequest(
                 }
 
                 if (operation === 'reg-verify') {
+                    const idToken = getBearerToken(
+                        req.headers.authorization as string | undefined,
+                    );
+                    if (!idToken) {
+                        return res.status(401).json({ error: 'auth-required' });
+                    }
+                    const decoded = await auth.verifyIdToken(idToken);
+                    if (decoded.uid !== resolvedUid) {
+                        return res.status(403).json({ error: 'forbidden' });
+                    }
+
                     const cred = response as RegistrationResponseJSON;
                     const expectedChallenge = userDoc.challenge || '';
                     const verification = await verifyRegistrationResponse({

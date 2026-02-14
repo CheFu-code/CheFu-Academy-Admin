@@ -3,11 +3,7 @@ import { useAuthUser } from '@/hooks/useAuthUser';
 import { UseAuth } from '@/services/authService';
 import LoginForm from './_components/LoginForm';
 import { useState } from 'react';
-import {
-    registerPasskey,
-    signInWithFirebasePasskey,
-    toPasskeyMessage,
-} from '@/lib/passkeys';
+import { signInWithFirebasePasskey, toPasskeyMessage } from '@/lib/passkeys';
 import { toast } from 'sonner';
 import {
     Dialog,
@@ -35,8 +31,6 @@ export default function LoginPage() {
     const [passkeyPending, setPasskeyPending] = useState(false);
     const [openPasskeyDialog, setOpenPasskeyDialog] = useState(false);
     const [passkeyIdentifier, setPasskeyIdentifier] = useState('');
-    const [openEnrollDialog, setOpenEnrollDialog] = useState(false);
-    const [enrollIdentifier, setEnrollIdentifier] = useState('');
 
     const isNoPasskeysEnrolledError = (error: unknown) => {
         const message = (error as Error)?.message || '';
@@ -52,9 +46,9 @@ export default function LoginPage() {
             toast.success('Signed in with passkey');
         } catch (e: unknown) {
             if (isNoPasskeysEnrolledError(e)) {
-                setEnrollIdentifier(value);
-                setOpenEnrollDialog(true);
-                toast.error('No passkey enrolled for this account yet.');
+                toast.error(
+                    'No passkey enrolled for this account. Sign in with email/password first, then enroll in Settings > Security.',
+                );
                 return;
             }
             const message = toPasskeyMessage(e);
@@ -81,30 +75,6 @@ export default function LoginPage() {
         setEmail(identifier);
         setOpenPasskeyDialog(false);
         await runPasskeySignIn(identifier);
-    }
-
-    async function handleEnrollPasskey() {
-        const identifier = enrollIdentifier.trim();
-        if (!identifier) return;
-
-        setPasskeyPending(true);
-        try {
-            const enrolled = await registerPasskey(identifier, identifier);
-            if (!enrolled) {
-                toast.error('Passkey enrollment failed.');
-                return;
-            }
-            toast.success('Passkey enrolled. Signing you in...');
-            setOpenEnrollDialog(false);
-            await signInWithFirebasePasskey(identifier);
-            toast.success('Signed in with passkey');
-        } catch (e: unknown) {
-            const message = toPasskeyMessage(e);
-            toast.error(message);
-            console.error('passkey enrollment error', e);
-        } finally {
-            setPasskeyPending(false);
-        }
     }
 
     return (
@@ -154,34 +124,6 @@ export default function LoginPage() {
                             disabled={!passkeyIdentifier.trim() || passkeyPending}
                         >
                             Continue
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-
-            <Dialog open={openEnrollDialog} onOpenChange={setOpenEnrollDialog}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Enroll a passkey</DialogTitle>
-                        <DialogDescription>
-                            No passkey is enrolled for this account. Create one now to continue.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <Input type="email" value={enrollIdentifier} disabled />
-                    <DialogFooter>
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => setOpenEnrollDialog(false)}
-                        >
-                            Not now
-                        </Button>
-                        <Button
-                            type="button"
-                            onClick={() => void handleEnrollPasskey()}
-                            disabled={!enrollIdentifier.trim() || passkeyPending}
-                        >
-                            {passkeyPending ? 'Enrolling...' : 'Enroll passkey'}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
