@@ -41,8 +41,20 @@ async function post<T = unknown>(
 
     if (!res.ok) {
         // Try to surface a meaningful error to the UI
-        const text = await res.text().catch(() => '');
-        throw new Error(text || `Request failed with status ${res.status}`);
+        let message = `Request failed with status ${res.status}`;
+        const contentType = res.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+            const json = await res
+                .json()
+                .catch(() => undefined) as
+                | { error?: string; message?: string }
+                | undefined;
+            message = json?.error || json?.message || message;
+        } else {
+            const text = await res.text().catch(() => '');
+            message = text || message;
+        }
+        throw new Error(message);
     }
     return res.json();
 }
@@ -107,6 +119,19 @@ export async function registerPasskey(
     }, idToken);
 
     return verified;
+}
+
+export async function hasEnrolledPasskey(uid: string): Promise<boolean> {
+    try {
+        await post<AuthenticationOptionsResponse>('authn-options', { uid });
+        return true;
+    } catch (error: unknown) {
+        const message = (error as Error)?.message || '';
+        if (/no-passkeys-enrolled/i.test(message)) {
+            return false;
+        }
+        throw error;
+    }
 }
 
 // ---------- Authentication (Sign in) ----------

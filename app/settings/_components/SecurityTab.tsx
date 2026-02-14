@@ -1,7 +1,12 @@
 'use client';
 
 import { auth } from '@/lib/firebase';
-import { isPasskeyReady, registerPasskey, toPasskeyMessage } from '@/lib/passkeys';
+import {
+    hasEnrolledPasskey,
+    isPasskeyReady,
+    registerPasskey,
+    toPasskeyMessage,
+} from '@/lib/passkeys';
 import { FirebaseError } from 'firebase/app';
 import {
     EmailAuthProvider,
@@ -10,7 +15,7 @@ import {
     reauthenticateWithPopup,
     updatePassword,
 } from 'firebase/auth';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import SecurityTabUI from './UI/SecurityTabUI';
 
@@ -23,6 +28,26 @@ const SecurityTab = () => {
     const [loadingDelete, setLoadingDelete] = useState(false);
     const [loadingChange, setLoadingChange] = useState(false);
     const [loadingPasskey, setLoadingPasskey] = useState(false);
+    const [passkeyEnrolled, setPasskeyEnrolled] = useState<boolean | null>(null);
+
+    useEffect(() => {
+        const unsub = auth.onAuthStateChanged((user) => {
+            if (!user) {
+                setPasskeyEnrolled(null);
+                return;
+            }
+
+            setPasskeyEnrolled(null);
+            hasEnrolledPasskey(user.uid)
+                .then((enrolled) => setPasskeyEnrolled(enrolled))
+                .catch((error: unknown) => {
+                    console.error('Error checking passkey enrollment:', error);
+                    setPasskeyEnrolled(null);
+                });
+        });
+
+        return () => unsub();
+    }, []);
 
     // Utility: check if user has password provider linked
     const userHasPasswordProvider = () => {
@@ -165,6 +190,7 @@ const SecurityTab = () => {
             }
 
             toast.success('Passkey enrolled successfully.');
+            setPasskeyEnrolled(true);
         } catch (error: unknown) {
             console.error('Error enrolling passkey:', error);
             toast.error(toPasskeyMessage(error));
@@ -192,6 +218,7 @@ const SecurityTab = () => {
             handleChangePassword={handleChangePassword}
             handleEnrollPasskey={handleEnrollPasskey}
             hasPasswordProvider={userHasPasswordProvider()}
+            passkeyEnrolled={passkeyEnrolled}
         />
     );
 };
