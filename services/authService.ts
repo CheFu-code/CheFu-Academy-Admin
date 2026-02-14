@@ -15,7 +15,6 @@ export const saveUser = async (user: User, fullname: string, email: string) => {
         };
 
         const userEmail = (user.email ?? email)?.trim();
-
         const userFullName = user.displayName || fullname || '';
         const userPhoto = user?.photoURL ?? null;
         const userProvider =
@@ -54,6 +53,7 @@ export const saveUser = async (user: User, fullname: string, email: string) => {
                 language: 'en',
                 subscriptionStatus: 'free',
                 deviceInfo,
+                country: '',
             };
 
             const cleanData = Object.fromEntries(

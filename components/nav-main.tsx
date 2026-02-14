@@ -13,6 +13,7 @@ import {
     SidebarMenuSubButton,
     SidebarMenuSubItem,
 } from '@/components/ui/sidebar';
+import { useAuthUser } from '@/hooks/useAuthUser';
 import { ChevronRight, Ticket, type LucideIcon } from 'lucide-react';
 
 export function NavMain({
@@ -26,6 +27,7 @@ export function NavMain({
         items?: { title: string; url: string }[];
     }[];
 }) {
+    const { user } = useAuthUser();
     return (
         <SidebarGroup>
             <SidebarGroupLabel>Study Center</SidebarGroupLabel>
@@ -91,7 +93,7 @@ export function NavMain({
             <SidebarMenuSubItem key="support">
                 <SidebarMenuSubButton asChild>
                     <a
-                        href="/support/tickets"
+                        href={`/support/${user?.uid}/tickets`}
                         className="flex items-center gap-2 font-bold"
                     >
                         <Ticket size={16} />

@@ -1,200 +1,147 @@
-"use client";
+'use client';
 
-import { Button } from "@/components/ui/button";
+import { auth } from '@/lib/firebase';
+import { FirebaseError } from 'firebase/app';
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { TabsContent } from "@/components/ui/tabs";
-import { auth } from "@/lib/firebase";
-import {
-  EmailAuthProvider,
-  reauthenticateWithCredential,
-  updatePassword,
-} from "firebase/auth";
-import { useState } from "react";
+    EmailAuthProvider,
+    GoogleAuthProvider,
+    reauthenticateWithCredential,
+    reauthenticateWithPopup,
+    updatePassword,
+} from 'firebase/auth';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import SecurityTabUI from './UI/SecurityTabUI';
 
 const SecurityTab = () => {
-  // states for modals + inputs
-  const [openDelete, setOpenDelete] = useState(false);
-  const [openChange, setOpenChange] = useState(false);
+    const [openDelete, setOpenDelete] = useState(false);
+    const [openChange, setOpenChange] = useState(false);
+    const [currentPassword, setCurrentPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [deletePassword, setDeletePassword] = useState('');
+    const [loadingDelete, setLoadingDelete] = useState(false);
+    const [loadingChange, setLoadingChange] = useState(false);
 
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [deletePassword, setDeletePassword] = useState("");
+    // Utility: check if user has password provider linked
+    const userHasPasswordProvider = () => {
+        const user = auth.currentUser;
+        return (
+            user?.providerData.some((p) => p.providerId === 'password') ?? false
+        );
+    };
 
-  const [loadingDelete, setLoadingDelete] = useState(false);
-  const [loadingChange, setLoadingChange] = useState(false);
+    // 🔹 Delete account (supports password or Google re-auth)
+    const handleDeleteAccount = async () => {
+        const user = auth.currentUser;
+        if (!user) return toast.error('No user is logged in.');
 
-  // 🔹 Delete account
-  const handleDeleteAccount = async () => {
-    const user = auth.currentUser;
+        setLoadingDelete(true);
+        try {
+            if (userHasPasswordProvider()) {
+                // Email/Password users -> reauth with password
+                if (!deletePassword) {
+                    setLoadingDelete(false);
+                    return alert('Enter your password first.');
+                }
+                const credential = EmailAuthProvider.credential(
+                    user.email!,
+                    deletePassword,
+                );
+                await reauthenticateWithCredential(user, credential);
+            } else {
+                // Google users -> reauth with Google
+                const provider = new GoogleAuthProvider();
+                await reauthenticateWithPopup(user, provider);
+            }
 
-    if (!user) return alert("No user is logged in.");
-    if (!deletePassword) return alert("Enter your password first.");
+            await user.delete();
+            toast.success('Your account has been deleted.');
+            setOpenDelete(false);
+        } catch (error: unknown) {
+            console.error('Error deleting account:', error);
 
-    setLoadingDelete(true);
-    try {
-      const credential = EmailAuthProvider.credential(
-        user.email!,
-        deletePassword
-      );
-      await reauthenticateWithCredential(user, credential);
-      await user.delete();
-      alert("Your account has been deleted.");
-      setOpenDelete(false);
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        console.error("Error deleting account:", error);
-        alert(error.message || "Failed to delete account.");
-      } else {
-        console.error("Unexpected error:", error);
-        alert("Failed to delete account.");
-      }
-    } finally {
-      setLoadingDelete(false);
-      setDeletePassword("");
+            if (error instanceof FirebaseError) {
+                switch (error.code) {
+                    case 'auth/requires-recent-login':
+                        toast.error('Please re-authenticate and try again.');
+                        break;
+                    case 'auth/wrong-password':
+                        toast.error('Incorrect password.');
+                        break;
+                    case 'auth/too-many-requests':
+                        toast.error('Too many requests. Please try again later.');
+                        break;
+                    case 'auth/network-request-failed':
+                        toast.error('Network error. Please try again later.');
+                        break;
+                    case 'auth/popup-closed-by-user':
+                        toast.error('Popup closed by user.');
+                        break;
+                    default:
+                        toast.error(error.message || 'Failed to delete account.');
+                }
+            } else {
+                toast.error('Failed to delete account.');
+            }
+        } finally {
+            setLoadingDelete(false);
+            setDeletePassword('');
+        }
     }
-  };
 
-  // 🔹 Change password
-  const handleChangePassword = async () => {
-    const user = auth.currentUser;
+    // 🔹 Change password (only for accounts that have password provider)
+    const handleChangePassword = async () => {
+        const user = auth.currentUser;
+        if (!user) return alert('No user is logged in.');
 
-    if (!user) return alert("No user is logged in.");
-    if (!currentPassword || !newPassword) return alert("Fill in both fields.");
+        if (!userHasPasswordProvider()) {
+            return alert(
+                'Your account is signed in with Google. Add a password to your account first to enable password changes.',
+            );
+        }
 
-    setLoadingChange(true);
-    try {
-      const credential = EmailAuthProvider.credential(
-        user.email!,
-        currentPassword
-      );
-      await reauthenticateWithCredential(user, credential);
-      await updatePassword(user, newPassword);
+        if (!currentPassword || !newPassword)
+            return toast.error('Fill in both fields.');
 
-      alert("Your password has been updated.");
-      setOpenChange(false);
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        console.error("Error updating password:", error);
-        alert(error.message || "Failed to change password.");
-      } else {
-        console.error("Unexpected error:", error);
-        alert("Failed to change password.");
-      }
-    }
-  };
+        setLoadingChange(true);
+        try {
+            const credential = EmailAuthProvider.credential(
+                user.email!,
+                currentPassword,
+            );
+            await reauthenticateWithCredential(user, credential);
+            await updatePassword(user, newPassword);
+            toast.success('Your password has been updated.');
+            setOpenChange(false);
+            setCurrentPassword('');
+            setNewPassword('');
+        } catch (error: unknown) {
+            console.error('Error changing password:', error);
+            toast.error('Failed to change password.');
+        } finally {
+            setLoadingChange(false);
+        }
+    };
 
-  return (
-    <TabsContent value="security" className="mt-4 sm:mt-6 px-2 sm:px-4">
-      <Card>
-        <CardHeader className="px-3 sm:px-4 py-3">
-          <CardTitle className="text-base sm:text-lg">
-            Security Settings
-          </CardTitle>
-          <CardDescription className="text-xs sm:text-sm">
-            Protect your account
-          </CardDescription>
-        </CardHeader>
-
-        <CardContent className="flex flex-col sm:flex-row gap-2 sm:gap-4 px-3 sm:px-4 pb-3">
-          {/* Change Password Modal */}
-          <Dialog open={openChange} onOpenChange={setOpenChange}>
-            <DialogTrigger asChild>
-              <Button
-                variant="outline"
-                className="text-sm sm:text-base py-2 px-3 sm:px-4"
-              >
-                Change Password
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Change Password</DialogTitle>
-                <DialogDescription>
-                  <span className="text-red-500 font-medium text-xs">
-                    Note: Changing your password will log out all other devices
-                    currently signed in with this account. This helps you keep
-                    your account secure.
-                  </span>
-                </DialogDescription>
-              </DialogHeader>
-              <Input
-                type="password"
-                placeholder="Current password"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-              />
-              <Input
-                type="password"
-                placeholder="New password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-              />
-              <DialogFooter>
-                <Button
-                  onClick={handleChangePassword}
-                  disabled={loadingChange || !currentPassword || !newPassword}
-                >
-                  {loadingChange ? "Updating..." : "Update"}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-
-          {/* Delete Account Modal */}
-          <Dialog open={openDelete} onOpenChange={setOpenDelete}>
-            <DialogTrigger asChild>
-              <Button
-                disabled={loadingDelete}
-                variant="destructive"
-                className="text-sm sm:text-base py-2 px-3 sm:px-4"
-              >
-                Delete Account
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Delete Account</DialogTitle>
-                <DialogDescription>
-                  Enter your password to confirm deletion.
-                </DialogDescription>
-              </DialogHeader>
-              <Input
-                type="password"
-                placeholder="Password"
-                value={deletePassword}
-                onChange={(e) => setDeletePassword(e.target.value)}
-              />
-              <DialogFooter>
-                <Button
-                  onClick={handleDeleteAccount}
-                  disabled={loadingDelete || !deletePassword}
-                  variant="destructive"
-                >
-                  {loadingDelete ? "Deleting..." : "Delete Account"}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </CardContent>
-      </Card>
-    </TabsContent>
-  );
+    return (
+        <SecurityTabUI
+            openDelete={openDelete}
+            setOpenDelete={setOpenDelete}
+            openChange={openChange}
+            setOpenChange={setOpenChange}
+            currentPassword={currentPassword}
+            setCurrentPassword={setCurrentPassword}
+            newPassword={newPassword}
+            setNewPassword={setNewPassword}
+            deletePassword={deletePassword}
+            setDeletePassword={setDeletePassword}
+            loadingDelete={loadingDelete}
+            loadingChange={loadingChange}
+            handleDeleteAccount={handleDeleteAccount}
+            handleChangePassword={handleChangePassword}
+            hasPasswordProvider={userHasPasswordProvider()}
+        />
+    );
 };
 
 export default SecurityTab;

@@ -7,7 +7,16 @@ import { db } from '@/lib/firebase';
 import { Ticket, TicketPriority, TicketStatus } from '@/types/supportTicket';
 import { downloadTicketPDF } from '@/utils/download-pdf';
 import { computeOverdue } from '@/utils/ticketSLA';
-import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
+import {
+    collection,
+    doc,
+    getDocs,
+    orderBy,
+    query,
+    serverTimestamp,
+    setDoc,
+    where,
+} from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 import { toast } from 'sonner';
@@ -19,6 +28,9 @@ const SupportTickets = () => {
     const [message, setMessage] = React.useState<string>('');
     const [priority, setPriority] = React.useState<TicketPriority>('low');
     const [ticketID, setTicketID] = React.useState<string>('');
+    const [userTickets, setUserTickets] = React.useState<Ticket[]>([]);
+    const [loadingTickets, setLoadingTickets] = React.useState(true);
+
     const [submittingTicket, setSubmittingTicket] =
         React.useState<boolean>(false);
 
@@ -73,7 +85,10 @@ const SupportTickets = () => {
                 updatedAtServer: serverTimestamp(),
             });
 
-            toast.success('Ticket submitted successfully!');
+            toast.success('Ticket submitted successfully!', {
+                description:
+                    'Your ticket has been created and our support team will contact you soon.',
+            });
             setTitle('');
             setMessage('');
             setTicketID('');
@@ -93,6 +108,34 @@ const SupportTickets = () => {
         }
     };
 
+    React.useEffect(() => {
+        if (!user?.email) return;
+
+        const fetchTickets = async () => {
+            try {
+                const q = query(
+                    collection(db, 'support-tickets'),
+                    where('email', '==', user.email),
+                    orderBy('createdAt', 'desc'),
+                );
+
+                const snapshot = await getDocs(q);
+                const tickets: Ticket[] = snapshot.docs.map((doc) => ({
+                    id: doc.id,
+                    ...doc.data(),
+                })) as Ticket[];
+
+                setUserTickets(tickets);
+            } catch (error) {
+                console.error('Error fetching tickets:', error);
+            } finally {
+                setLoadingTickets(false);
+            }
+        };
+
+        fetchTickets();
+    }, [user?.email]);
+
     return (
         <SupportTicketsUI
             ticketID={ticketID}
@@ -105,6 +148,8 @@ const SupportTickets = () => {
             setMessage={setMessage}
             priority={priority}
             setPriority={setPriority}
+            userTickets={userTickets}
+            loadingTickets={loadingTickets}
         />
     );
 };

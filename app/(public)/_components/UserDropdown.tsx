@@ -1,3 +1,4 @@
+'use client'
 import {
     BookOpen,
     ChevronDownIcon,
@@ -22,8 +23,10 @@ import { UserDropdownProps } from '@/types/user';
 import { signOut } from 'firebase/auth';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 
 export default function UserDropdown({ user }: UserDropdownProps) {
+    const router=useRouter()
     const handleLogout = async () => {
         try {
             await signOut(auth);
@@ -58,7 +61,7 @@ export default function UserDropdown({ user }: UserDropdownProps) {
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="max-w-64">
-                <DropdownMenuLabel className="flex min-w-0 flex-col">
+                <DropdownMenuLabel onClick={()=>router.push('/settings/account')} className="flex min-w-0 flex-col cursor-pointer">
                     <span className="text-foreground truncate text-sm font-medium">
                         {user?.fullname}
                     </span>

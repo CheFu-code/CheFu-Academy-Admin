@@ -6,51 +6,58 @@ import React from 'react';
 export default function CookieBanner() {
     const { consent, setConsent } = useConsent();
 
-    if (consent) return null; // already decided
+    if (consent) return null;
 
     return (
         <div
             role="dialog"
+            aria-label="Cookie consent banner"
             aria-live="polite"
-            aria-label="Cookie consent"
             aria-modal="false"
-            className="cc-banner"
+            className="cookie-banner"
         >
-            <div className="cc-inner">
-                <p className="cc-text">
-                    We use cookies to enhance your experience and analyze
-                    traffic.{' '}
-                    <a href="/privacy-policy" className="cc-link">
-                        Learn more
-                    </a>
-                    .
-                </p>
-                <div className="cc-actions">
+            <div className="cookie-inner">
+                <div className="cookie-text">
+                    <h4 className="cookie-title">Your Privacy Matters</h4>
+                    <p>
+                        We use cookies to improve your browsing experience, deliver
+                        personalized content, and analyze our traffic.{' '}
+                        <a href="/privacy-policy" className="cookie-link">
+                            Learn more
+                        </a>
+                        .
+                    </p>
+                </div>
+
+                <div className="cookie-actions">
                     <button
-                        className="cc-btn cc-accept"
+                        className="cookie-btn accept"
                         onClick={() => setConsent('accepted')}
                     >
-                        Accept
+                        Accept all
                     </button>
+
                     <button
-                        className="cc-btn cc-reject"
+                        className="cookie-btn reject"
                         onClick={() => setConsent('rejected')}
                     >
                         Reject
                     </button>
                 </div>
             </div>
+
             <style jsx>{`
-                .cc-banner {
+                .cookie-banner {
                     position: fixed;
                     left: 0;
                     right: 0;
                     bottom: 0;
-                    z-index: 50;
-                    background: #0f172a;
-                    color: #e2e8f0;
-                    padding: 14px 16px;
-                    box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.25);
+                    z-index: 100;
+                    backdrop-filter: blur(12px);
+                    background: rgba(15, 23, 42, 0.82);
+                    padding: 18px 20px;
+                    color: #f1f5f9;
+                    box-shadow: 0 -4px 30px rgba(0, 0, 0, 0.35);
                     font-family:
                         system-ui,
                         -apple-system,
@@ -63,58 +70,83 @@ export default function CookieBanner() {
                         'Noto Sans',
                         sans-serif;
                 }
-                .cc-inner {
-                    display: flex;
-                    gap: 12px;
-                    align-items: center;
-                    justify-content: space-between;
-                    max-width: 1100px;
+
+                .cookie-inner {
+                    max-width: 1200px;
                     margin: 0 auto;
+                    display: flex;
+                    gap: 20px;
+                    justify-content: space-between;
+                    align-items: center;
                     flex-wrap: wrap;
                 }
-                .cc-text {
-                    margin: 0;
-                    font-size: 0.95rem;
-                    line-height: 1.4;
+
+                .cookie-title {
+                    margin: 0 0 6px;
+                    font-size: 1.1rem;
+                    font-weight: 700;
                 }
-                .cc-link {
+
+                .cookie-text p {
+                    margin: 0;
+                    line-height: 1.5;
+                    font-size: 0.95rem;
+                }
+
+                .cookie-link {
                     color: #93c5fd;
                     text-decoration: underline;
+                    transition: color 0.2s ease;
                 }
-                .cc-actions {
+
+                .cookie-link:hover {
+                    color: #bfdbfe;
+                }
+
+                .cookie-actions {
                     display: flex;
-                    gap: 8px;
+                    gap: 10px;
                 }
-                .cc-btn {
-                    appearance: none;
+
+                .cookie-btn {
                     border: 0;
+                    padding: 10px 18px;
                     border-radius: 6px;
-                    padding: 8px 14px;
                     font-weight: 600;
                     cursor: pointer;
+                    font-size: 0.95rem;
                     transition:
-                        transform 0.02s ease,
-                        background 0.2s ease,
-                        color 0.2s ease,
-                        border-color 0.2s ease;
+                        background 0.25s ease,
+                        color 0.25s ease,
+                        transform 0.1s ease;
                 }
-                .cc-accept {
+
+                .cookie-btn:active {
+                    transform: scale(0.95);
+                }
+
+                .accept {
                     background: #22c55e;
-                    color: #0b2f16;
+                    color: #082f1a;
                 }
-                .cc-accept:hover {
+
+                .accept:hover {
                     background: #16a34a;
                 }
-                .cc-reject {
+
+                .reject {
                     background: transparent;
+                    border: 2px solid #64748b;
                     color: #e2e8f0;
-                    border: 2px solid #475569;
                 }
-                .cc-reject:hover {
+
+                .reject:hover {
                     border-color: #94a3b8;
+                    color: #ffffff;
                 }
+
                 @media (prefers-reduced-motion: reduce) {
-                    .cc-btn {
+                    .cookie-btn {
                         transition: none;
                     }
                 }

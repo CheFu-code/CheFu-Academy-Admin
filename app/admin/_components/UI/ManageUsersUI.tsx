@@ -1,10 +1,7 @@
-import { Button } from '@/components/ui/button';
-import { Loader2, Search, Trash2, Users, X } from 'lucide-react';
-import * as React from 'react';
-
 import Header from '@/components/Shared/Header';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import {
@@ -15,46 +12,31 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { roleToBadgeVariant } from '@/helpers/highlightAdmin';
+import { db } from '@/lib/firebase';
 import { ManageUsersProps } from '@/types';
+import { doc, serverTimestamp, updateDoc } from 'firebase/firestore';
+import { Copy, Loader2, Search, Trash2, Users, X } from 'lucide-react';
+import * as React from 'react';
 import DeleteModal from './DeleteModal';
+import { copyToClipboard } from '@/helpers/copyToClipboard';
+import { EditableRolesCell } from '../EditableRoleCell';
 
 const ManageUsersUI: React.FC<ManageUsersProps> = ({
     loading,
     search,
     setSearch,
     filteredUsers,
-    onDelete,
     total,
     confirmOpen,
     setConfirmOpen,
     selectedUser,
-    setSelectedUser,
     deletingId,
-    setDeletingId,
     isDeletingSelected,
     deleting,
     openDeleteModal,
     closeDeleteModal,
+    confirmDelete,
 }) => {
-    const confirmDelete = async () => {
-        if (!selectedUser || !onDelete) return;
-
-        const id = selectedUser.uid ?? selectedUser.id;
-
-        try {
-            setDeletingId(id);
-            onDelete(selectedUser); // ✅ actual delete happens here
-            setConfirmOpen(false);
-            setSelectedUser(null);
-        } catch (err) {
-            console.error('Failed to delete user:', err);
-            // Optional: show toast here
-        } finally {
-            setDeletingId(null);
-        }
-    };
-
     return (
         <div className="p-2 sm:p-4 space-y-4">
             {/* Header */}
@@ -117,9 +99,10 @@ const ManageUsersUI: React.FC<ManageUsersProps> = ({
                         </Badge>
                     </CardTitle>
 
-                    <Button size={'sm'} className="inline-flex cursor-pointer">
+                    {/**TODO: Make this button functional */}
+                    {/* <Button size={'sm'} className="inline-flex cursor-pointer">
                         Export
-                    </Button>
+                    </Button> */}
                 </CardHeader>
 
                 <CardContent className="p-0">
@@ -171,6 +154,9 @@ const ManageUsersUI: React.FC<ManageUsersProps> = ({
                                         <TableHead className="w-35 font-semibold">
                                             Joined
                                         </TableHead>
+                                        <TableHead className="w-35 font-semibold">
+                                            Last Login
+                                        </TableHead>
                                         <TableHead className="w-40 text-right font-semibold">
                                             Actions
                                         </TableHead>
@@ -179,12 +165,6 @@ const ManageUsersUI: React.FC<ManageUsersProps> = ({
 
                                 <TableBody>
                                     {filteredUsers.map((user) => {
-                                        const roleText = Array.isArray(
-                                            user.roles,
-                                        )
-                                            ? user.roles.join(', ')
-                                            : String(user.roles ?? '-');
-
                                         return (
                                             <TableRow
                                                 key={user.id}
@@ -212,13 +192,23 @@ const ManageUsersUI: React.FC<ManageUsersProps> = ({
                                                             <p className="truncate">
                                                                 {user.fullname}
                                                             </p>
-                                                            <p className="text-xs text-muted-foreground truncate">
-                                                                ID: {user.uid}
-                                                            </p>
+                                                            <div className="flex items-center gap-2">
+                                                                <p className="text-xs text-muted-foreground truncate">
+                                                                    ID:{' '}
+                                                                    {user.uid}
+                                                                </p>
+                                                                <Copy
+                                                                    onClick={() =>
+                                                                        copyToClipboard(
+                                                                            user.uid,
+                                                                        )
+                                                                    }
+                                                                    className="size-3 hover:text-primary cursor-pointer"
+                                                                />
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </TableCell>
-
                                                 <TableCell className="text-muted-foreground">
                                                     <span className="truncate block max-w-105">
                                                         {user.email}
@@ -226,15 +216,36 @@ const ManageUsersUI: React.FC<ManageUsersProps> = ({
                                                 </TableCell>
 
                                                 <TableCell>
-                                                    <Badge
-                                                        variant={roleToBadgeVariant(
-                                                            roleText,
-                                                        )}
-                                                    >
-                                                        {roleText}
-                                                    </Badge>
+                                                    <EditableRolesCell
+                                                        userEmail={user.email}
+                                                        roles={user.roles ?? []}
+                                                        allRoles={[
+                                                            'admin',
+                                                            'founder',
+                                                            'viewer',
+                                                            'support',
+                                                            'manager',
+                                                            'student',
+                                                        ]}
+                                                        onSave={async (
+                                                            userEmail,
+                                                            newRoles,
+                                                        ) => {
+                                                            await updateDoc(
+                                                                doc(
+                                                                    db,
+                                                                    'users',
+                                                                    userEmail,
+                                                                ),
+                                                                {
+                                                                    roles: newRoles,
+                                                                    updatedAt:
+                                                                        serverTimestamp(),
+                                                                },
+                                                            );
+                                                        }}
+                                                    />
                                                 </TableCell>
-
                                                 <TableCell className="text-muted-foreground">
                                                     {user.createdAt?.toDate
                                                         ? user.createdAt
@@ -242,7 +253,13 @@ const ManageUsersUI: React.FC<ManageUsersProps> = ({
                                                               .toLocaleDateString()
                                                         : '-'}
                                                 </TableCell>
-
+                                                <TableCell className="text-muted-foreground">
+                                                    {user.createdAt?.toDate
+                                                        ? user?.lastLogin
+                                                              .toDate()
+                                                              .toLocaleDateString()
+                                                        : '-'}
+                                                </TableCell>
                                                 {!user.roles.includes(
                                                     'admin',
                                                 ) && (

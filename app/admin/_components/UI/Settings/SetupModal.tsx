@@ -20,6 +20,9 @@ const SetupModal = ({
     qrDataUrl,
     secretText,
     loading,
+    confirmButtonText = 'Verify & Enable',
+    title = 'Enable Admin Two-Factor Authentication',
+    description = "Scan this QR in Google Authenticator / 1Password / Authy, then enter the current 6‑digit code."
 }: {
     show2FAModal: boolean;
     setShow2FAModal: (value: boolean) => void;
@@ -29,20 +32,22 @@ const SetupModal = ({
     qrDataUrl: string | null;
     secretText: string | null;
     loading: boolean;
+    confirmButtonText?: string;
+    title?: string;
+    description?: string;
 }) => {
     return (
         <Dialog open={show2FAModal} onOpenChange={setShow2FAModal}>
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>
-                        Enable Admin Two-Factor Authentication
+                        {title}
                     </DialogTitle>
                 </DialogHeader>
 
                 <div className="space-y-3">
                     <p className="text-sm text-gray-500">
-                        Scan this QR in Google Authenticator / 1Password /
-                        Authy, then enter the current 6‑digit code.
+                        {description}
                     </p>
 
                     {qrDataUrl && (
@@ -95,7 +100,7 @@ const SetupModal = ({
                             disabled={twoFACode.length !== 6 || loading}
                             onClick={handleVerify2FA}
                         >
-                            Verify & Enable
+                            {confirmButtonText}
                         </Button>
                     </div>
                 </div>
