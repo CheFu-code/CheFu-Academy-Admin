@@ -49,7 +49,6 @@ export default function LoginPage() {
         setPasskeyPending(true);
         try {
             await signInWithFirebasePasskey(value);
-            console.log('Signed in with passkey');
             toast.success('Signed in with passkey');
         } catch (e: unknown) {
             if (isNoPasskeysEnrolledError(e)) {
