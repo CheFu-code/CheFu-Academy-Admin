@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { TabsContent } from '@/components/ui/tabs';
+import { KeyRound } from 'lucide-react';
 
 const SecurityTabUI = ({
     openDelete,
@@ -31,8 +32,10 @@ const SecurityTabUI = ({
     setDeletePassword,
     loadingDelete,
     loadingChange,
+    loadingPasskey,
     handleDeleteAccount,
     handleChangePassword,
+    handleEnrollPasskey,
     hasPasswordProvider,
 }: {
     openDelete: boolean;
@@ -47,8 +50,10 @@ const SecurityTabUI = ({
     setDeletePassword: (value: string) => void;
     loadingDelete: boolean;
     loadingChange: boolean;
+    loadingPasskey: boolean;
     handleDeleteAccount: () => void;
     handleChangePassword: () => void;
+    handleEnrollPasskey: () => void;
     hasPasswordProvider: boolean;
 }) => {
 
@@ -64,6 +69,16 @@ const SecurityTabUI = ({
                 </CardHeader>
 
                 <CardContent className="flex flex-col sm:flex-row gap-2 sm:gap-4">
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleEnrollPasskey}
+                        disabled={loadingPasskey}
+                    >
+                        <KeyRound className="mr-2 h-4 w-4" />
+                        {loadingPasskey ? 'Enrolling...' : 'Enroll Passkey'}
+                    </Button>
+
                     {/* Change Password Modal */}
                     <Dialog open={openChange} onOpenChange={setOpenChange}>
                         <DialogTrigger asChild>

@@ -1,6 +1,7 @@
 'use client';
 
 import { auth } from '@/lib/firebase';
+import { isPasskeyReady, registerPasskey, toPasskeyMessage } from '@/lib/passkeys';
 import { FirebaseError } from 'firebase/app';
 import {
     EmailAuthProvider,
@@ -21,6 +22,7 @@ const SecurityTab = () => {
     const [deletePassword, setDeletePassword] = useState('');
     const [loadingDelete, setLoadingDelete] = useState(false);
     const [loadingChange, setLoadingChange] = useState(false);
+    const [loadingPasskey, setLoadingPasskey] = useState(false);
 
     // Utility: check if user has password provider linked
     const userHasPasswordProvider = () => {
@@ -30,6 +32,23 @@ const SecurityTab = () => {
         );
     };
 
+    const reauthenticateSensitiveAction = async (
+        user: NonNullable<typeof auth.currentUser>,
+        password?: string,
+    ) => {
+        if (userHasPasswordProvider()) {
+            if (!password) {
+                throw new Error('reauth-password-required');
+            }
+            const credential = EmailAuthProvider.credential(user.email!, password);
+            await reauthenticateWithCredential(user, credential);
+            return;
+        }
+
+        const provider = new GoogleAuthProvider();
+        await reauthenticateWithPopup(user, provider);
+    };
+
     // 🔹 Delete account (supports password or Google re-auth)
     const handleDeleteAccount = async () => {
         const user = auth.currentUser;
@@ -37,22 +56,11 @@ const SecurityTab = () => {
 
         setLoadingDelete(true);
         try {
-            if (userHasPasswordProvider()) {
-                // Email/Password users -> reauth with password
-                if (!deletePassword) {
-                    setLoadingDelete(false);
-                    return alert('Enter your password first.');
-                }
-                const credential = EmailAuthProvider.credential(
-                    user.email!,
-                    deletePassword,
-                );
-                await reauthenticateWithCredential(user, credential);
-            } else {
-                // Google users -> reauth with Google
-                const provider = new GoogleAuthProvider();
-                await reauthenticateWithPopup(user, provider);
+            if (!deletePassword && userHasPasswordProvider()) {
+                setLoadingDelete(false);
+                return alert('Enter your password first.');
             }
+            await reauthenticateSensitiveAction(user, deletePassword);
 
             await user.delete();
             toast.success('Your account has been deleted.');
@@ -105,11 +113,7 @@ const SecurityTab = () => {
 
         setLoadingChange(true);
         try {
-            const credential = EmailAuthProvider.credential(
-                user.email!,
-                currentPassword,
-            );
-            await reauthenticateWithCredential(user, credential);
+            await reauthenticateSensitiveAction(user, currentPassword);
             await updatePassword(user, newPassword);
             toast.success('Your password has been updated.');
             setOpenChange(false);
@@ -120,6 +124,52 @@ const SecurityTab = () => {
             toast.error('Failed to change password.');
         } finally {
             setLoadingChange(false);
+        }
+    };
+
+    const handleEnrollPasskey = async () => {
+        const user = auth.currentUser;
+        if (!user) {
+            toast.error('No user is logged in.');
+            return;
+        }
+
+        setLoadingPasskey(true);
+        try {
+            let reauthPassword: string | undefined;
+            if (userHasPasswordProvider()) {
+                const value = window
+                    .prompt('Enter your current password to enroll a passkey.')
+                    ?.trim();
+                if (!value) {
+                    toast.error(
+                        'Passkey enrollment cancelled. Re-authentication is required.',
+                    );
+                    return;
+                }
+                reauthPassword = value;
+            }
+
+            await reauthenticateSensitiveAction(user, reauthPassword);
+
+            const ready = await isPasskeyReady();
+            if (!ready) {
+                toast.error('Passkeys are not supported on this device/browser.');
+                return;
+            }
+
+            const ok = await registerPasskey(user.uid, user.email || user.uid);
+            if (!ok) {
+                toast.error('Passkey enrollment failed.');
+                return;
+            }
+
+            toast.success('Passkey enrolled successfully.');
+        } catch (error: unknown) {
+            console.error('Error enrolling passkey:', error);
+            toast.error(toPasskeyMessage(error));
+        } finally {
+            setLoadingPasskey(false);
         }
     };
 
@@ -137,8 +187,10 @@ const SecurityTab = () => {
             setDeletePassword={setDeletePassword}
             loadingDelete={loadingDelete}
             loadingChange={loadingChange}
+            loadingPasskey={loadingPasskey}
             handleDeleteAccount={handleDeleteAccount}
             handleChangePassword={handleChangePassword}
+            handleEnrollPasskey={handleEnrollPasskey}
             hasPasswordProvider={userHasPasswordProvider()}
         />
     );
