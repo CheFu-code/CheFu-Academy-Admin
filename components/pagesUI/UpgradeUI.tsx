@@ -1,29 +1,23 @@
 'use client';
 
-import { useAuthUser } from '@/hooks/useAuthUser';
 import { Lock } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Separator } from '../ui/separator';
-import { Input } from '../ui/input';
-import { Button } from '../ui/button';
-import { toast } from 'sonner';
 
-const UpgradeUI = ({ price, plan }: { price: string; plan: string }) => {
-    const router = useRouter();
-    const { user, loading } = useAuthUser();
-    const [cardHolderName, setCardHolderName] = useState('');
-    const [cardNumber, setCardNumber] = useState('');
-    const [expiry, setExpiry] = useState('');
-    const [cvc, setCvc] = useState('');
-
-    useEffect(() => {
-        if (!user || !loading) {
-            router.replace('/login');
-        }
-    }, [loading, router, user]);
-
+const UpgradeUI = ({
+    price,
+    plan,
+    handleSubscribe,
+    isSubmitting,
+    errorMessage,
+}: {
+    price: string;
+    plan: string;
+    handleSubscribe: () => void;
+    isSubmitting: boolean;
+    errorMessage: string;
+}) => {
     return (
         <main className="min-h-screen bg-background flex items-center justify-center px-4">
             <Card className="w-full max-w-md">
@@ -57,59 +51,20 @@ const UpgradeUI = ({ price, plan }: { price: string; plan: string }) => {
                     </div>
 
                     <div className="space-y-4">
-                        <div>
-                            <label className="text-sm text-muted-foreground">
-                                Cardholder Name
-                            </label>
-                            <Input
-                                value={cardHolderName}
-                                onChange={(e) =>
-                                    setCardHolderName(e.target.value)
-                                }
-                                placeholder="John Doe"
-                            />
-                        </div>
-                        <div>
-                            <label className="text-sm text-muted-foreground">
-                                Card Number
-                            </label>
-                            <Input
-                                value={cardNumber}
-                                onChange={(e) => setCardNumber(e.target.value)}
-                                placeholder="1234 5678 9012 3456"
-                            />
-                        </div>
-
-                        <div className="flex gap-4">
-                            <div className="flex-1">
-                                <label className="text-sm text-muted-foreground">
-                                    Expiry
-                                </label>
-                                <Input
-                                    value={expiry}
-                                    onChange={(e) => setExpiry(e.target.value)}
-                                    placeholder="MM/YY"
-                                />
-                            </div>
-                            <div className="flex-1">
-                                <label className="text-sm text-muted-foreground">
-                                    CVC
-                                </label>
-                                <Input
-                                    value={cvc}
-                                    onChange={(e) => setCvc(e.target.value)}
-                                    placeholder="123"
-                                />
-                            </div>
-                        </div>
-
                         <Button
-                            onClick={() => toast.warning('Not yet implemented')}
+                            onClick={handleSubscribe}
                             className="w-full gap-2 cursor-pointer"
+                            disabled={isSubmitting}
                         >
                             <Lock className="w-4 h-4" />
-                            Pay ${price}
+                            {isSubmitting ? 'Redirecting...' : `Pay $${price}`}
                         </Button>
+
+                        {errorMessage ? (
+                            <p className="text-sm text-red-600" role="alert">
+                                {errorMessage}
+                            </p>
+                        ) : null}
                     </div>
 
                     <p className="text-xs text-center text-muted-foreground">

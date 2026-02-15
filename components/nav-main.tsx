@@ -14,7 +14,16 @@ import {
     SidebarMenuSubItem,
 } from '@/components/ui/sidebar';
 import { useAuthUser } from '@/hooks/useAuthUser';
+import { db } from '@/lib/firebase';
+import {
+    collection,
+    limit,
+    onSnapshot,
+    query,
+    where,
+} from 'firebase/firestore';
 import { ChevronRight, Ticket, type LucideIcon } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 export function NavMain({
     items,
@@ -28,6 +37,35 @@ export function NavMain({
     }[];
 }) {
     const { user } = useAuthUser();
+    const [hasAgentReply, setHasAgentReply] = useState(false);
+
+    useEffect(() => {
+        if (!user?.email) {
+            setHasAgentReply(false);
+            return;
+        }
+
+        const repliedTicketsQuery = query(
+            collection(db, 'support-tickets'),
+            where('email', '==', user.email),
+            where('hasAgentReply', '==', true),
+            limit(1),
+        );
+
+        const unsubscribe = onSnapshot(
+            repliedTicketsQuery,
+            (snapshot) => {
+                setHasAgentReply(!snapshot.empty);
+            },
+            (error) => {
+                console.error('Error checking replied tickets:', error);
+                setHasAgentReply(false);
+            },
+        );
+
+        return () => unsubscribe();
+    }, [user?.email]);
+
     return (
         <SidebarGroup>
             <SidebarGroupLabel>Study Center</SidebarGroupLabel>
@@ -98,6 +136,12 @@ export function NavMain({
                     >
                         <Ticket size={16} />
                         <span>Support Tickets</span>
+                        {hasAgentReply ? (
+                            <span
+                                className="size-2 rounded-full bg-green-500 animate-pulse"
+                                aria-label="You have a reply from support"
+                            />
+                        ) : null}
                     </a>
                 </SidebarMenuSubButton>
             </SidebarMenuSubItem>
