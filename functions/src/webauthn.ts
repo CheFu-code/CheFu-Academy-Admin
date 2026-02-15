@@ -41,6 +41,9 @@ const ORIGINS = new Set<string>([...defaultOrigins, ...envOrigins]);
 const ALLOW_VERCEL_PREVIEWS = process.env.WEBAUTHN_ALLOW_VERCEL_PREVIEWS === 'true';
 const SIGNIN_ALERT_FROM = process.env.SIGNIN_ALERT_FROM || '';
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
+const SIGNIN_ALERT_PASSWORD_CHANGE_URL =
+    process.env.SIGNIN_ALERT_PASSWORD_CHANGE_URL ||
+    'https://academy.chefuinc.com/settings/account';
 
 const isAllowedOrigin = (origin: string) => {
     if (ORIGINS.has(origin)) return true;
@@ -186,6 +189,20 @@ const normalizeFromAddress = (raw: string): string | null => {
     return `${name} <${email}>`;
 };
 
+const normalizeActionUrl = (raw: string): string | null => {
+    const value = raw.trim();
+    if (!value) return null;
+    try {
+        const parsed = new URL(value);
+        if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
+            return null;
+        }
+        return parsed.toString();
+    } catch {
+        return null;
+    }
+};
+
 const sendSignInAlertEmail = async (
     uid: string,
     details: {
@@ -228,6 +245,10 @@ const sendSignInAlertEmail = async (
     const safeOrigin = escapeHtml(details.origin);
     const safeUserAgent = escapeHtml(details.userAgent);
     const safeCredentialId = escapeHtml(details.credentialId);
+    const passwordChangeUrl =
+        normalizeActionUrl(SIGNIN_ALERT_PASSWORD_CHANGE_URL) ||
+        'https://academy.chefuinc.com/settings/account';
+    const safePasswordChangeUrl = escapeHtml(passwordChangeUrl);
     const text = [
         `Hi ${user.displayName || user.email},`,
         '',
@@ -240,6 +261,7 @@ const sendSignInAlertEmail = async (
         `Credential: ${details.credentialId}`,
         '',
         'If this was not you, secure your account immediately.',
+        `Change your password now: ${passwordChangeUrl}`,
     ].join('\n');
 
     const html = `
@@ -253,6 +275,7 @@ const sendSignInAlertEmail = async (
             <li><strong>Credential:</strong> ${safeCredentialId}</li>
         </ul>
         <p>If this was not you, secure your account immediately.</p>
+        <p><a href="${safePasswordChangeUrl}">Change your password now</a></p>
     `;
 
     const response = await fetch('https://api.resend.com/emails', {
