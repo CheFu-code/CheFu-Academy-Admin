@@ -154,12 +154,20 @@ const getUserAgent = (req: Request) =>
 
 const createDeviceFingerprint = (details: {
     credentialId: string;
-    userAgent: string;
     origin: string;
 }) =>
     createHash('sha256')
-        .update(`${details.credentialId}|${details.userAgent}|${details.origin}`)
+        .update(`${details.credentialId}|${details.origin}`)
         .digest('hex');
+
+const escapeHtml = (s: string): string =>
+    s
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+        .replace(/\//g, '&#x2F;');
 
 const sendNewDeviceAlertEmail = async (
     uid: string,
@@ -187,14 +195,21 @@ const sendNewDeviceAlertEmail = async (
     const appUserDoc = appUserDocSnap.data() as AppUserDoc | undefined;
     const securityEmailsEnabled = appUserDoc?.emailPreferences?.security === true;
     if (!securityEmailsEnabled) {
+        const emailHash = createHash('sha256').update(user.email).digest('hex');
         logger.info('Skipping sign-in alert email because security emails are disabled', {
             uid,
-            email: user.email,
+            emailHash,
         });
         return;
     }
 
     const signedInAt = new Date().toISOString();
+    const safeName = escapeHtml(user.displayName || user.email);
+    const safeSignedInAt = escapeHtml(signedInAt);
+    const safeIpAddress = escapeHtml(details.ipAddress);
+    const safeOrigin = escapeHtml(details.origin);
+    const safeUserAgent = escapeHtml(details.userAgent);
+    const safeCredentialId = escapeHtml(details.credentialId);
     const text = [
         `Hi ${user.displayName || user.email},`,
         '',
@@ -210,14 +225,14 @@ const sendNewDeviceAlertEmail = async (
     ].join('\n');
 
     const html = `
-        <p>Hi ${user.displayName || user.email},</p>
+        <p>Hi ${safeName},</p>
         <p>We detected a new sign-in to your CheFu Academy account.</p>
         <ul>
-            <li><strong>Time (UTC):</strong> ${signedInAt}</li>
-            <li><strong>IP address:</strong> ${details.ipAddress}</li>
-            <li><strong>Origin:</strong> ${details.origin}</li>
-            <li><strong>Device:</strong> ${details.userAgent}</li>
-            <li><strong>Credential:</strong> ${details.credentialId}</li>
+            <li><strong>Time (UTC):</strong> ${safeSignedInAt}</li>
+            <li><strong>IP address:</strong> ${safeIpAddress}</li>
+            <li><strong>Origin:</strong> ${safeOrigin}</li>
+            <li><strong>Device:</strong> ${safeUserAgent}</li>
+            <li><strong>Credential:</strong> ${safeCredentialId}</li>
         </ul>
         <p>If this was not you, secure your account immediately.</p>
     `;
@@ -502,7 +517,6 @@ export const webauthnApi = onRequest(
                     const nowIso = new Date().toISOString();
                     const deviceKey = createDeviceFingerprint({
                         credentialId,
-                        userAgent,
                         origin,
                     });
                     const existingDevice = userDoc.signInDevices?.find(
@@ -539,16 +553,14 @@ export const webauthnApi = onRequest(
                     });
 
                     if (!existingDevice) {
-                        try {
-                            await sendNewDeviceAlertEmail(resolvedUid, {
-                                origin,
-                                credentialId,
-                                ipAddress,
-                                userAgent,
-                            });
-                        } catch (error) {
+                        void sendNewDeviceAlertEmail(resolvedUid, {
+                            origin,
+                            credentialId,
+                            ipAddress,
+                            userAgent,
+                        }).catch((error: unknown) => {
                             logger.error('Failed to send sign-in alert email', error);
-                        }
+                        });
                     }
 
                     // Sign into Firebase: mint custom token for this uid
