@@ -46,7 +46,6 @@ const NotificationsTabSkeleton = () => {
 
 const NotificationsTab = () => {
     const { user, loading } = useAuthUser();
-    const [changingPref, setChangingPref] = useState(false);
     const [prefs, setPrefs] = useState(
         user?.emailPreferences ?? {
             activity: false,
@@ -55,6 +54,9 @@ const NotificationsTab = () => {
             security: true,
         },
     );
+    const [changingPrefKey, setChangingPrefKey] = useState<
+        keyof typeof prefs | null
+    >(null);
 
     useEffect(() => {
         if (user?.emailPreferences) {
@@ -63,24 +65,25 @@ const NotificationsTab = () => {
     }, [user]);
 
     const handleToggle = async (key: keyof typeof prefs, value: boolean) => {
+        if (!user) return;
+
+        const previousPrefs = prefs;
+        const newPrefs = { ...previousPrefs, [key]: value };
+
         try {
-            setChangingPref(true);
-            setPrefs((prev) => ({ ...prev, [key]: value }));
-            if (!user) return null;
+            setChangingPrefKey(key);
+            setPrefs(newPrefs);
 
             const userRef = doc(db, "users", user.email);
             await updateDoc(userRef, {
-                emailPreferences: {
-                    ...prefs,
-                    [key]: value,
-                },
+                emailPreferences: newPrefs,
             });
         } catch (err) {
+            setPrefs(previousPrefs);
             console.error("Failed to update preference:", err);
             toast.error("Failed to update preference");
         } finally {
-            setPrefs((prev) => ({ ...prev, [key]: value }));
-            setChangingPref(false);
+            setChangingPrefKey(null);
         }
     };
 
@@ -115,11 +118,11 @@ const NotificationsTab = () => {
                                         className="flex items-center justify-between text-xs sm:text-sm"
                                     >
                                         <span>{`${key.charAt(0).toUpperCase() + key.slice(1)} Emails`}</span>
-                                        {changingPref && key === "security" ? (
-                                            <Loader2 className="animate-pulse" />
+                                        {changingPrefKey === key ? (
+                                            <Loader2 className="animate-spin" />
                                         ) : (
                                             <Switch
-                                                disabled={changingPref}
+                                                disabled={changingPrefKey !== null}
                                                 checked={prefs[key]}
                                                 onCheckedChange={(val) =>
                                                     handleToggle(key, val)
