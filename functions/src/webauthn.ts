@@ -168,6 +168,24 @@ const escapeHtml = (s: string): string =>
         .replace(/'/g, '&#39;')
         .replace(/\//g, '&#x2F;');
 
+const normalizeFromAddress = (raw: string): string | null => {
+    const value = raw.trim();
+    if (!value) return null;
+
+    // Already valid: "name@domain.com" or "Name <name@domain.com>"
+    if (/\S+@\S+\.\S+/.test(value) && (value.includes('<') || !value.includes(' '))) {
+        return value;
+    }
+
+    // Repair common invalid format: "Name name@domain.com" -> "Name <name@domain.com>"
+    const emailMatch = value.match(/([^\s<>]+@[^\s<>]+\.[^\s<>]+)$/);
+    if (!emailMatch) return null;
+    const email = emailMatch[1];
+    const name = value.slice(0, value.length - email.length).trim();
+    if (!name) return email;
+    return `${name} <${email}>`;
+};
+
 const sendSignInAlertEmail = async (
     uid: string,
     details: {
@@ -177,9 +195,10 @@ const sendSignInAlertEmail = async (
         userAgent: string;
     },
 ) => {
-    if (!SIGNIN_ALERT_FROM || !RESEND_API_KEY) {
+    const fromAddress = normalizeFromAddress(SIGNIN_ALERT_FROM);
+    if (!fromAddress || !RESEND_API_KEY) {
         logger.warn(
-            'SIGNIN_ALERT_FROM/RESEND_API_KEY is missing',
+            'SIGNIN_ALERT_FROM is invalid (or missing) or RESEND_API_KEY is missing',
         );
         return;
     }
@@ -243,7 +262,7 @@ const sendSignInAlertEmail = async (
             Authorization: `Bearer ${RESEND_API_KEY}`,
         },
         body: JSON.stringify({
-            from: SIGNIN_ALERT_FROM,
+            from: fromAddress,
             to: [user.email],
             subject: `Sign-in alert for ${RP_NAME}`,
             text,
