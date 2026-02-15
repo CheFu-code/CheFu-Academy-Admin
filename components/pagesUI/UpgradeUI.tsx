@@ -3,33 +3,20 @@
 import { Lock } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Input } from '../ui/input';
 import { Separator } from '../ui/separator';
 
 const UpgradeUI = ({
     price,
     plan,
-    cardHolderName,
-    setCardHolderName,
-    cardNumber,
-    setCardNumber,
-    expiry,
-    setExpiry,
-    cvc,
-    setCvc,
-    handleSubscribe
+    handleSubscribe,
+    isSubmitting,
+    errorMessage,
 }: {
     price: string;
     plan: string;
-    cardHolderName: string;
-    setCardHolderName: (value: string) => void;
-    cardNumber: string;
-    setCardNumber: (value: string) => void;
-    expiry: string;
-    setExpiry: (value: string) => void;
-    cvc: string;
-    setCvc: (value: string) => void;
     handleSubscribe: () => void;
+    isSubmitting: boolean;
+    errorMessage: string;
 }) => {
     return (
         <main className="min-h-screen bg-background flex items-center justify-center px-4">
@@ -64,59 +51,20 @@ const UpgradeUI = ({
                     </div>
 
                     <div className="space-y-4">
-                        <div>
-                            <label className="text-sm text-muted-foreground">
-                                Cardholder Name
-                            </label>
-                            <Input
-                                value={cardHolderName}
-                                onChange={(e) =>
-                                    setCardHolderName(e.target.value)
-                                }
-                                placeholder="John Doe"
-                            />
-                        </div>
-                        <div>
-                            <label className="text-sm text-muted-foreground">
-                                Card Number
-                            </label>
-                            <Input
-                                value={cardNumber}
-                                onChange={(e) => setCardNumber(e.target.value)}
-                                placeholder="1234 5678 9012 3456"
-                            />
-                        </div>
-
-                        <div className="flex gap-4">
-                            <div className="flex-1">
-                                <label className="text-sm text-muted-foreground">
-                                    Expiry
-                                </label>
-                                <Input
-                                    value={expiry}
-                                    onChange={(e) => setExpiry(e.target.value)}
-                                    placeholder="MM/YY"
-                                />
-                            </div>
-                            <div className="flex-1">
-                                <label className="text-sm text-muted-foreground">
-                                    CVC
-                                </label>
-                                <Input
-                                    value={cvc}
-                                    onChange={(e) => setCvc(e.target.value)}
-                                    placeholder="123"
-                                />
-                            </div>
-                        </div>
-
                         <Button
                             onClick={handleSubscribe}
                             className="w-full gap-2 cursor-pointer"
+                            disabled={isSubmitting}
                         >
                             <Lock className="w-4 h-4" />
-                            Pay ${price}
+                            {isSubmitting ? 'Redirecting...' : `Pay $${price}`}
                         </Button>
+
+                        {errorMessage ? (
+                            <p className="text-sm text-red-600" role="alert">
+                                {errorMessage}
+                            </p>
+                        ) : null}
                     </div>
 
                     <p className="text-xs text-center text-muted-foreground">

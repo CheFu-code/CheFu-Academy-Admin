@@ -37,11 +37,11 @@ export function NavMain({
     }[];
 }) {
     const { user } = useAuthUser();
-    const [hasTicketReply, setHasTicketReply] = useState(false);
+    const [hasAgentReply, setHasAgentReply] = useState(false);
 
     useEffect(() => {
         if (!user?.email) {
-            setHasTicketReply(false);
+            setHasAgentReply(false);
             return;
         }
 
@@ -55,11 +55,11 @@ export function NavMain({
         const unsubscribe = onSnapshot(
             repliedTicketsQuery,
             (snapshot) => {
-                setHasTicketReply(!snapshot.empty);
+                setHasAgentReply(!snapshot.empty);
             },
             (error) => {
                 console.error('Error checking replied tickets:', error);
-                setHasTicketReply(false);
+                setHasAgentReply(false);
             },
         );
 
@@ -136,10 +136,10 @@ export function NavMain({
                     >
                         <Ticket size={16} />
                         <span>Support Tickets</span>
-                        {hasTicketReply ? (
+                        {hasAgentReply ? (
                             <span
                                 className="size-2 rounded-full bg-green-500 animate-pulse"
-                                aria-label="You have replied support tickets"
+                                aria-label="You have a reply from support"
                             />
                         ) : null}
                     </a>

@@ -11,11 +11,8 @@ export default function UpgradeClient() {
     const plan = searchParams.get('plan');
     const router = useRouter();
     const { user, loading } = useAuthUser();
-    const [cardHolderName, setCardHolderName] = useState('');
-    const [cardNumber, setCardNumber] = useState('');
-    const [expiry, setExpiry] = useState('');
-    const [cvc, setCvc] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
 
     useEffect(() => {
         if (!loading && !user) {
@@ -27,10 +24,11 @@ export default function UpgradeClient() {
 
     const handleSubscribe = async () => {
         if (isSubmitting || !user?.email) return;
+        setErrorMessage('');
 
         const parsedPrice = Number(price);
         if (!Number.isFinite(parsedPrice) || parsedPrice <= 0) {
-            console.error('Invalid plan price:', price);
+            setErrorMessage('Invalid plan price. Please refresh and try again.');
             return;
         }
 
@@ -57,6 +55,9 @@ export default function UpgradeClient() {
 
             window.location.href = data.url;
         } catch (error) {
+            const message =
+                error instanceof Error ? error.message : 'Unknown error';
+            setErrorMessage(`Failed to start checkout: ${message}`);
             console.error('Failed to start Stripe checkout:', error);
         } finally {
             setIsSubmitting(false);
@@ -66,15 +67,9 @@ export default function UpgradeClient() {
         <UpgradeUI
             price={price}
             plan={plan}
-            cardHolderName={cardHolderName}
-            setCardHolderName={setCardHolderName}
-            cardNumber={cardNumber}
-            setCardNumber={setCardNumber}
-            expiry={expiry}
-            setExpiry={setExpiry}
-            cvc={cvc}
-            setCvc={setCvc}
             handleSubscribe={handleSubscribe}
+            isSubmitting={isSubmitting}
+            errorMessage={errorMessage}
         />
     );
 }
