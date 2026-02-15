@@ -31,13 +31,99 @@ type AudienceUser = {
     email: string;
     member?: boolean;
     subscriptionStatus?: string;
+    roles?: string[];
+    country?: string;
+    countryCode?: string;
+    createdAt?: unknown;
+    lastLogin?: unknown;
+    lastSeen?: unknown;
     emailPreferences?: Partial<Record<EmailPreferenceKey, boolean>>;
 };
+
+type PreferenceAudience =
+    | "All Subscribers"
+    | "Customers (All)"
+    | "General Subscribers"
+    | "Marketing Subscribers"
+    | "Security Subscribers"
+    | "Activity Subscribers";
 
 const isCustomer = (user: AudienceUser) => {
     if (user.member === true) return true;
     const status = (user.subscriptionStatus ?? "").trim().toLowerCase();
     return status.length > 0 && status !== "free" && status !== "none";
+};
+
+const EU_COUNTRY_CODES = new Set([
+    "AT", "BE", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR", "DE", "GR",
+    "HU", "IE", "IT", "LV", "LT", "LU", "MT", "NL", "PL", "PT", "RO", "SK",
+    "SI", "ES", "SE",
+]);
+
+const EU_COUNTRY_NAMES = new Set([
+    "austria", "belgium", "bulgaria", "croatia", "cyprus", "czech republic",
+    "denmark", "estonia", "finland", "france", "germany", "greece", "hungary",
+    "ireland", "italy", "latvia", "lithuania", "luxembourg", "malta",
+    "netherlands", "poland", "portugal", "romania", "slovakia", "slovenia",
+    "spain", "sweden",
+]);
+
+const toDate = (value: unknown): Date | null => {
+    if (value instanceof Date) return value;
+    if (typeof value === "object" && value !== null && "toDate" in value) {
+        const maybeTimestamp = value as { toDate?: () => Date };
+        if (typeof maybeTimestamp.toDate === "function") {
+            return maybeTimestamp.toDate();
+        }
+    }
+    if (typeof value === "number" || typeof value === "string") {
+        const parsed = new Date(value);
+        if (!Number.isNaN(parsed.getTime())) return parsed;
+    }
+    return null;
+};
+
+const isWithinDays = (value: unknown, days: number): boolean => {
+    const dateValue = toDate(value);
+    if (!dateValue) return false;
+    const minDate = new Date();
+    minDate.setDate(minDate.getDate() - days);
+    return dateValue >= minDate;
+};
+
+const matchesSegment = (user: AudienceUser, segment: string): boolean => {
+    const subscription = (user.subscriptionStatus ?? "").toLowerCase();
+    const countryCode = (user.countryCode ?? "").toUpperCase();
+    const country = (user.country ?? "").toLowerCase().trim();
+    const lastActiveAt = user.lastSeen ?? user.lastLogin;
+
+    switch (segment) {
+        case "Active":
+            return isWithinDays(lastActiveAt, 30);
+        case "Churn-risk":
+            return !isWithinDays(lastActiveAt, 90);
+        case "VIP":
+            return (
+                user.member === true ||
+                subscription.includes("vip") ||
+                subscription.includes("premium") ||
+                subscription.includes("pro") ||
+                subscription.includes("enterprise") ||
+                subscription.includes("annual") ||
+                subscription.includes("lifetime") ||
+                (user.roles ?? []).some((role) => role.toLowerCase() === "vip")
+            );
+        case "Last 30 days":
+            return isWithinDays(user.createdAt, 30);
+        case "Last 90 days":
+            return isWithinDays(user.createdAt, 90);
+        case "Trial users":
+            return subscription.includes("trial");
+        case "EU Region":
+            return EU_COUNTRY_CODES.has(countryCode) || EU_COUNTRY_NAMES.has(country);
+        default:
+            return true;
+    }
 };
 
 export function MainPanel() {
@@ -52,7 +138,7 @@ export function MainPanel() {
         fromName: "Marketing Team",
         fromEmail: "marketing@chefuinc.com",
         replyTo: "support@chefuinc.com",
-        audience: "All Subscribers",
+        audience: "All Subscribers" as PreferenceAudience,
         segments: ["Active", "Last 90 days"],
         subjectA: "",
         subjectB: "",
@@ -98,6 +184,12 @@ export function MainPanel() {
                                 typeof data.subscriptionStatus === "string"
                                     ? data.subscriptionStatus
                                     : "",
+                            roles: Array.isArray(data.roles) ? data.roles.filter((role) => typeof role === "string") : [],
+                            country: typeof data.country === "string" ? data.country : "",
+                            countryCode: typeof data.countryCode === "string" ? data.countryCode : "",
+                            createdAt: data.createdAt,
+                            lastLogin: data.lastLogin,
+                            lastSeen: data.lastSeen,
                             emailPreferences: data.emailPreferences,
                         };
                     })
@@ -118,20 +210,32 @@ export function MainPanel() {
         };
     }, []);
 
-    const recipientEmails = useMemo(() => {
-        const audienceBase = (() => {
-            if (form.audience === "Customers (All)") {
-                return audienceUsers.filter(isCustomer);
-            }
-            if (form.audience.startsWith("Leads")) {
-                return audienceUsers.filter((u) => !isCustomer(u));
-            }
-            return audienceUsers;
-        })();
+    const recipientPreferenceKey = useMemo<EmailPreferenceKey>(() => {
+        if (form.audience === "General Subscribers") return "general";
+        if (form.audience === "Marketing Subscribers") return "marketing";
+        if (form.audience === "Security Subscribers") return "security";
+        if (form.audience === "Activity Subscribers") return "activity";
+        return type;
+    }, [form.audience, type]);
 
-        const eligible = audienceBase.filter((u) => u.emailPreferences?.[type] === true);
-        return Array.from(new Set(eligible.map((u) => u.email)));
-    }, [audienceUsers, form.audience, type]);
+    const recipientEmails = useMemo(() => {
+        const audienceBase =
+            form.audience === "Customers (All)"
+                ? audienceUsers.filter(isCustomer)
+                : audienceUsers;
+
+        const preferenceEligible = audienceBase.filter(
+            (u) => u.emailPreferences?.[recipientPreferenceKey] === true
+        );
+        const segmentEligible =
+            form.segments.length > 0
+                ? preferenceEligible.filter((u) =>
+                    form.segments.every((segment) => matchesSegment(u, segment))
+                )
+                : preferenceEligible;
+
+        return Array.from(new Set(segmentEligible.map((u) => u.email)));
+    }, [audienceUsers, form.audience, form.segments, recipientPreferenceKey]);
 
     const onDrop = useCallback((accepted: File[]) => {
         setFiles((prev) => [
@@ -185,7 +289,7 @@ export function MainPanel() {
             return;
         }
         if (recipientEmails.length === 0) {
-            toast.error(`No recipients match ${form.audience} with emailPreferences.${type}=true.`);
+            toast.error(`No recipients match ${form.audience}, selected segments, and emailPreferences.${recipientPreferenceKey}=true.`);
             return;
         }
         try {
@@ -317,7 +421,7 @@ export function MainPanel() {
                                             <Label>Audience</Label>
                                             <Select
                                                 value={form.audience}
-                                                onValueChange={(v) => setField("audience", v)}
+                                                onValueChange={(v) => setField("audience", v as PreferenceAudience)}
                                             >
                                                 <SelectTrigger>
                                                     <SelectValue placeholder="Choose audience" />
@@ -325,7 +429,10 @@ export function MainPanel() {
                                                 <SelectContent>
                                                     <SelectItem value="All Subscribers">All Subscribers</SelectItem>
                                                     <SelectItem value="Customers (All)">Customers (All)</SelectItem>
-                                                    <SelectItem value="Leads (North Region)">Leads (North Region)</SelectItem>
+                                                    <SelectItem value="General Subscribers">General Subscribers</SelectItem>
+                                                    <SelectItem value="Marketing Subscribers">Marketing Subscribers</SelectItem>
+                                                    <SelectItem value="Security Subscribers">Security Subscribers</SelectItem>
+                                                    <SelectItem value="Activity Subscribers">Activity Subscribers</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </div>
@@ -342,8 +449,13 @@ export function MainPanel() {
                                             ) : (
                                                 <span>
                                                     {recipientEmails.length} recipient(s) will receive this {type} email
-                                                    ({form.audience}, requires <code>emailPreferences.{type} = true</code>).
+                                                    ({form.audience}, requires <code>emailPreferences.{recipientPreferenceKey} = true</code>).
                                                 </span>
+                                            )}
+                                            {!loadingAudienceUsers && form.segments.length > 0 && (
+                                                <div className="mt-1 text-slate-400">
+                                                    Segments applied (all must match): {form.segments.join(", ")}
+                                                </div>
                                             )}
                                             {!loadingAudienceUsers && recipientEmails.length > 0 && (
                                                 <div className="mt-2 text-slate-400">
