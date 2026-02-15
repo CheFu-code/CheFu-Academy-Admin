@@ -168,7 +168,7 @@ const escapeHtml = (s: string): string =>
         .replace(/'/g, '&#39;')
         .replace(/\//g, '&#x2F;');
 
-const sendNewDeviceAlertEmail = async (
+const sendSignInAlertEmail = async (
     uid: string,
     details: {
         origin: string;
@@ -212,7 +212,7 @@ const sendNewDeviceAlertEmail = async (
     const text = [
         `Hi ${user.displayName || user.email},`,
         '',
-        'We detected a sign-in from a new device on your CheFu Academy account.',
+        'We detected a sign-in to your CheFu Academy account.',
         '',
         `Time (UTC): ${signedInAt}`,
         `IP address: ${details.ipAddress}`,
@@ -225,7 +225,7 @@ const sendNewDeviceAlertEmail = async (
 
     const html = `
         <p>Hi ${safeName},</p>
-        <p>We detected a new sign-in to your CheFu Academy account.</p>
+        <p>We detected a sign-in to your CheFu Academy account.</p>
         <ul>
             <li><strong>Time (UTC):</strong> ${safeSignedInAt}</li>
             <li><strong>IP address:</strong> ${safeIpAddress}</li>
@@ -245,7 +245,7 @@ const sendNewDeviceAlertEmail = async (
         body: JSON.stringify({
             from: SIGNIN_ALERT_FROM,
             to: [user.email],
-            subject: `New device sign-in to ${RP_NAME}`,
+            subject: `Sign-in alert for ${RP_NAME}`,
             text,
             html,
         }),
@@ -552,16 +552,14 @@ export const webauthnApi = onRequest(
                         signInDevices: updatedDevices,
                     });
 
-                    if (!existingDevice) {
-                        void sendNewDeviceAlertEmail(resolvedUid, {
-                            origin,
-                            credentialId,
-                            ipAddress,
-                            userAgent,
-                        }).catch((error: unknown) => {
-                            logger.error('Failed to send sign-in alert email', error);
-                        });
-                    }
+                    void sendSignInAlertEmail(resolvedUid, {
+                        origin,
+                        credentialId,
+                        ipAddress,
+                        userAgent,
+                    }).catch((error: unknown) => {
+                        logger.error('Failed to send sign-in alert email', error);
+                    });
 
                     // Sign into Firebase: mint custom token for this uid
                     const token = await auth.createCustomToken(resolvedUid);
