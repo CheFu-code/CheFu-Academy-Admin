@@ -8,6 +8,7 @@ import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 import AccountUI from '../_components/UI/AccountUI';
+import AccountSkeleton from '@/components/skeletons/AccountSkeleton';
 
 const Account = () => {
     const { user, loading } = useAuthUser();
@@ -50,7 +51,6 @@ const Account = () => {
                 updatedAt: new Date(),
             });
 
-            // 🔹 Optional: sync Firebase Auth profile
             if (auth.currentUser) {
                 await updateProfile(auth.currentUser, {
                     photoURL,
@@ -67,9 +67,19 @@ const Account = () => {
         }
     };
 
+    if (loading) {
+        return <AccountSkeleton />;
+    }
+
+    if (!user) {
+        return (
+            <div className="container mx-auto max-w-4xl p-4 sm:p-6">
+                <p className="text-sm text-muted-foreground">Unable to load account data.</p>
+            </div>
+        );
+    }
     return (
         <AccountUI
-            loading={loading}
             handleAvatarUpload={handleAvatarUpload}
             handleChangeAvatar={handleChangeAvatar}
             user={user}

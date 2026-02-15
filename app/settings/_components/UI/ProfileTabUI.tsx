@@ -10,7 +10,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { Switch } from '@/components/ui/switch';
 import { TabsContent } from '@/components/ui/tabs';
 import { User } from '@/types/user';
 
@@ -21,8 +20,6 @@ const ProfileTabUI = ({
     setName,
     bio,
     setBio,
-    prefs,
-    handleToggle,
     updateField,
     saving,
     loggingOut,
@@ -33,14 +30,6 @@ const ProfileTabUI = ({
     setName: (value: string) => void,
     bio: string,
     setBio: (value: string) => void,
-    prefs: {
-        activity: boolean;
-        general: boolean;
-        marketing: boolean;
-        security: boolean;
-    },
-
-    handleToggle: (key: keyof typeof prefs, value: boolean) => void,
     updateField: (field: 'fullname' | 'bio', value: string) => void,
     saving: null | 'fullname' | 'bio',
     loggingOut: boolean,
@@ -189,40 +178,6 @@ const ProfileTabUI = ({
                         </div>
                     </div>
 
-                    <Separator />
-
-                    {/* Preferences */}
-                    <div className="space-y-1 sm:space-y-2">
-                        <h3 className="text-xs sm:text-sm font-semibold text-muted-foreground">
-                            Preferences
-                        </h3>
-                        <div className="grid gap-1 sm:gap-2 mt-1 sm:mt-2">
-                            {prefs &&
-                                (
-                                    [
-                                        'activity',
-                                        'general',
-                                        'marketing',
-                                        'security',
-                                    ] as const
-                                ).map((key) => (
-                                    <div
-                                        key={key}
-                                        className="flex items-center justify-between text-xs sm:text-sm"
-                                    >
-                                        <span>{`${key.charAt(0).toUpperCase() +
-                                            key.slice(1)
-                                            } Emails`}</span>
-                                        <Switch
-                                            checked={prefs[key]}
-                                            onCheckedChange={(val) =>
-                                                handleToggle(key, val)
-                                            }
-                                        />
-                                    </div>
-                                ))}
-                        </div>
-                    </div>
                     <Separator />
                     <div className="space-y-1 sm:space-y-2">
                         <Button

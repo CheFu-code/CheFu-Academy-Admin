@@ -19,7 +19,7 @@ const PricingSection = () => {
                         className="p-6 relative overflow-hidden flex flex-col justify-between"
                     >
                         {plan.name === 'Pro' && (
-                            <div className="absolute top-0 right-0 px-4 py-1 bg-white/10 rounded-bl-xl text-sm font-medium text-green-500 border border-gray-400/10">
+                            <div className="absolute top-0 right-0 px-4 py-1 bg-gray-200/80 dark:bg-white/10 rounded-bl-xl text-sm font-medium text-green-500 border border-gray-400/10">
                                 Popular
                             </div>
                         )}
