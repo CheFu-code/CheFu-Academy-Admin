@@ -29,11 +29,9 @@ const auth = getAuth();
 const RP_NAME = process.env.RP_NAME || 'CheFu Academy';
 const RP_ID = process.env.RP_ID || undefined; // leave undefined to accept the Host header's domain
 // Allowed origins for WebAuthn ceremonies.
-// You can override/extend this at deploy time:
-// WEBAUTHN_ALLOWED_ORIGINS="https://admin.example.com,https://cheforumreal.web.app,http://localhost:3000"
 const defaultOrigins = [
     'https://cheforumreal.web.app',
-    'https://chefu-academy.vercel.app',
+    'https://academy.chefuinc.com',
     'http://localhost:3000',
 ];
 const envOrigins = (process.env.WEBAUTHN_ALLOWED_ORIGINS || '')

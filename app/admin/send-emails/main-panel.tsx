@@ -34,7 +34,6 @@ export function MainPanel() {
     const [type, setType] = useState<CampaignType>("general");
     const [activeTab, setActiveTab] = useState<ActiveTab>("compose");
     const [previewDevice, setPreviewDevice] = useState<PreviewDevice>("desktop");
-
     const [form, setForm] = useState<EmailFormState>(INITIAL_FORM);
     const [files, setFiles] = useState<File[]>([]);
     const [scheduleTime, setScheduleTime] = useState(DEFAULT_SCHEDULE_TIME);
