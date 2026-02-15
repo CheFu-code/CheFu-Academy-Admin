@@ -404,7 +404,7 @@ export const downloadCoursePDF_Office = async (course: Course) => {
 
     // Optional QR (course.url)
     let qrDataUrl: string | undefined;
-    const courseUrl = 'chefu-academy.vercel.app';
+    const courseUrl = 'academy.chefuinc.com';
     if (courseUrl) {
         try {
             qrDataUrl = await QRCode.toDataURL(courseUrl, { margin: 0, width: 160 });
