@@ -1,29 +1,36 @@
 'use client';
 
-import { useAuthUser } from '@/hooks/useAuthUser';
 import { Lock } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Separator } from '../ui/separator';
-import { Input } from '../ui/input';
 import { Button } from '../ui/button';
-import { toast } from 'sonner';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Input } from '../ui/input';
+import { Separator } from '../ui/separator';
 
-const UpgradeUI = ({ price, plan }: { price: string; plan: string }) => {
-    const router = useRouter();
-    const { user, loading } = useAuthUser();
-    const [cardHolderName, setCardHolderName] = useState('');
-    const [cardNumber, setCardNumber] = useState('');
-    const [expiry, setExpiry] = useState('');
-    const [cvc, setCvc] = useState('');
-
-    useEffect(() => {
-        if (!user || !loading) {
-            router.replace('/login');
-        }
-    }, [loading, router, user]);
-
+const UpgradeUI = ({
+    price,
+    plan,
+    cardHolderName,
+    setCardHolderName,
+    cardNumber,
+    setCardNumber,
+    expiry,
+    setExpiry,
+    cvc,
+    setCvc,
+    handleSubscribe
+}: {
+    price: string;
+    plan: string;
+    cardHolderName: string;
+    setCardHolderName: (value: string) => void;
+    cardNumber: string;
+    setCardNumber: (value: string) => void;
+    expiry: string;
+    setExpiry: (value: string) => void;
+    cvc: string;
+    setCvc: (value: string) => void;
+    handleSubscribe: () => void;
+}) => {
     return (
         <main className="min-h-screen bg-background flex items-center justify-center px-4">
             <Card className="w-full max-w-md">
@@ -104,7 +111,7 @@ const UpgradeUI = ({ price, plan }: { price: string; plan: string }) => {
                         </div>
 
                         <Button
-                            onClick={() => toast.warning('Not yet implemented')}
+                            onClick={handleSubscribe}
                             className="w-full gap-2 cursor-pointer"
                         >
                             <Lock className="w-4 h-4" />

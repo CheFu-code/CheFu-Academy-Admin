@@ -161,7 +161,11 @@ const SupportTicketsUI = ({
                         {userTickets.map((ticket) => (
                             <Card
                                 key={ticket.id}
-                                className="border rounded-lg shadow-sm"
+                                className={`border rounded-lg shadow-sm ${
+                                    ticket.hasAgentReply
+                                        ? 'bg-green-700/40 border-emerald-200'
+                                        : ''
+                                }`}
                             >
                                 {/* Header */}
                                 <CardHeader className="pb-3">
@@ -172,8 +176,20 @@ const SupportTicketsUI = ({
                                             </span>
 
                                             {/* Priority badge */}
-                                            <span
-                                                className={`
+                                            <div className="flex items-center gap-2 ml-2">
+                                                <span
+                                                    className={`text-[11px] px-2 py-1 rounded-md font-medium ${
+                                                        ticket.hasAgentReply
+                                                            ? 'bg-emerald-100 text-emerald-700'
+                                                            : 'bg-slate-100 text-slate-700'
+                                                    }`}
+                                                >
+                                                    {ticket.hasAgentReply
+                                                        ? 'Replied'
+                                                        : 'No Reply'}
+                                                </span>
+                                                <span
+                                                    className={`
                                 text-xs px-2 py-1 rounded-md ml-2 capitalize
                                 ${
                                     ticket.priority === 'high'
@@ -183,9 +199,10 @@ const SupportTicketsUI = ({
                                           : 'bg-gray-400 text-gray-700'
                                 }
                             `}
-                                            >
-                                                {ticket.priority}
-                                            </span>
+                                                >
+                                                    {ticket.priority}
+                                                </span>
+                                            </div>
                                         </div>
                                     </CardTitle>
 
