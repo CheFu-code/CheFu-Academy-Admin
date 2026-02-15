@@ -14,18 +14,27 @@ import {
     User,
 } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import os from 'os';
 import { useRef, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 
+const getClientContext = () => {
+    const isBrowser = typeof window !== 'undefined';
+
+    return {
+        deviceInfo: {
+            platform: isBrowser ? navigator.platform : 'unknown',
+            userAgent: isBrowser ? navigator.userAgent : 'unknown',
+            language: isBrowser ? navigator.language : 'unknown',
+        },
+        locationInfo: isBrowser
+            ? Intl.DateTimeFormat().resolvedOptions().timeZone || 'unknown'
+            : 'unknown',
+    };
+};
+
 export const saveUser = async (user: User, fullname: string, email: string) => {
     try {
-        const deviceInfo = {
-            platform: os.platform(), // 'darwin', 'win32', 'linux'
-            osType: os.type(), // 'Linux', 'Darwin', 'Windows_NT'
-            osRelease: os.release(), // OS version
-            arch: os.arch(), // 'x64', 'arm', etc.
-        };
+        const { deviceInfo } = getClientContext();
 
         const userEmail = (user.email ?? email)?.trim();
         const userFullName = user.displayName || fullname || '';
@@ -135,21 +144,7 @@ export const UseAuth = () => {
             }
             const fullname = user.displayName?.trim() || 'Google User';
             const email = user.email || '';
-            const response = await fetch(
-                `${BACKEND_URL}/api/email/send-alert`,
-                {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        email: email,
-                        name:
-                            user.displayName?.trim() ||
-                            user.email?.split('@')[0],
-                        device: deviceInfo,
-                        location: locationInfo,
-                    }),
-                },
-            );
+
             const savedData = await saveUser(user, fullname, email);
             if (!savedData) throw new Error('Failed to save user data.');
         } catch (error: unknown) {
