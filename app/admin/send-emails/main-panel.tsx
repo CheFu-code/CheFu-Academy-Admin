@@ -1,10 +1,11 @@
 'use client'
 
 import * as React from "react";
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState, useCallback, useEffect } from "react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { useDropzone } from "react-dropzone";
+import { collection, getDocs } from "firebase/firestore";
 import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
 import { Calendar as CalendarIcon, Send, Eye, Upload, FlaskConical, Link2, Rocket, TimerReset, Smartphone, Monitor, CheckCircle2, X } from "lucide-react";
@@ -19,9 +20,25 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { db } from "@/lib/firebase";
 import { SegmentSelector, TemplateDropdown, EmailPreview, PreviewSheet } from "./sub-components";
 
 type CampaignType = "general" | "marketing";
+type EmailPreferenceKey = CampaignType | "activity" | "security";
+
+type AudienceUser = {
+    id: string;
+    email: string;
+    member?: boolean;
+    subscriptionStatus?: string;
+    emailPreferences?: Partial<Record<EmailPreferenceKey, boolean>>;
+};
+
+const isCustomer = (user: AudienceUser) => {
+    if (user.member === true) return true;
+    const status = (user.subscriptionStatus ?? "").trim().toLowerCase();
+    return status.length > 0 && status !== "free" && status !== "none";
+};
 
 export function MainPanel() {
     const DEFAULT_SCHEDULE_TIME = "09:00";
@@ -56,6 +73,65 @@ export function MainPanel() {
 
     const [files, setFiles] = useState<File[]>([]);
     const [scheduleTime, setScheduleTime] = useState(DEFAULT_SCHEDULE_TIME);
+    const [audienceUsers, setAudienceUsers] = useState<AudienceUser[]>([]);
+    const [loadingAudienceUsers, setLoadingAudienceUsers] = useState(false);
+
+    useEffect(() => {
+        let mounted = true;
+        const loadAudienceUsers = async () => {
+            setLoadingAudienceUsers(true);
+            try {
+                const snap = await getDocs(collection(db, "users"));
+                if (!mounted) return;
+                const users = snap.docs
+                    .map((docSnap) => {
+                        const data = docSnap.data() as Partial<AudienceUser>;
+                        const email =
+                            typeof data.email === "string" && data.email.includes("@")
+                                ? data.email
+                                : docSnap.id;
+                        return {
+                            id: docSnap.id,
+                            email,
+                            member: data.member === true,
+                            subscriptionStatus:
+                                typeof data.subscriptionStatus === "string"
+                                    ? data.subscriptionStatus
+                                    : "",
+                            emailPreferences: data.emailPreferences,
+                        };
+                    })
+                    .filter((u) => typeof u.email === "string" && u.email.includes("@"));
+                setAudienceUsers(users);
+            } catch (error) {
+                console.error("Failed to load users for email audience:", error);
+                toast.error("Unable to load audience from Firestore.");
+            } finally {
+                if (mounted) {
+                    setLoadingAudienceUsers(false);
+                }
+            }
+        };
+        loadAudienceUsers();
+        return () => {
+            mounted = false;
+        };
+    }, []);
+
+    const recipientEmails = useMemo(() => {
+        const audienceBase = (() => {
+            if (form.audience === "Customers (All)") {
+                return audienceUsers.filter(isCustomer);
+            }
+            if (form.audience.startsWith("Leads")) {
+                return audienceUsers.filter((u) => !isCustomer(u));
+            }
+            return audienceUsers;
+        })();
+
+        const eligible = audienceBase.filter((u) => u.emailPreferences?.[type] === true);
+        return Array.from(new Set(eligible.map((u) => u.email)));
+    }, [audienceUsers, form.audience, type]);
 
     const onDrop = useCallback((accepted: File[]) => {
         setFiles((prev) => [
@@ -104,11 +180,19 @@ export function MainPanel() {
             toast.error("Please complete required fields: From, Subject, Content.");
             return;
         }
+        if (loadingAudienceUsers) {
+            toast.error("Still loading users from Firestore. Please wait.");
+            return;
+        }
+        if (recipientEmails.length === 0) {
+            toast.error(`No recipients match ${form.audience} with emailPreferences.${type}=true.`);
+            return;
+        }
         try {
             // TODO: Replace with your API call
             // await api.post("/emails/send", payload)
             await new Promise((r) => setTimeout(r, 800));
-            toast.success("Email sent to selected audience.");
+            toast.success(`Email sent to ${recipientEmails.length} recipient(s).`);
         } catch (e) {
             toast.error("Failed to send. Check logs and try again.");
             console.log(e)
@@ -251,6 +335,22 @@ export function MainPanel() {
                                                 values={form.segments}
                                                 onChange={(v) => setField("segments", v)}
                                             />
+                                        </div>
+                                        <div className="rounded-md border border-slate-800/60 bg-slate-950/50 p-3 text-xs text-slate-300">
+                                            {loadingAudienceUsers ? (
+                                                <span>Checking Firestore recipients...</span>
+                                            ) : (
+                                                <span>
+                                                    {recipientEmails.length} recipient(s) will receive this {type} email
+                                                    ({form.audience}, requires <code>emailPreferences.{type} = true</code>).
+                                                </span>
+                                            )}
+                                            {!loadingAudienceUsers && recipientEmails.length > 0 && (
+                                                <div className="mt-2 text-slate-400">
+                                                    {recipientEmails.slice(0, 5).join(", ")}
+                                                    {recipientEmails.length > 5 ? " ..." : ""}
+                                                </div>
+                                            )}
                                         </div>
                                         <div className="text-xs text-slate-400">
                                             Tip: Keep segments small and precise. Avoid spam—honor opt-outs and include an unsubscribe link.
@@ -613,8 +713,8 @@ export function MainPanel() {
                                         <Button
                                             variant="secondary"
                                             onClick={handleSendNow}
-                                            disabled={!canSend}
-                                            className={cn(!canSend && "opacity-60")}
+                                            disabled={!canSend || loadingAudienceUsers || recipientEmails.length === 0}
+                                            className={cn((!canSend || loadingAudienceUsers || recipientEmails.length === 0) && "opacity-60")}
                                         >
                                             <Send className="mr-2 h-4 w-4" />
                                             Send now
