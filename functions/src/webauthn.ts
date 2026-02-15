@@ -93,8 +93,20 @@ const setUserDoc = (uid: string, data: Partial<WebAuthnUserDoc>) =>
 const resolveUid = async (identifier: string): Promise<string> => {
     const value = identifier.trim();
     if (!value.includes('@')) return value;
-    const user = await auth.getUserByEmail(value);
-    return user.uid;
+    try {
+        const user = await auth.getUserByEmail(value);
+        return user.uid;
+    } catch (error: unknown) {
+        if (
+            typeof error === 'object' &&
+            error !== null &&
+            'code' in error &&
+            (error as { code?: string }).code === 'auth/user-not-found'
+        ) {
+            throw new Error('user-not-registered');
+        }
+        throw error;
+    }
 };
 
 const ensureOrigin = (origin: string) => {
@@ -372,6 +384,10 @@ export const webauthnApi = onRequest(
                 return res.status(400).json({ error: 'unknown-operation' });
             } catch (err: unknown) {
                 logger.error('webauthnApi error', err);
+                const message = (err as Error)?.message || '';
+                if (/user-not-registered/i.test(message)) {
+                    return res.status(404).json({ error: 'user-not-registered' });
+                }
                 return res
                     .status(500)
                     .json({ error: 'internal', message: 'Internal server error' });

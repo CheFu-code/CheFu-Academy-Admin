@@ -179,6 +179,8 @@ export async function signInWithPasskey(uid: string): Promise<UserCredential> {
  */
 export function toPasskeyMessage(err: unknown): string {
     const msg = (err as Error)?.message || 'Unknown error';
+    if (/user-not-registered/i.test(msg))
+        return 'No account exists for this email. Please register first.';
     if (/no-passkeys-enrolled/i.test(msg))
         return 'No passkey is enrolled for this account yet.';
     if (/NotAllowedError|AbortError/i.test(msg))
