@@ -2,6 +2,7 @@ import { featureProps } from '@/types/feature';
 import {
     IconDashboard,
     IconListDetails,
+    IconMail,
     IconMessage,
     IconMoneybag,
     IconReport,
@@ -172,6 +173,11 @@ export const documents = [
 ];
 
 export const advanced = [
+    {
+        name: 'Send Emails',
+        url: '/admin/send-emails',
+        icon: IconMail,
+    },
     {
         name: 'Billing Section',
         url: '/admin/billing',
