@@ -1,22 +1,20 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Bell, Loader, ShieldCheck, User } from 'lucide-react';
-import React from 'react';
-import ProfileTab from '../ProfileTab';
-import NotificationsTab from '../NotificationsTab';
-import SecurityTab from '../SecurityTab';
 import { User as FirebaseU } from '@/types/user';
+import { Bell, ShieldCheck, User } from 'lucide-react';
+import React from 'react';
+import NotificationsTab from '../NotificationsTab';
+import ProfileTab from '../ProfileTab';
+import SecurityTab from '../SecurityTab';
 
 const AccountUI = ({
     handleChangeAvatar,
     user,
     changing,
     fileInputRef,
-    loading,
     handleAvatarUpload,
 }: {
-    loading: boolean;
     user: FirebaseU | null;
     changing: boolean;
     handleChangeAvatar: () => void;
@@ -25,19 +23,8 @@ const AccountUI = ({
         e: React.ChangeEvent<HTMLInputElement>,
     ) => Promise<void>;
 }) => {
-    if (!user) {
-        return (
-            <div className="container mx-auto max-w-4xl p-4 sm:p-6">
-                <div className="flex items-center justify-center h-64">
-                    <Loader className="animate-spin size-8" />
-                </div>
-            </div>
-        );
-    }
-
     return (
         <div className="container mx-auto max-w-4xl p-4 sm:p-6">
-            {/* Header */}
             <div className="flex items-center space-x-3 sm:space-x-4 mb-2 sm:mb-4">
                 <div className="flex flex-col items-start space-y-1 sm:space-y-2 w-full min-w-0">
                     <div className="flex flex-row items-center">
@@ -54,9 +41,7 @@ const AccountUI = ({
                             </AvatarFallback>
 
                             {changing && (
-                                <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full">
-                                    <Loader className="h-4 w-4 animate-spin text-white" />
-                                </div>
+                                <div className="absolute inset-0 rounded-full bg-black/40" />
                             )}
                         </Avatar>
 
@@ -69,15 +54,20 @@ const AccountUI = ({
                         />
 
                         <div className="flex flex-col">
-                            {loading ? (
-                                <Loader className="animate-spin size-4" />
-                            ) : (
-                                <h1 className="text-base sm:text-2xl font-bold">
-                                    {user?.fullname || 'Unknown'}
-                                </h1>
-                            )}
+                            <h1 className="text-base sm:text-2xl font-bold">
+                                {user?.fullname || 'Unknown'}
+                            </h1>
                             <p className="text-xs sm:text-sm text-muted-foreground">
-                                {user?.roles[0] || 'anonymous'} at CheFu Academy
+                                {user?.roles?.length
+                                    ? user.roles
+                                        .map(
+                                            (role) =>
+                                                role.charAt(0).toUpperCase() +
+                                                role.slice(1),
+                                        )
+                                        .join(', ')
+                                    : 'anonymous'}{' '}
+                                at CheFu Academy
                             </p>
                         </div>
                     </div>
@@ -91,7 +81,6 @@ const AccountUI = ({
 
             <Separator className="my-3 sm:my-4" />
 
-            {/* Tabs */}
             <Tabs defaultValue="profile" className="w-full">
                 <TabsList className="flex w-full overflow-x-auto no-scrollbar space-x-1 sm:space-x-2 px-1 sm:px-2">
                     <TabsTrigger
@@ -117,7 +106,6 @@ const AccountUI = ({
                     </TabsTrigger>
                 </TabsList>
 
-                {/* Tab Contents */}
                 <ProfileTab />
                 <NotificationsTab />
                 <SecurityTab />

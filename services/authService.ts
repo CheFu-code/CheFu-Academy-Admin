@@ -135,7 +135,21 @@ export const UseAuth = () => {
             }
             const fullname = user.displayName?.trim() || 'Google User';
             const email = user.email || '';
-
+            const response = await fetch(
+                `${BACKEND_URL}/api/email/send-alert`,
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: email,
+                        name:
+                            user.displayName?.trim() ||
+                            user.email?.split('@')[0],
+                        device: deviceInfo,
+                        location: locationInfo,
+                    }),
+                },
+            );
             const savedData = await saveUser(user, fullname, email);
             if (!savedData) throw new Error('Failed to save user data.');
         } catch (error: unknown) {

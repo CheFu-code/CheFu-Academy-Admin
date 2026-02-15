@@ -12,7 +12,6 @@ const ProfileTab = () => {
     const [name, setName] = useState(user?.fullname ?? '');
     const [saving, setSaving] = useState<null | 'fullname' | 'bio'>(null);
     const [bio, setBio] = useState(user?.bio ?? '');
-
     if (!user) return null;
 
     const updateField = async (field: 'fullname' | 'bio', value: string) => {
