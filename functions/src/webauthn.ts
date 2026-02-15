@@ -4,8 +4,7 @@ import { getAuth } from 'firebase-admin/auth';
 import { getFirestore } from 'firebase-admin/firestore';
 import { onRequest } from 'firebase-functions/v2/https';
 import * as logger from 'firebase-functions/logger';
-import corsLib from 'cors';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 import { createHash } from 'node:crypto';
 import {
     generateRegistrationOptions,
@@ -57,16 +56,18 @@ const isAllowedOrigin = (origin: string) => {
 // Store users & credentials in Firestore
 const USERS = db.collection('webauthnUsers');
 
-// Basic CORS for same-origin Hosting rewrite + local dev
-const cors = corsLib({
-    origin: (origin, callback) => {
-        if (!origin || isAllowedOrigin(origin)) {
-            callback(null, true);
-            return;
-        }
-        callback(new Error('Not allowed by CORS'));
-    },
-});
+const applyCorsHeaders = (req: Request, res: Response): boolean => {
+    const origin = req.headers.origin;
+    if (typeof origin !== 'string' || !origin) return true;
+    if (!isAllowedOrigin(origin)) return false;
+
+    res.set('Access-Control-Allow-Origin', origin);
+    res.set('Vary', 'Origin');
+    res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.set('Access-Control-Max-Age', '3600');
+    return true;
+};
 
 // --- Types ---
 type Passkey = {
@@ -274,74 +275,75 @@ const BodySchema = z.object({
 export const webauthnApi = onRequest(
     {
         region: 'us-central1',
-        cors: false, // we call cors() manually
+        cors: false,
     },
     async (req, res) => {
-        cors(req, res, async () => {
+        try {
+            if (!applyCorsHeaders(req, res)) {
+                return void res.status(403).json({ error: 'origin-not-allowed' });
+            }
+            if (req.method === 'OPTIONS') {
+                return void res.status(204).send('');
+            }
+            if (req.method !== 'POST') {
+                return void res.status(405).send('Method Not Allowed');
+            }
+
+            const parsed = BodySchema.safeParse(req.body);
+            if (!parsed.success) {
+                return void res.status(400).json({ error: 'invalid-request' });
+            }
+            const { operation, uid, username, response } = parsed.data;
+            const resolvedUid = await resolveUid(uid);
+
+            const expectedOrigin = (req.headers.origin as string) || '';
+            ensureOrigin(expectedOrigin);
+
+            // Decide RPID
+            const forwardedHost =
+                ((req.headers['x-forwarded-host'] as string | undefined) ||
+                    req.headers.host ||
+                    '')
+                    .split(',')[0]
+                    .trim()
+                    .toLowerCase();
+            let originHost = '';
             try {
-                if (req.method === 'OPTIONS') {
-                    return res.status(204).send('');
-                }
+                originHost = new URL(expectedOrigin).hostname.toLowerCase();
+            } catch {
+                originHost = '';
+            }
+            const effectiveRPID =
+                (originHost || RP_ID || forwardedHost.split(':')[0] || '')
+                    .trim()
+                    .toLowerCase();
+            if (!effectiveRPID) {
+                return void res.status(500).json({ error: 'rp-id-not-configured' });
+            }
 
-                if (req.method !== 'POST') {
-                    return res.status(405).send('Method Not Allowed');
-                }
+            // Load and normalize user doc to avoid crashes on legacy/partial records
+            const loadedUserDoc = await getUserDoc(resolvedUid);
+            const userDoc: WebAuthnUserDoc = {
+                username: loadedUserDoc?.username || username || resolvedUid,
+                challenge: loadedUserDoc?.challenge,
+                credentials: Array.isArray(loadedUserDoc?.credentials)
+                    ? loadedUserDoc.credentials
+                    : [],
+                signInDevices: Array.isArray(loadedUserDoc?.signInDevices)
+                    ? loadedUserDoc.signInDevices
+                    : [],
+            };
 
-                const parsed = BodySchema.safeParse(req.body);
-                if (!parsed.success) {
-                    return res.status(400).json({ error: 'invalid-request' });
-                }
-                const { operation, uid, username, response } = parsed.data;
-                const resolvedUid = await resolveUid(uid);
-
-                const expectedOrigin = (req.headers.origin as string) || '';
-                ensureOrigin(expectedOrigin);
-
-                // Decide RPID
-                const forwardedHost =
-                    ((req.headers['x-forwarded-host'] as string | undefined) ||
-                        req.headers.host ||
-                        '')
-                        .split(',')[0]
-                        .trim()
-                        .toLowerCase();
-                let originHost = '';
-                try {
-                    originHost = new URL(expectedOrigin).hostname.toLowerCase();
-                } catch {
-                    originHost = '';
-                }
-                const effectiveRPID =
-                    (originHost || RP_ID || forwardedHost.split(':')[0] || '')
-                        .trim()
-                        .toLowerCase();
-                if (!effectiveRPID) {
-                    return res.status(500).json({ error: 'rp-id-not-configured' });
-                }
-
-                // Load and normalize user doc to avoid crashes on legacy/partial records
-                const loadedUserDoc = await getUserDoc(resolvedUid);
-                const userDoc: WebAuthnUserDoc = {
-                    username: loadedUserDoc?.username || username || resolvedUid,
-                    challenge: loadedUserDoc?.challenge,
-                    credentials: Array.isArray(loadedUserDoc?.credentials)
-                        ? loadedUserDoc.credentials
-                        : [],
-                    signInDevices: Array.isArray(loadedUserDoc?.signInDevices)
-                        ? loadedUserDoc.signInDevices
-                        : [],
-                };
-
-                if (operation === 'reg-options') {
+            if (operation === 'reg-options') {
                     const idToken = getBearerToken(
                         req.headers.authorization as string | undefined,
                     );
                     if (!idToken) {
-                        return res.status(401).json({ error: 'auth-required' });
+                        return void res.status(401).json({ error: 'auth-required' });
                     }
                     const decoded = await auth.verifyIdToken(idToken);
                     if (decoded.uid !== resolvedUid) {
-                        return res.status(403).json({ error: 'forbidden' });
+                        return void res.status(403).json({ error: 'forbidden' });
                     }
 
                     // Generate options for registration
@@ -371,24 +373,24 @@ export const webauthnApi = onRequest(
                         challenge: options.challenge,
                         username: userDoc.username,
                     });
-                    return res.status(200).json({ options });
+                    return void res.status(200).json({ options });
                 }
 
-                if (operation === 'reg-verify') {
+            if (operation === 'reg-verify') {
                     const idToken = getBearerToken(
                         req.headers.authorization as string | undefined,
                     );
                     if (!idToken) {
-                        return res.status(401).json({ error: 'auth-required' });
+                        return void res.status(401).json({ error: 'auth-required' });
                     }
                     const decoded = await auth.verifyIdToken(idToken);
                     if (decoded.uid !== resolvedUid) {
-                        return res.status(403).json({ error: 'forbidden' });
+                        return void res.status(403).json({ error: 'forbidden' });
                     }
 
                     const cred = response as RegistrationResponseJSON;
                     if (!userDoc.challenge) {
-                        return res.status(400).json({
+                        return void res.status(400).json({
                             error: 'missing stored challenge for verification',
                         });
                     }
@@ -404,7 +406,7 @@ export const webauthnApi = onRequest(
                         !verification.verified ||
                         !verification.registrationInfo
                     ) {
-                        return res.status(400).json({ verified: false });
+                        return void res.status(400).json({ verified: false });
                     }
 
                     const { credential, credentialDeviceType, credentialBackedUp } =
@@ -430,12 +432,12 @@ export const webauthnApi = onRequest(
                         ],
                     });
 
-                    return res.status(200).json({ verified: true });
+                    return void res.status(200).json({ verified: true });
                 }
 
-                if (operation === 'authn-options') {
+            if (operation === 'authn-options') {
                     if (userDoc.credentials.length === 0) {
-                        return res
+                        return void res
                             .status(404)
                             .json({ error: 'no-passkeys-enrolled' });
                     }
@@ -455,19 +457,19 @@ export const webauthnApi = onRequest(
                     });
 
                     await setUserDoc(resolvedUid, { challenge: options.challenge });
-                    return res.status(200).json({ options });
+                    return void res.status(200).json({ options });
                 }
 
-                if (operation === 'has-passkeys') {
-                    return res
+            if (operation === 'has-passkeys') {
+                    return void res
                         .status(200)
                         .json({ enrolled: userDoc.credentials.length > 0 });
                 }
 
-                if (operation === 'authn-verify') {
+            if (operation === 'authn-verify') {
                     const cred = response as AuthenticationResponseJSON;
                     if (!userDoc.challenge) {
-                        return res.status(400).json({
+                        return void res.status(400).json({
                             error: 'missing stored challenge for verification',
                         });
                     }
@@ -479,7 +481,7 @@ export const webauthnApi = onRequest(
                         (c) => c.id === credID,
                     );
                     if (!match) {
-                        return res
+                        return void res
                             .status(404)
                             .json({ error: 'credential-not-found' });
                     }
@@ -501,7 +503,7 @@ export const webauthnApi = onRequest(
                         !verification.verified ||
                         !verification.authenticationInfo
                     ) {
-                        return res.status(401).json({ verified: false });
+                        return void res.status(401).json({ verified: false });
                     }
 
                     // Update counter to prevent replays
@@ -563,22 +565,21 @@ export const webauthnApi = onRequest(
 
                     // Sign into Firebase: mint custom token for this uid
                     const token = await auth.createCustomToken(resolvedUid);
-                    return res
+                    return void res
                         .status(200)
                         .json({ verified: true, customToken: token });
                 }
 
-                return res.status(400).json({ error: 'unknown-operation' });
-            } catch (err: unknown) {
-                logger.error('webauthnApi error', err);
-                const message = (err as Error)?.message || '';
-                if (/user-not-registered/i.test(message)) {
-                    return res.status(404).json({ error: 'user-not-registered' });
-                }
-                return res
-                    .status(500)
-                    .json({ error: 'internal', message: 'Internal server error' });
+            return void res.status(400).json({ error: 'unknown-operation' });
+        } catch (err: unknown) {
+            logger.error('webauthnApi error', err);
+            const message = (err as Error)?.message || '';
+            if (/user-not-registered/i.test(message)) {
+                return void res.status(404).json({ error: 'user-not-registered' });
             }
-        });
+            return void res
+                .status(500)
+                .json({ error: 'internal', message: 'Internal server error' });
+        }
     },
 );
