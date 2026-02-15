@@ -1,4 +1,3 @@
-import { format } from "date-fns";
 import { Calendar as CalendarIcon, CheckCircle2, Send, TimerReset } from "lucide-react";
 import { toast } from "sonner";
 import { Calendar } from "@/components/ui/calendar";
@@ -42,6 +41,9 @@ export function ScheduleTab({
     handleSaveDraft,
     handleSendNow,
 }: ScheduleTabProps) {
+    const disableSendActions = !canSend || loadingAudienceUsers || recipientCount === 0;
+    const disableSchedule = disableSendActions || !form.scheduleAt;
+
     return (
         <TabsContent value="schedule" className="mt-6">
             <Card className="border-slate-800/60 bg-slate-900/40">
@@ -130,21 +132,37 @@ export function ScheduleTab({
                         <Button
                             variant="secondary"
                             onClick={handleSendNow}
-                            disabled={!canSend || loadingAudienceUsers || recipientCount === 0}
-                            className={cn((!canSend || loadingAudienceUsers || recipientCount === 0) && "opacity-60")}
+                            disabled={disableSendActions}
+                            className={cn(disableSendActions && "opacity-60")}
                         >
                             <Send className="mr-2 h-4 w-4" />
                             Send now
                         </Button>
                         <Button
                             onClick={() => {
+                                if (!canSend) {
+                                    toast.error("Please complete required fields: From, Subject, Content.");
+                                    return;
+                                }
+                                if (loadingAudienceUsers) {
+                                    toast.error("Still loading users from Firestore. Please wait.");
+                                    return;
+                                }
+                                if (recipientCount === 0) {
+                                    toast.error("No recipients match the selected audience and preferences.");
+                                    return;
+                                }
                                 if (!form.scheduleAt) {
                                     toast.error("Pick a schedule date/time first.");
                                     return;
                                 }
                                 toast.success(`Scheduled for ${scheduleLabel} (${form.timezone})`);
                             }}
-                            className="bg-linear-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500"
+                            disabled={disableSchedule}
+                            className={cn(
+                                "bg-linear-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500",
+                                disableSchedule && "opacity-60"
+                            )}
                         >
                             <CalendarIcon className="mr-2 h-4 w-4" />
                             Schedule

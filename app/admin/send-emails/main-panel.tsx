@@ -83,6 +83,12 @@ export function MainPanel() {
         };
     }, []);
 
+    useEffect(() => {
+        if (type !== "marketing") {
+            setForm((prev) => (prev.enableAB ? { ...prev, enableAB: false } : prev));
+        }
+    }, [type]);
+
     const recipientPreferenceKey = useMemo<EmailPreferenceKey>(() => {
         if (form.audience === "General Subscribers") return "general";
         if (form.audience === "Marketing Subscribers") return "marketing";
@@ -164,7 +170,7 @@ export function MainPanel() {
             toast.success(`Email sent to ${recipientEmails.length} recipient(s).`);
         } catch (e) {
             toast.error("Failed to send. Check logs and try again.");
-            console.log(e);
+            console.error(e);
         }
     }
 

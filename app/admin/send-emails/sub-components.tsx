@@ -2,61 +2,13 @@
 
 import * as React from "react";
 import { useMemo, useState } from "react";
-import DOMPurify from "dompurify";
-import { CheckCircle2, ChevronDown, Eye, FileText, Wand2 } from "lucide-react";
+import DOMPurify from "isomorphic-dompurify";
+import { Eye, FileText, Wand2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-
-export function SegmentSelector({
-    values,
-    onChange,
-}: {
-    values: string[];
-    onChange: (v: string[]) => void;
-}) {
-    const [open, setOpen] = useState(false);
-    const all = ["Active", "Churn-risk", "VIP", "Last 30 days", "Last 90 days", "Trial users", "EU Region"];
-    return (
-        <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild>
-                <Button variant="outline" className="w-full justify-between border-slate-700 bg-slate-900/30 hover:bg-slate-900/40">
-                    <span className="truncate">
-                        {values.length ? values.join(", ") : "Add segments"}
-                    </span>
-                    <ChevronDown className="h-4 w-4 ml-2" />
-                </Button>
-            </PopoverTrigger>
-            <PopoverContent align="start" className="w-70 p-0">
-                <ScrollArea className="max-h-65">
-                    <div className="p-2 space-y-1">
-                        {all.map((seg) => {
-                            const active = values.includes(seg);
-                            return (
-                                <Button
-                                    key={seg}
-                                    variant="ghost"
-                                    className={cn("w-full justify-between", active && "bg-slate-800")}
-                                    onClick={() => {
-                                        onChange(
-                                            active ? values.filter((v) => v !== seg) : [...values, seg]
-                                        );
-                                    }}
-                                >
-                                    <span>{seg}</span>
-                                    {active && <CheckCircle2 className="h-4 w-4 text-cyan-300" />}
-                                </Button>
-                            );
-                        })}
-                    </div>
-                </ScrollArea>
-            </PopoverContent>
-        </Popover>
-    );
-}
 
 export function TemplateDropdown({ onSelectTemplate }: { onSelectTemplate: (htmlOrText: string) => void }) {
     const templates = [
