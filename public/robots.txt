@@ -1,9 +1,0 @@
-# *
-User-agent: *
-Allow: /
-
-# Host
-Host: https://chefuinc.com
-
-# Sitemaps
-Sitemap: https://chefuinc.com/sitemap.xml
