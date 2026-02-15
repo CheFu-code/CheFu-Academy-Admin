@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useMemo, useState, useCallback } from "react";
 import { format } from "date-fns";
+import DOMPurify from "dompurify";
 import { toast } from "sonner";
 import { useDropzone } from "react-dropzone";
 import { cn } from "@/lib/utils"; // if you have a classnames helper; else remove
@@ -123,6 +124,7 @@ function SidebarNav() {
 /* --------------------------------- MAIN UI -------------------------------- */
 
 function MainPanel() {
+    const DEFAULT_SCHEDULE_TIME = "09:00";
     const [type, setType] = useState<CampaignType>("general");
     const [activeTab, setActiveTab] = useState<"audience" | "compose" | "preview" | "schedule">(
         "compose"
@@ -153,6 +155,7 @@ function MainPanel() {
     });
 
     const [files, setFiles] = useState<File[]>([]);
+    const [scheduleTime, setScheduleTime] = useState(DEFAULT_SCHEDULE_TIME);
 
     const onDrop = useCallback((accepted: File[]) => {
         setFiles((prev) => [
@@ -178,6 +181,15 @@ function MainPanel() {
         () => (form.scheduleAt ? format(form.scheduleAt, "EEE, MMM d yyyy HH:mm") : "Pick date & time"),
         [form.scheduleAt]
     );
+
+    const combineDateAndTime = useCallback((date: Date, timeValue: string) => {
+        const [hourPart, minutePart] = timeValue.split(":");
+        const hours = Number.parseInt(hourPart ?? "0", 10);
+        const minutes = Number.parseInt(minutePart ?? "0", 10);
+        const next = new Date(date);
+        next.setHours(Number.isNaN(hours) ? 0 : hours, Number.isNaN(minutes) ? 0 : minutes, 0, 0);
+        return next;
+    }, []);
 
     const setField = <K extends keyof typeof form>(key: K, value: (typeof form)[K]) =>
         setForm((f) => ({ ...f, [key]: value }));
@@ -257,7 +269,7 @@ function MainPanel() {
                 <CardContent className="pt-0">
                     <Tabs
                         value={activeTab}
-                        onValueChange={(val) => setActiveTab(val as any)}
+                        onValueChange={(val) => setActiveTab(val as "audience" | "compose" | "preview" | "schedule")}
                         className="w-full"
                     >
                         <TabsList className="bg-slate-800/70">
@@ -656,13 +668,34 @@ function MainPanel() {
                                                         <CalendarIcon className="h-4 w-4 ml-2" />
                                                     </Button>
                                                 </PopoverTrigger>
-                                                <PopoverContent className="w-auto p-0" align="start">
+                                                <PopoverContent className="w-auto p-3 space-y-3" align="start">
                                                     <Calendar
                                                         mode="single"
                                                         selected={form.scheduleAt}
-                                                        onSelect={(d) => setField("scheduleAt", d)}
-                                                        initialFocus
+                                                        onSelect={(d) => {
+                                                            if (!d) {
+                                                                setField("scheduleAt", undefined);
+                                                                return;
+                                                            }
+                                                            setField("scheduleAt", combineDateAndTime(d, scheduleTime));
+                                                        }}
+                                                        autoFocus
                                                     />
+                                                    <div className="space-y-1">
+                                                        <Label htmlFor="schedule-time">Time</Label>
+                                                        <Input
+                                                            id="schedule-time"
+                                                            type="time"
+                                                            value={scheduleTime}
+                                                            onChange={(e) => {
+                                                                const nextTime = e.target.value || DEFAULT_SCHEDULE_TIME;
+                                                                setScheduleTime(nextTime);
+
+                                                                const baseDate = form.scheduleAt ?? new Date();
+                                                                setField("scheduleAt", combineDateAndTime(baseDate, nextTime));
+                                                            }}
+                                                        />
+                                                    </div>
                                                 </PopoverContent>
                                             </Popover>
                                         </div>
@@ -841,8 +874,13 @@ function EmailPreview({
 
 function RenderContent({ content }: { content: string }) {
     const isHtml = /<\/?[a-z][\s\S]*>/i.test(content);
+    const sanitizedContent = useMemo(
+        () => DOMPurify.sanitize(content),
+        [content]
+    );
+
     if (isHtml) {
-        return <div dangerouslySetInnerHTML={{ __html: content }} />;
+        return <div dangerouslySetInnerHTML={{ __html: sanitizedContent }} />;
     }
     return (
         <pre className="whitespace-pre-wrap text-slate-200 font-sans leading-relaxed">
