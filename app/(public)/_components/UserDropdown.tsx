@@ -47,10 +47,11 @@ export default function UserDropdown({ user }: UserDropdownProps) {
                     />
                 </Button>
             </DropdownMenuTrigger>
+
             <DropdownMenuContent align="end" className="max-w-64">
                 <DropdownMenuItem asChild>
                     <Link href="/settings/account" className="flex min-w-0 flex-col">
-                        <span className="text-foreground truncate text-sm font-medium">
+                        <span className="text-foreground truncate  text-sm font-medium">
                             {user?.fullname}
                         </span>
                         <span className="text-muted-foreground truncate text-xs font-normal">

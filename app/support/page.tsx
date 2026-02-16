@@ -6,317 +6,207 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { Button } from '@/components/ui/button';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
+import {
+    ArrowLeft,
+    CircleHelp,
+    Mail,
+    MessageCircle,
+    Phone,
+} from 'lucide-react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+
+const faqItems = [
+    {
+        value: 'general',
+        question: 'What is CheFu Academy?',
+        answer:
+            'CheFu Academy is a learning platform where you can generate courses using AI and browse videos.',
+    },
+    {
+        value: 'app',
+        question: 'Can I use CheFu Academy on multiple devices?',
+        answer: 'Yes, your account syncs across devices.',
+    },
+    {
+        value: 'course',
+        question: 'How do I generate a course with AI?',
+        answer:
+            'Go to Create Course, generate a topic, and our AI will create a custom course for you.',
+    },
+    {
+        value: 'topic',
+        question: 'What topics can I generate courses on?',
+        answer:
+            'You can generate courses on a wide range of topics, from tech and business to arts and personal development.',
+    },
+    {
+        value: 'generation',
+        question: 'How long does it take to generate a course?',
+        answer: 'Courses are typically generated within minutes, depending on complexity.',
+    },
+    {
+        value: 'videos',
+        question: 'Can I upload my own video?',
+        answer:
+            'Currently, only admins can upload videos. Contact support if you would like to contribute content.',
+    },
+    {
+        value: 'offline',
+        question: 'Can I save videos for offline viewing?',
+        answer: 'Currently, only Pro members can save videos offline.',
+    },
+    {
+        value: 'language',
+        question: 'Are videos available in different languages?',
+        answer:
+            'Most videos include subtitles or translations. Check each video description for details.',
+    },
+    {
+        value: 'video',
+        question: 'Are the videos curated?',
+        answer: 'Yes, all videos are reviewed by our team before being published.',
+    },
+    {
+        value: 'progress',
+        question: 'Can I track my learning progress?',
+        answer: 'Yes, your progress is saved under My Courses.',
+    },
+    {
+        value: 'account',
+        question: 'How do I create an account?',
+        answer:
+            'Click Sign Up on the homepage and follow the registration process using a valid email and strong password.',
+    },
+    {
+        value: 'billing',
+        question: 'What payment methods do you accept?',
+        answer: 'We accept credit cards and PayPal for premium features.',
+    },
+    {
+        value: 'payment',
+        question: 'How do I update my payment method?',
+        answer:
+            'Go to billing settings and select Upgrade to add a new card or update existing payment details.',
+    },
+    {
+        value: 'subscription',
+        question: 'How do I cancel my subscription?',
+        answer:
+            'You do not need to manually cancel. Access continues until your current billing period ends, then your account downgrades to Free.',
+    },
+    {
+        value: 'issues',
+        question: "The app isn't working on my device. Help!",
+        answer:
+            'Try clearing cache or updating your browser. Contact support if issues persist.',
+    },
+    {
+        value: 'technical',
+        question: 'Technical issues or bugs?',
+        answer:
+            'Send a detailed description to support@chefuinc.com and include screenshots when possible.',
+    },
+];
 
 const Support = () => {
     const router = useRouter();
     const currentYear = new Date().getFullYear();
 
     return (
-        <div className="max-w-3xl mx-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
-            <h1
-                onClick={() => router.push('/courses')}
-                className="text-2xl sm:text-3xl font-bold cursor-pointer"
-            >
-                Support
-            </h1>
-            <p className="text-sm sm:text-base text-muted-foreground">
-                We&apos;re here to help. Find answers to common questions or
-                reach out to us directly.
-            </p>
+        <div className="mx-auto max-w-6xl space-y-6 p-4 sm:p-6">
+            <Button variant="ghost" className="w-fit" onClick={() => router.push('/courses')}>
+                <ArrowLeft className="mr-1.5 h-4 w-4" />
+                Back to Courses
+            </Button>
 
-            <ScrollArea className="h-100 sm:h-150 border rounded-md p-3 sm:p-4 scrollbar-none">
-                <div className="space-y-3 sm:space-y-4">
-                    {/* FAQ Section */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-lg sm:text-xl">
-                                Frequently Asked Questions
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <Accordion type="single" collapsible>
-                                <AccordionItem value="general">
-                                    <AccordionTrigger className="text-sm sm:text-base">
-                                        What is CheFu Academy?
-                                    </AccordionTrigger>
-                                    <AccordionContent>
-                                        <p className="text-xs sm:text-sm text-muted-foreground">
-                                            CheFu Academy is a learning platform
-                                            where you can generate courses using
-                                            AI and browse videos.
-                                        </p>
-                                    </AccordionContent>
-                                </AccordionItem>
+            <Card className="border-border/60 bg-linear-to-br from-indigo-500/10 via-sky-500/5 to-transparent">
+                <CardHeader>
+                    <CardTitle className="text-2xl sm:text-3xl">Support Center</CardTitle>
+                    <CardDescription className="text-sm sm:text-base">
+                        Find answers quickly, then contact us directly if you still need help.
+                    </CardDescription>
+                </CardHeader>
+            </Card>
 
-                                <AccordionItem value="app">
-                                    <AccordionTrigger className="text-sm sm:text-base">
-                                        Can I use CheFu Academy on multiple
-                                        devices?
-                                    </AccordionTrigger>
-                                    <AccordionContent>
-                                        <p className="text-xs sm:text-sm text-muted-foreground">
-                                            Yes, your account syncs across
-                                            devices.
-                                        </p>
-                                    </AccordionContent>
-                                </AccordionItem>
+            <div className="grid gap-4 md:grid-cols-3">
+                <Card className="border-border/60">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-base">
+                            <Mail className="h-4 w-4" />
+                            Email
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <Link className="text-sm text-primary hover:underline" href="mailto:support@chefuinc.com">
+                            support@chefuinc.com
+                        </Link>
+                    </CardContent>
+                </Card>
 
-                                <AccordionItem value="course">
-                                    <AccordionTrigger className="text-sm sm:text-base">
-                                        How do I generate a course with AI?
-                                    </AccordionTrigger>
-                                    <AccordionContent>
-                                        <p className="text-xs sm:text-sm text-muted-foreground">
-                                            Simple navigate to{' '}
-                                            <a
-                                                href="/courses/create-course"
-                                                className="text-primary cursor-pointer font-semibold"
-                                            >
-                                                Create Course
-                                            </a>{' '}
-                                            page, generate a topic, and our AI
-                                            will create a custom course for you.
-                                        </p>
-                                    </AccordionContent>
-                                </AccordionItem>
+                <Card className="border-border/60">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-base">
+                            <Phone className="h-4 w-4" />
+                            Phone
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-sm text-muted-foreground">+27 (60) 603-1205</p>
+                    </CardContent>
+                </Card>
 
-                                <AccordionItem value="topic">
-                                    <AccordionTrigger className="text-sm sm:text-base">
-                                        What topics can I generate courses on?
-                                    </AccordionTrigger>
-                                    <AccordionContent>
-                                        <p className="text-xs sm:text-sm text-muted-foreground">
-                                            You can generate courses on a wide
-                                            range of topics, from tech and
-                                            business to arts and personal
-                                            development. Try it out!
-                                        </p>
-                                    </AccordionContent>
-                                </AccordionItem>
+                <Card className="border-border/60">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-base">
+                            <MessageCircle className="h-4 w-4" />
+                            Live Chat
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <Link className="text-sm text-primary hover:underline" href="/support/chat">
+                            Open in-chat support
+                        </Link>
+                    </CardContent>
+                </Card>
+            </div>
 
-                                <AccordionItem value="generation">
-                                    <AccordionTrigger className="text-sm sm:text-base">
-                                        How long does it take to generate a
-                                        course?
-                                    </AccordionTrigger>
-                                    <AccordionContent>
-                                        <p className="text-xs sm:text-sm text-muted-foreground">
-                                            Courses are typically generated
-                                            within minutes, depending on
-                                            complexity.
-                                        </p>
-                                    </AccordionContent>
-                                </AccordionItem>
+            <Card className="border-border/60 shadow-sm">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-xl">
+                        <CircleHelp className="h-5 w-5" />
+                        Frequently Asked Questions
+                    </CardTitle>
+                    <CardDescription>
+                        Expand a question to view the answer.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Accordion type="single" collapsible>
+                        {faqItems.map(item => (
+                            <AccordionItem key={item.value} value={item.value}>
+                                <AccordionTrigger className="text-sm sm:text-base">
+                                    {item.question}
+                                </AccordionTrigger>
+                                <AccordionContent>
+                                    <p className="text-sm text-muted-foreground">{item.answer}</p>
+                                </AccordionContent>
+                            </AccordionItem>
+                        ))}
+                    </Accordion>
+                </CardContent>
+            </Card>
 
-                                <AccordionItem value="videos">
-                                    <AccordionTrigger className="text-sm sm:text-base">
-                                        Can I upload my own video?
-                                    </AccordionTrigger>
-                                    <AccordionContent>
-                                        <p className="text-xs sm:text-sm text-muted-foreground">
-                                            Currently, only admins can upload
-                                            videos.{' '}
-                                            <a
-                                                href="mailto:chefu.inc@gmail.com"
-                                                className="text-primary font-semibold cursor-pointer"
-                                            >
-                                                Contact support
-                                            </a>{' '}
-                                            if you&apos;d like to contribute
-                                            content.
-                                        </p>
-                                    </AccordionContent>
-                                </AccordionItem>
-
-                                <AccordionItem value="offline">
-                                    <AccordionTrigger className="text-sm sm:text-base">
-                                        Can I save videos for offline viewing?
-                                    </AccordionTrigger>
-                                    <AccordionContent>
-                                        <p className="text-xs sm:text-sm text-muted-foreground">
-                                            Currently, only pro members can save
-                                            videos offline.
-                                        </p>
-                                    </AccordionContent>
-                                </AccordionItem>
-
-                                <AccordionItem value="language">
-                                    <AccordionTrigger className="text-sm sm:text-base">
-                                        Are videos available in different
-                                        languages?
-                                    </AccordionTrigger>
-                                    <AccordionContent>
-                                        <p className="text-xs sm:text-sm text-muted-foreground">
-                                            Most videos include subtitles or
-                                            translations. Check the video
-                                            description for details.
-                                        </p>
-                                    </AccordionContent>
-                                </AccordionItem>
-
-                                <AccordionItem value="video">
-                                    <AccordionTrigger className="text-sm sm:text-base">
-                                        Are the videos curated?
-                                    </AccordionTrigger>
-                                    <AccordionContent>
-                                        <p className="text-xs sm:text-sm text-muted-foreground">
-                                            Yes, all videos are viewed by our
-                                            team before being published.
-                                        </p>
-                                    </AccordionContent>
-                                </AccordionItem>
-
-                                <AccordionItem value="progress">
-                                    <AccordionTrigger className="text-sm sm:text-base">
-                                        Can I track my learning progress?
-                                    </AccordionTrigger>
-                                    <AccordionContent>
-                                        <p className="text-xs sm:text-sm text-muted-foreground">
-                                            Yes, your progressed is saved under
-                                            <a
-                                                href="/courses/my-courses"
-                                                className="text-primary font-semibold cursor-pointer"
-                                            >
-                                                {' '}
-                                                My Course
-                                            </a>
-                                            .
-                                        </p>
-                                    </AccordionContent>
-                                </AccordionItem>
-
-                                <AccordionItem value="account">
-                                    <AccordionTrigger className="text-sm sm:text-base">
-                                        How do I create an account?
-                                    </AccordionTrigger>
-                                    <AccordionContent>
-                                        <p className="text-xs sm:text-sm text-muted-foreground">
-                                            Click on the Sign Up button on the
-                                            homepage and follow the registration
-                                            process. Provide a valid email
-                                            address and create a strong
-                                            password.
-                                        </p>
-                                    </AccordionContent>
-                                </AccordionItem>
-
-                                <AccordionItem value="billing">
-                                    <AccordionTrigger className="text-sm sm:text-base">
-                                        What payment methods do you accept?
-                                    </AccordionTrigger>
-                                    <AccordionContent>
-                                        <p className="text-xs sm:text-sm text-muted-foreground">
-                                            We accept credit cards and PayPal
-                                            for premium features.
-                                        </p>
-                                    </AccordionContent>
-                                </AccordionItem>
-
-                                <AccordionItem value="payment">
-                                    <AccordionTrigger className="text-sm sm:text-base">
-                                        How do I update my payment method?
-                                    </AccordionTrigger>
-                                    <AccordionContent>
-                                        <p className="text-xs sm:text-sm text-muted-foreground">
-                                            Navigate to your billing settings
-                                            and select &quot;Upgrade.&quot; You
-                                            can add a new card or update
-                                            existing information.
-                                        </p>
-                                    </AccordionContent>
-                                </AccordionItem>
-
-                                <AccordionItem value="subscription">
-                                    <AccordionTrigger className="text-sm sm:text-base">
-                                        How do I cancel my subscription?
-                                    </AccordionTrigger>
-                                    <AccordionContent>
-                                        <p className="text-xs sm:text-sm text-muted-foreground">
-                                            You don&apos;t need to manually
-                                            cancel your subscription. Your
-                                            access will continue until the end
-                                            of your current billing period.
-                                            After that, your account will be
-                                            downgraded to the free plan.
-                                        </p>
-                                    </AccordionContent>
-                                </AccordionItem>
-
-                                <AccordionItem value="issues">
-                                    <AccordionTrigger className="text-sm sm:text-base">
-                                        The app isn&apos;t working on my device.
-                                        Help!
-                                    </AccordionTrigger>
-                                    <AccordionContent>
-                                        <p className="text-xs sm:text-sm text-muted-foreground">
-                                            Try clearing caches or updating your
-                                            browser. Contact support if issues
-                                            persist.
-                                        </p>
-                                    </AccordionContent>
-                                </AccordionItem>
-
-                                <AccordionItem value="technical">
-                                    <AccordionTrigger className="text-sm sm:text-base">
-                                        Technical issues or bugs?
-                                    </AccordionTrigger>
-                                    <AccordionContent>
-                                        <p className="text-xs sm:text-sm text-muted-foreground">
-                                            If you encounter any technical
-                                            issues, please send a detailed
-                                            description to chefu.inc@gmail.com
-                                            and include screenshots if possible.
-                                        </p>
-                                    </AccordionContent>
-                                </AccordionItem>
-                            </Accordion>
-                        </CardContent>
-                    </Card>
-
-                    {/* Contact Support */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-lg sm:text-xl">
-                                Contact Support
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-xs sm:text-sm text-muted-foreground mb-2">
-                                If your question isn’t answered in the FAQ,
-                                reach out to us directly:
-                            </p>
-                            <ul className="list-disc ml-5 space-y-1 text-xs sm:text-sm text-muted-foreground">
-                                <li>
-                                    Email:{' '}
-                                    <a
-                                        className="text-blue-600"
-                                        href="mailto:chefu.inc@gmail.com"
-                                    >
-                                        chefu.inc@gmail.com
-                                    </a>
-                                </li>
-                                <li>Phone: +27 (60) 603-1205</li>
-                                <li>
-                                    Live chat is available on{' '}
-                                    <a
-                                        href="/support/chat"
-                                        className="text-blue-600 hover:underline"
-                                    >
-                                        in-chat-support
-                                    </a>{' '}
-                                    during business hours.
-                                </li>
-                            </ul>
-                        </CardContent>
-                    </Card>
-                </div>
-            </ScrollArea>
-
-            <p className="text-xs sm:text-sm text-muted-foreground text-center">
-                © {currentYear} CheFu Academy. All rights reserved.
+            <p className="text-center text-xs text-muted-foreground sm:text-sm">
+                Copyright {currentYear} CheFu Academy. All rights reserved.
             </p>
         </div>
     );
