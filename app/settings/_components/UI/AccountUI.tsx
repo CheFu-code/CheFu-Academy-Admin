@@ -1,4 +1,5 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { User as FirebaseU } from '@/types/user';
@@ -23,14 +24,20 @@ const AccountUI = ({
         e: React.ChangeEvent<HTMLInputElement>,
     ) => Promise<void>;
 }) => {
+    const roles = user?.roles?.length
+        ? user.roles.map(
+            role => role.charAt(0).toUpperCase() + role.slice(1),
+        )
+        : ['Anonymous'];
+
     return (
-        <div className="container mx-auto max-w-4xl p-4 sm:p-6">
-            <div className="flex items-center space-x-3 sm:space-x-4 mb-2 sm:mb-4">
-                <div className="flex flex-col items-start space-y-1 sm:space-y-2 w-full min-w-0">
-                    <div className="flex flex-row items-center">
+        <div className="container mx-auto max-w-5xl space-y-5 p-4 sm:p-6">
+            <div className="rounded-2xl border border-border/60 bg-muted/20 p-4 shadow-sm sm:p-6">
+                <div className="flex items-start gap-3 sm:gap-4">
+                    <div className="shrink-0">
                         <Avatar
                             onClick={handleChangeAvatar}
-                            className="relative h-10 w-10 sm:h-16 sm:w-16 mr-2 cursor-pointer"
+                            className="relative h-14 w-14 cursor-pointer ring-2 ring-background sm:h-20 sm:w-20"
                         >
                             <AvatarImage
                                 src={user?.profilePicture}
@@ -44,64 +51,73 @@ const AccountUI = ({
                                 <div className="absolute inset-0 rounded-full bg-black/40" />
                             )}
                         </Avatar>
+                    </div>
 
-                        <input
-                            ref={fileInputRef}
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={handleAvatarUpload}
-                        />
+                    <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleAvatarUpload}
+                    />
 
-                        <div className="flex flex-col">
-                            <h1 className="text-base sm:text-2xl font-bold">
+                    <div className="min-w-0 flex-1 space-y-3">
+                        <div className="space-y-1">
+                            <h1 className="text-lg font-bold tracking-tight sm:text-2xl">
                                 {user?.fullname || 'Unknown'}
                             </h1>
-                            <p className="text-xs sm:text-sm text-muted-foreground">
-                                {user?.roles?.length
-                                    ? user.roles
-                                        .map(
-                                            (role) =>
-                                                role.charAt(0).toUpperCase() +
-                                                role.slice(1),
-                                        )
-                                        .join(', ')
-                                    : 'anonymous'}{' '}
-                                at CheFu Academy
+                            <p className="text-xs text-muted-foreground sm:text-sm">
+                                Manage your profile, notifications, and account security.
                             </p>
                         </div>
-                    </div>
-                    {user?.bio && (
-                        <p className="text-muted-foreground truncate w-full">
-                            {user?.bio}
+
+                        <div className="flex flex-wrap items-center gap-2">
+                            {roles.map(role => (
+                                <Badge key={role} variant="secondary">
+                                    {role}
+                                </Badge>
+                            ))}
+                            <span className="text-xs text-muted-foreground">
+                                at CheFu Academy
+                            </span>
+                        </div>
+
+                        {user?.bio && (
+                            <p className="line-clamp-2 text-sm text-muted-foreground">
+                                {user.bio}
+                            </p>
+                        )}
+
+                        <p className="text-xs text-muted-foreground">
+                            Click your avatar to update your profile picture.
                         </p>
-                    )}
+                    </div>
                 </div>
             </div>
 
-            <Separator className="my-3 sm:my-4" />
+            <Separator className="my-2 sm:my-3" />
 
             <Tabs defaultValue="profile" className="w-full">
-                <TabsList className="flex w-full overflow-x-auto no-scrollbar space-x-1 sm:space-x-2 px-1 sm:px-2">
+                <TabsList className="grid h-auto w-full grid-cols-3 gap-1 rounded-xl bg-muted/40 p-1">
                     <TabsTrigger
                         value="profile"
-                        className="shrink-0 min-w-12.5 text-xs sm:text-sm"
+                        className="text-xs sm:text-sm"
                     >
-                        <User className="mr-1 h-3 w-3 sm:h-4 sm:w-4 hidden sm:inline" />{' '}
+                        <User className="mr-1 hidden h-3 w-3 sm:inline sm:h-4 sm:w-4" />{' '}
                         Profile
                     </TabsTrigger>
                     <TabsTrigger
                         value="notifications"
-                        className="shrink-0 min-w-13.75 text-xs sm:text-sm"
+                        className="text-xs sm:text-sm"
                     >
-                        <Bell className="mr-1 h-3 w-3 sm:h-4 sm:w-4 hidden sm:inline" />{' '}
+                        <Bell className="mr-1 hidden h-3 w-3 sm:inline sm:h-4 sm:w-4" />{' '}
                         Notifications
                     </TabsTrigger>
                     <TabsTrigger
                         value="security"
-                        className="shrink-0 min-w-12.5 text-xs sm:text-sm"
+                        className="text-xs sm:text-sm"
                     >
-                        <ShieldCheck className="mr-1 h-3 w-3 sm:h-4 sm:w-4 hidden sm:inline" />{' '}
+                        <ShieldCheck className="mr-1 hidden h-3 w-3 sm:inline sm:h-4 sm:w-4" />{' '}
                         Security
                     </TabsTrigger>
                 </TabsList>

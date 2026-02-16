@@ -1,52 +1,21 @@
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Switch } from "@/components/ui/switch";
-import { TabsContent } from "@/components/ui/tabs";
-import { useAuthUser } from "@/hooks/useAuthUser";
-import { db } from "@/lib/firebase";
-import { doc, updateDoc } from "firebase/firestore";
-import { Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
+import { NotificationsTabSkeleton } from '@/components/skeletons/NotificationTabSkeleton';
+import { useAuthUser } from '@/hooks/useAuthUser';
+import { db } from '@/lib/firebase';
+import { doc, updateDoc } from 'firebase/firestore';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import NotificationsTabUI from './UI/NotificationsTabUI';
 
-const NotificationsTabSkeleton = () => {
-    return (
-        <TabsContent value="notifications" className="mt-6">
-            <Card>
-                <CardHeader>
-                    <Skeleton className="h-6 w-40" />
-                    <Skeleton className="h-4 w-56" />
-                </CardHeader>
-                <CardContent>
-                    <div className="space-y-1 sm:space-y-2">
-                        <Skeleton className="h-4 w-24" />
-                        <div className="grid gap-3 mt-2">
-                            {Array.from({ length: 4 }).map((_, idx) => (
-                                <div
-                                    key={idx}
-                                    className="flex items-center justify-between"
-                                >
-                                    <Skeleton className="h-4 w-28 sm:w-40" />
-                                    <Skeleton className="h-6 w-11 rounded-full" />
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-        </TabsContent>
-    );
+type Prefs = {
+    activity: boolean;
+    general: boolean;
+    marketing: boolean;
+    security: boolean;
 };
 
 const NotificationsTab = () => {
     const { user, loading } = useAuthUser();
-    const [prefs, setPrefs] = useState(
+    const [prefs, setPrefs] = useState<Prefs>(
         user?.emailPreferences ?? {
             activity: false,
             general: false,
@@ -55,36 +24,70 @@ const NotificationsTab = () => {
         },
     );
     const [changingPrefKey, setChangingPrefKey] = useState<
-        keyof typeof prefs | null
+        keyof Prefs | 'bulk' | null
     >(null);
 
     useEffect(() => {
         if (user?.emailPreferences) {
-            setPrefs(user.emailPreferences);
+            setPrefs(user.emailPreferences as Prefs);
         }
     }, [user]);
 
-    const handleToggle = async (key: keyof typeof prefs, value: boolean) => {
+    const persistPrefs = async (
+        nextPrefs: Prefs,
+        changingKey: keyof Prefs | 'bulk',
+        rollbackPrefs: Prefs,
+    ) => {
         if (!user) return;
 
-        const previousPrefs = prefs;
-        const newPrefs = { ...previousPrefs, [key]: value };
-
         try {
-            setChangingPrefKey(key);
-            setPrefs(newPrefs);
+            setChangingPrefKey(changingKey);
+            setPrefs(nextPrefs);
 
-            const userRef = doc(db, "users", user.email);
+            const userRef = doc(db, 'users', user.email);
             await updateDoc(userRef, {
-                emailPreferences: newPrefs,
+                emailPreferences: nextPrefs,
             });
         } catch (err) {
-            setPrefs(previousPrefs);
-            console.error("Failed to update preference:", err);
-            toast.error("Failed to update preference");
+            setPrefs(rollbackPrefs);
+            console.error('Failed to update preference:', err);
+            toast.error('Failed to update preference');
         } finally {
             setChangingPrefKey(null);
         }
+    };
+
+    const handleToggle = async (key: keyof Prefs, value: boolean) => {
+        if (!user) return;
+        const previousPrefs = prefs;
+        const newPrefs = { ...previousPrefs, [key]: value };
+        await persistPrefs(newPrefs, key, previousPrefs);
+    };
+
+    const handleBulkUpdate = async (type: 'all' | 'essential') => {
+        if (!user) return;
+        const previousPrefs = prefs;
+        const newPrefs: Prefs =
+            type === 'all'
+                ? {
+                    activity: true,
+                    general: true,
+                    marketing: true,
+                    security: true,
+                }
+                : {
+                    activity: true,
+                    general: true,
+                    marketing: false,
+                    security: true,
+                };
+
+        await persistPrefs(newPrefs, 'bulk', previousPrefs);
+        toast.success(
+            type === 'all'
+                ? 'All notifications enabled.'
+                : 'Switched to essential notifications.',
+        );
     };
 
     if (loading) {
@@ -92,50 +95,12 @@ const NotificationsTab = () => {
     }
 
     return (
-        <TabsContent value="notifications" className="mt-6">
-            <Card>
-                <CardHeader>
-                    <CardTitle>Notifications</CardTitle>
-                    <CardDescription>Manage your learning updates</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div className="space-y-1 sm:space-y-2">
-                        <h3 className="text-xs sm:text-sm font-semibold text-muted-foreground">
-                            Preferences
-                        </h3>
-                        <div className="grid gap-1 sm:gap-2 mt-1 sm:mt-2">
-                            {prefs &&
-                                (
-                                    [
-                                        "activity",
-                                        "general",
-                                        "marketing",
-                                        "security",
-                                    ] as const
-                                ).map((key) => (
-                                    <div
-                                        key={key}
-                                        className="flex items-center justify-between text-xs sm:text-sm"
-                                    >
-                                        <span>{`${key.charAt(0).toUpperCase() + key.slice(1)} Emails`}</span>
-                                        {changingPrefKey === key ? (
-                                            <Loader2 className="animate-spin" />
-                                        ) : (
-                                            <Switch
-                                                disabled={changingPrefKey !== null}
-                                                checked={prefs[key]}
-                                                onCheckedChange={(val) =>
-                                                    handleToggle(key, val)
-                                                }
-                                            />
-                                        )}
-                                    </div>
-                                ))}
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-        </TabsContent>
+        <NotificationsTabUI
+            prefs={prefs}
+            handleToggle={handleToggle}
+            handleBulkUpdate={handleBulkUpdate}
+            changingPrefKey={changingPrefKey}
+        />
     );
 };
 
