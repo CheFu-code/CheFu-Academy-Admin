@@ -29,3 +29,4 @@ setGlobalOptions({ maxInstances: 10 });
 //   response.send("Hello from Firebase!");
 // });
 export { webauthnApi } from './webauthn';
+export { sendWelcomeEmailOnUserCreate } from './welcomeEmail';

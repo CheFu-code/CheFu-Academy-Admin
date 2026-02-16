@@ -24,36 +24,46 @@ const SecurityTabUI = ({
     setOpenDelete,
     openChange,
     setOpenChange,
+    openPasskeyDialog,
+    setOpenPasskeyDialog,
     currentPassword,
     setCurrentPassword,
     newPassword,
     setNewPassword,
     deletePassword,
     setDeletePassword,
+    passkeyPassword,
+    setPasskeyPassword,
     loadingDelete,
     loadingChange,
     loadingPasskey,
     handleDeleteAccount,
     handleChangePassword,
     handleEnrollPasskey,
+    handleConfirmEnrollPasskey,
     hasPasswordProvider,
 }: {
     openDelete: boolean;
     setOpenDelete: (value: boolean) => void;
     openChange: boolean;
     setOpenChange: (value: boolean) => void;
+    openPasskeyDialog: boolean;
+    setOpenPasskeyDialog: (value: boolean) => void;
     currentPassword: string;
     setCurrentPassword: (value: string) => void;
     newPassword: string;
     setNewPassword: (value: string) => void;
     deletePassword: string;
     setDeletePassword: (value: string) => void;
+    passkeyPassword: string;
+    setPasskeyPassword: (value: string) => void;
     loadingDelete: boolean;
     loadingChange: boolean;
     loadingPasskey: boolean;
     handleDeleteAccount: () => void;
     handleChangePassword: () => void;
     handleEnrollPasskey: () => void;
+    handleConfirmEnrollPasskey: () => void;
     hasPasswordProvider: boolean;
 }) => {
 
@@ -72,7 +82,13 @@ const SecurityTabUI = ({
                     <Button
                         type="button"
                         variant="outline"
-                        onClick={handleEnrollPasskey}
+                        onClick={() => {
+                            if (hasPasswordProvider) {
+                                setOpenPasskeyDialog(true);
+                                return;
+                            }
+                            handleEnrollPasskey();
+                        }}
                         disabled={loadingPasskey}
                     >
                         <KeyRound className="mr-2 h-4 w-4" />
@@ -80,6 +96,58 @@ const SecurityTabUI = ({
                             ? 'Enrolling...'
                             : 'Enroll Passkey'}
                     </Button>
+
+                    <Dialog
+                        open={openPasskeyDialog}
+                        onOpenChange={(open) => {
+                            setOpenPasskeyDialog(open);
+                            if (!open) setPasskeyPassword('');
+                        }}
+                    >
+                        <DialogContent className="sm:max-w-md">
+                            <DialogHeader>
+                                <DialogTitle>Confirm to Enroll Passkey</DialogTitle>
+                                <DialogDescription>
+                                    Enter your current password to securely continue passkey enrollment.
+                                </DialogDescription>
+                            </DialogHeader>
+
+                            <Input
+                                type="password"
+                                autoComplete="current-password"
+                                placeholder="Current password"
+                                value={passkeyPassword}
+                                onChange={(e) => setPasskeyPassword(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        handleConfirmEnrollPasskey();
+                                    }
+                                }}
+                            />
+
+                            <DialogFooter>
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    onClick={() => {
+                                        setOpenPasskeyDialog(false);
+                                        setPasskeyPassword('');
+                                    }}
+                                    disabled={loadingPasskey}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    type="button"
+                                    onClick={handleConfirmEnrollPasskey}
+                                    disabled={loadingPasskey || !passkeyPassword.trim()}
+                                >
+                                    {loadingPasskey ? 'Enrolling...' : 'Continue'}
+                                </Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
 
                     {/* Change Password Modal */}
                     <Dialog open={openChange} onOpenChange={setOpenChange}>

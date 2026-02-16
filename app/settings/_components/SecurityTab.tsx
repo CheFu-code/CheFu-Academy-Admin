@@ -21,9 +21,11 @@ import SecurityTabUI from './UI/SecurityTabUI';
 const SecurityTab = () => {
     const [openDelete, setOpenDelete] = useState(false);
     const [openChange, setOpenChange] = useState(false);
+    const [openPasskeyDialog, setOpenPasskeyDialog] = useState(false);
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [deletePassword, setDeletePassword] = useState('');
+    const [passkeyPassword, setPasskeyPassword] = useState('');
     const [loadingDelete, setLoadingDelete] = useState(false);
     const [loadingChange, setLoadingChange] = useState(false);
     const [loadingPasskey, setLoadingPasskey] = useState(false);
@@ -131,27 +133,18 @@ const SecurityTab = () => {
         }
     };
 
-    const handleEnrollPasskey = async () => {
+    const handleEnrollPasskey = async (reauthPassword?: string) => {
         const user = auth.currentUser;
         if (!user) {
             toast.error('No user is logged in.');
-            return;
+            return false;
         }
 
         setLoadingPasskey(true);
         try {
-            let reauthPassword: string | undefined;
-            if (userHasPasswordProvider()) {
-                const value = window
-                    .prompt('Enter your current password to enroll a passkey.')
-                    ?.trim();
-                if (!value) {
-                    toast.error(
-                        'Passkey enrollment cancelled. Re-authentication is required.',
-                    );
-                    return;
-                }
-                reauthPassword = value;
+            if (userHasPasswordProvider() && !reauthPassword) {
+                toast.error('Enter your current password to enroll a passkey.');
+                return false;
             }
 
             await reauthenticateSensitiveAction(user, reauthPassword);
@@ -159,21 +152,37 @@ const SecurityTab = () => {
             const ready = await isPasskeyReady();
             if (!ready) {
                 toast.error('Passkeys are not supported on this device/browser.');
-                return;
+                return false;
             }
 
             const ok = await registerPasskey(user.uid, user.email || user.uid);
             if (!ok) {
                 toast.error('Passkey enrollment failed.');
-                return;
+                return false;
             }
 
             toast.success('Passkey enrolled successfully.');
+            return true;
         } catch (error: unknown) {
             console.error('Error enrolling passkey:', error);
             toast.error(toPasskeyMessage(error));
+            return false;
         } finally {
             setLoadingPasskey(false);
+        }
+    };
+
+    const handleConfirmEnrollPasskey = async () => {
+        const password = passkeyPassword.trim();
+        if (!password) {
+            toast.error('Enter your current password to continue.');
+            return;
+        }
+
+        const ok = await handleEnrollPasskey(password);
+        if (ok) {
+            setOpenPasskeyDialog(false);
+            setPasskeyPassword('');
         }
     };
 
@@ -183,18 +192,23 @@ const SecurityTab = () => {
             setOpenDelete={setOpenDelete}
             openChange={openChange}
             setOpenChange={setOpenChange}
+            openPasskeyDialog={openPasskeyDialog}
+            setOpenPasskeyDialog={setOpenPasskeyDialog}
             currentPassword={currentPassword}
             setCurrentPassword={setCurrentPassword}
             newPassword={newPassword}
             setNewPassword={setNewPassword}
             deletePassword={deletePassword}
             setDeletePassword={setDeletePassword}
+            passkeyPassword={passkeyPassword}
+            setPasskeyPassword={setPasskeyPassword}
             loadingDelete={loadingDelete}
             loadingChange={loadingChange}
             loadingPasskey={loadingPasskey}
             handleDeleteAccount={handleDeleteAccount}
             handleChangePassword={handleChangePassword}
-            handleEnrollPasskey={handleEnrollPasskey}
+            handleEnrollPasskey={() => void handleEnrollPasskey()}
+            handleConfirmEnrollPasskey={handleConfirmEnrollPasskey}
             hasPasswordProvider={userHasPasswordProvider()}
         />
     );

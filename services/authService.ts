@@ -83,7 +83,6 @@ export const saveUser = async (user: User, fullname: string, email: string) => {
             );
 
             await setDoc(userDocRef, cleanData);
-            await sendWelcomeEmail(userEmail, userFullName);
             toast.success('Welcome! Your account has been created.');
             return cleanData;
         }
@@ -91,18 +90,6 @@ export const saveUser = async (user: User, fullname: string, email: string) => {
         throw new Error(
             `Failed to save your data. Please try again later. ${e}`,
         );
-    }
-};
-
-const sendWelcomeEmail = async (email: string, name: string) => {
-    try {
-        await fetch(`${BACKEND_URL}/api/email/send-welcome`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, name }),
-        });
-    } catch (error) {
-        console.error('Failed to send welcome email:', error);
     }
 };
 
