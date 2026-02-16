@@ -2,12 +2,7 @@ import { auth } from './firebase';
 
 const API = (
     process.env.NEXT_PUBLIC_PASSWORD_CHANGED_API_URL ||
-    (process.env.NODE_ENV === 'development' &&
-    process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID
-        ? 'https://us-central1-' +
-          process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID +
-          '.cloudfunctions.net/sendPasswordChangedEmail'
-        : '/send-password-changed-email')
+    '/api/send-password-changed-email'
 ).replace(/\/+$/, '');
 
 export async function sendPasswordChangedAlert() {
@@ -44,4 +39,3 @@ export async function sendPasswordChangedAlert() {
 
     return response.json() as Promise<{ sent: boolean; reason?: string }>;
 }
-

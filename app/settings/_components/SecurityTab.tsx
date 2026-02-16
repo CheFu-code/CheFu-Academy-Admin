@@ -125,15 +125,14 @@ const SecurityTab = () => {
 
             try {
                 await sendPasswordChangedAlert();
+                toast.success('Your password has been updated.');
+                setOpenChange(false);
+                setCurrentPassword('');
+                setNewPassword('');
             } catch (emailError: unknown) {
                 console.error('Password-changed alert email failed:', emailError);
                 toast.error('Password updated, but alert email could not be sent.');
             }
-
-            toast.success('Your password has been updated.');
-            setOpenChange(false);
-            setCurrentPassword('');
-            setNewPassword('');
         } catch (error: unknown) {
             console.error('Error changing password:', error);
             toast.error('Failed to change password.');

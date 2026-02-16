@@ -1,8 +1,10 @@
-import { initializeApp } from 'firebase-admin/app';
+import { getApps, initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { getFirestore } from 'firebase-admin/firestore';
 
-initializeApp();
+if (getApps().length === 0) {
+    initializeApp();
+}
 
 export const db = getFirestore();
 export const auth = getAuth();
@@ -23,15 +25,20 @@ export const SIGNIN_ALERT_PASSWORD_CHANGE_URL =
     process.env.SIGNIN_ALERT_PASSWORD_CHANGE_URL ||
     'https://academy.chefuinc.com/settings/account';
 export const ALLOW_VERCEL_PREVIEWS = process.env.WEBAUTHN_ALLOW_VERCEL_PREVIEWS === 'true';
+const ALLOW_LOCALHOST =
+    process.env.WEBAUTHN_ALLOW_LOCALHOST === 'true' ||
+    process.env.ALLOW_LOCALHOST === 'true' ||
+    process.env.NODE_ENV !== 'production';
 
 const defaultOrigins = [
     'https://cheforumreal.web.app',
     'https://academy.chefuinc.com',
-    'http://localhost:3000',
 ];
+if (ALLOW_LOCALHOST) {
+    defaultOrigins.push('http://localhost:3000');
+}
 const envOrigins = (process.env.WEBAUTHN_ALLOWED_ORIGINS || '')
     .split(',')
     .map((v) => v.trim())
     .filter(Boolean);
 export const ORIGINS = new Set<string>([...defaultOrigins, ...envOrigins]);
-
