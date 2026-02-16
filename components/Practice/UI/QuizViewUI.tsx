@@ -1,30 +1,19 @@
 'use client';
 
-import { Card, CardHeader, CardTitle } from '@/components/ui/card';
+import { usePracticeCourses } from '@/hooks/usePracticeCourses';
+import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import React from 'react';
+import React, { useMemo } from 'react';
 
 const QuizViewUI = () => {
     const router = useRouter();
-    const quizzes = [
-        {
-            title: 'quiz 1',
-            id: '123',
-        },
-        {
-            title: 'quiz 2',
-            id: '456',
-        },
-        {
-            title: 'quiz 3',
-            id: '789',
-        },
-        {
-            title: 'quiz 3',
-            id: '012',
-        },
-    ];
+    const { courses, loading } = usePracticeCourses();
+    const quizzes = useMemo(
+        () => courses.filter(course => (course.quiz || []).length > 0),
+        [courses],
+    );
+
     return (
         <div>
             <div className="flex overflow-hidden relative z-0 h-80">
@@ -40,7 +29,8 @@ const QuizViewUI = () => {
                 </h1>
             </div>
             <div className="grid grid-cols-2  sm:grid-cols-3 lg:grid-cols-4 mt-8 gap-4">
-                {quizzes.map((item, i) => (
+                {!loading &&
+                    quizzes.map((item) => (
                     <Card
                         onClick={() =>
                             router.push(
@@ -48,7 +38,7 @@ const QuizViewUI = () => {
                             )
                         }
                         className="cursor-pointer"
-                        key={i}
+                        key={item.id}
                     >
                         <div className="items-center justify-center flex">
                             <Image
@@ -61,10 +51,23 @@ const QuizViewUI = () => {
                             />
                         </div>
                         <CardHeader>
-                            <CardTitle>{item.title}</CardTitle>
+                            <CardTitle>{item.courseTitle}</CardTitle>
+                            <CardDescription>
+                                {(item.quiz || []).length} question(s)
+                            </CardDescription>
                         </CardHeader>
                     </Card>
                 ))}
+                {!loading && quizzes.length === 0 && (
+                    <p className="text-sm text-muted-foreground">
+                        No quiz data found in your courses yet.
+                    </p>
+                )}
+                {loading && (
+                    <p className="text-sm text-muted-foreground">
+                        Loading quizzes...
+                    </p>
+                )}
             </div>
         </div>
     );

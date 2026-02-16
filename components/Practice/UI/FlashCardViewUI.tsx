@@ -1,30 +1,19 @@
 'use client';
 
-import { Card, CardHeader, CardTitle } from '@/components/ui/card';
+import { usePracticeCourses } from '@/hooks/usePracticeCourses';
+import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import React from 'react';
+import React, { useMemo } from 'react';
 
 const FlashCardViewUI = () => {
     const router = useRouter();
-    const flashcards = [
-        {
-            title: 'flash 1',
-            id: '123',
-        },
-        {
-            title: 'flash 2',
-            id: '456',
-        },
-        {
-            title: 'flash 3',
-            id: '789',
-        },
-        {
-            title: 'flash 3',
-            id: '012',
-        },
-    ];
+    const { courses, loading } = usePracticeCourses();
+    const flashcards = useMemo(
+        () => courses.filter(course => (course.flashcards || []).length > 0),
+        [courses],
+    );
+
     return (
         <div>
             <div className="flex overflow-hidden relative z-0 h-80">
@@ -40,7 +29,8 @@ const FlashCardViewUI = () => {
                 </h1>
             </div>
             <div className="grid grid-cols-2  sm:grid-cols-3 lg:grid-cols-4 mt-8 gap-4">
-                {flashcards.map((item, i) => (
+                {!loading &&
+                    flashcards.map((item) => (
                     <Card
                         onClick={() =>
                             router.push(
@@ -48,7 +38,7 @@ const FlashCardViewUI = () => {
                             )
                         }
                         className="cursor-pointer"
-                        key={i}
+                        key={item.id}
                     >
                         <div className="items-center justify-center flex">
                             <Image
@@ -61,10 +51,23 @@ const FlashCardViewUI = () => {
                             />
                         </div>
                         <CardHeader>
-                            <CardTitle>{item.title}</CardTitle>
+                            <CardTitle>{item.courseTitle}</CardTitle>
+                            <CardDescription>
+                                {(item.flashcards || []).length} flashcard(s)
+                            </CardDescription>
                         </CardHeader>
                     </Card>
                 ))}
+                {!loading && flashcards.length === 0 && (
+                    <p className="text-sm text-muted-foreground">
+                        No flashcards found in your courses yet.
+                    </p>
+                )}
+                {loading && (
+                    <p className="text-sm text-muted-foreground">
+                        Loading flashcards...
+                    </p>
+                )}
             </div>
         </div>
     );
