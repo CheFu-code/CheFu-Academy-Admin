@@ -9,7 +9,6 @@ import {
     auth,
 } from './webauthn/config';
 import {
-    applyCorsHeaders,
     areSecurityEmailsEnabled,
     getBearerToken,
     getClientIp,
@@ -27,16 +26,14 @@ const PASSWORD_CHANGED_SUPPORT_EMAIL =
 export const sendPasswordChangedEmail = onRequest(
     {
         region: 'us-central1',
-        cors: false,
+        cors: [
+            'http://localhost:3000',
+            'https://academy.chefuinc.com',
+            'https://cheforumreal.web.app',
+        ],
     },
     async (req, res) => {
         try {
-            if (!applyCorsHeaders(req, res)) {
-                return void res.status(403).json({ error: 'origin-not-allowed' });
-            }
-            if (req.method === 'OPTIONS') {
-                return void res.status(204).send('');
-            }
             if (req.method !== 'POST') {
                 return void res.status(405).send('Method Not Allowed');
             }
@@ -114,4 +111,3 @@ export const sendPasswordChangedEmail = onRequest(
         }
     },
 );
-
