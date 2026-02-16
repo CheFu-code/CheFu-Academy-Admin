@@ -14,7 +14,7 @@ import { toast } from 'sonner';
 
 const CourseView = ({ course: initialCourse }: { course?: Course }) => {
     const params = useParams();
-    const courseId = params.id;
+    const courseId = Array.isArray(params.id) ? params.id[0] : params.id;
     const [course, setCourse] = useState<Course | undefined>(initialCourse);
     const [loading, setLoading] = useState(!initialCourse);
     const {
@@ -30,16 +30,45 @@ const CourseView = ({ course: initialCourse }: { course?: Course }) => {
     }, [course?.completedChapter, setCompletedChaptersState]);
 
     useEffect(() => {
-        if (!initialCourse && courseId) {
-            const fetchCourse = async () => {
-                const docRef = doc(db, 'course', courseId as string);
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists())
-                    setCourse({ id: docSnap.id, ...docSnap.data() } as Course);
-                setLoading(false);
-            };
-            fetchCourse();
+        if (!courseId) return;
+
+        if (initialCourse && initialCourse.id === courseId) {
+            setCourse(initialCourse);
+            setLoading(false);
+            return;
         }
+
+        let cancelled = false;
+
+        const fetchCourse = async () => {
+            try {
+                setLoading(true);
+                setCourse(undefined);
+
+                const docRef = doc(db, 'course', courseId);
+                const docSnap = await getDoc(docRef);
+
+                if (cancelled) return;
+
+                if (docSnap.exists()) {
+                    setCourse({ id: docSnap.id, ...docSnap.data() } as Course);
+                } else {
+                    setCourse(undefined);
+                }
+            } catch (error) {
+                console.error('Failed to fetch course:', error);
+                toast.error('Failed to load course. Please try again.');
+                if (!cancelled) setCourse(undefined);
+            } finally {
+                if (!cancelled) setLoading(false);
+            }
+        };
+
+        fetchCourse();
+
+        return () => {
+            cancelled = true;
+        };
     }, [courseId, initialCourse]);
 
     useEffect(() => {

@@ -16,58 +16,63 @@ const QuizViewUI = () => {
     );
 
     return (
-        <div>
-            <div className="flex overflow-hidden relative z-0 h-80">
+        <div className="space-y-6">
+            <div className="relative flex h-72 overflow-hidden rounded-2xl">
                 <Image
                     fill
                     priority
-                    className="w-full object-cover rounded-b-xl"
+                    className="w-full object-cover"
                     alt="Quiz"
                     src={'/quizz.png'}
                 />
-                <h1 className="absolute top-3 left-3 text-white text-xl font-semibold">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/20 to-transparent" />
+                <div className="absolute left-4 top-4 rounded-full border border-white/30 bg-white/15 px-3 py-1 text-xs text-white backdrop-blur">
+                    Practice Mode
+                </div>
+                <h1 className="absolute bottom-4 left-4 text-2xl font-semibold text-white">
                     Quiz
                 </h1>
             </div>
-            <div className="grid grid-cols-2  sm:grid-cols-3 lg:grid-cols-4 mt-8 gap-4">
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {!loading &&
-                    quizzes.map((item) => (
-                    <Card
-                        onClick={() =>
-                            router.push(
-                                `/courses/practice/quiz/quiz-view/${item.id}`,
-                            )
-                        }
-                        className="cursor-pointer"
-                        key={item.id}
-                    >
-                        <div className="items-center justify-center flex">
-                            <Image
-                                priority
-                                alt="Quiz"
-                                src={'/quiz.png'}
-                                className="h-25 w-25"
-                                width={25}
-                                height={25}
-                            />
-                        </div>
-                        <CardHeader>
-                            <CardTitle>{item.courseTitle}</CardTitle>
-                            <CardDescription>
-                                {(item.quiz || []).length} question(s)
-                            </CardDescription>
-                        </CardHeader>
-                    </Card>
-                ))}
+                    quizzes.map(item => (
+                        <Card
+                            onClick={() =>
+                                router.push(`/courses/practice/quiz/quiz-view/${item.id}`)
+                            }
+                            className="group cursor-pointer overflow-hidden border-border/60 transition-all duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-md"
+                            key={item.id}
+                        >
+                            <div className="relative flex h-28 items-center justify-center bg-gradient-to-br from-sky-500/20 to-blue-500/10">
+                                <Image
+                                    priority
+                                    alt="Quiz"
+                                    src={'/quiz.png'}
+                                    className="h-20 w-20 object-contain transition-transform duration-300 group-hover:scale-105"
+                                    width={80}
+                                    height={80}
+                                />
+                            </div>
+                            <CardHeader className="space-y-1.5">
+                                <CardTitle className="line-clamp-2 text-base">{item.courseTitle}</CardTitle>
+                                <CardDescription>
+                                    {(item.quiz || []).length} question(s)
+                                </CardDescription>
+                                <p className="pt-1 text-xs font-medium text-primary">
+                                    Start challenge
+                                </p>
+                            </CardHeader>
+                        </Card>
+                    ))}
                 {!loading && quizzes.length === 0 && (
-                    <Card className="col-span-2 sm:col-span-3 lg:col-span-4 border-dashed">
-                        <CardHeader className="text-center space-y-2">
+                    <Card className="col-span-1 border-dashed sm:col-span-2 lg:col-span-3">
+                        <CardHeader className="space-y-2 text-center">
                             <CardTitle>No Quizzes Yet</CardTitle>
                             <CardDescription>
-                                We couldn&apos;t find any courses with quiz content in your
-                                account.
+                                Add quiz content to one of your courses to start practicing.
                             </CardDescription>
-                            <div className="pt-2">
+                            <div className="pt-1">
                                 <Button
                                     variant="outline"
                                     onClick={() => router.push('/courses/my-courses')}
@@ -79,11 +84,11 @@ const QuizViewUI = () => {
                     </Card>
                 )}
                 {loading && (
-                    <Card className="col-span-2 sm:col-span-3 lg:col-span-4">
-                        <CardHeader className="text-center space-y-3">
-                            <CardTitle>Loading Quizzes...</CardTitle>
+                    <Card className="col-span-1 sm:col-span-2 lg:col-span-3">
+                        <CardHeader className="space-y-3 text-center">
+                            <CardTitle>Loading Quizzes</CardTitle>
                             <CardDescription>
-                                Please wait while we fetch your available quiz sets.
+                                Pulling your quiz sets from enrolled courses.
                             </CardDescription>
                             <div className="mx-auto h-1.5 w-28 animate-pulse rounded-full bg-primary/25" />
                         </CardHeader>
