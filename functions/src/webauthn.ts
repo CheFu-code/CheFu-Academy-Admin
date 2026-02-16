@@ -41,6 +41,7 @@ const ORIGINS = new Set<string>([...defaultOrigins, ...envOrigins]);
 const ALLOW_VERCEL_PREVIEWS = process.env.WEBAUTHN_ALLOW_VERCEL_PREVIEWS === 'true';
 const SIGNIN_ALERT_FROM = process.env.SIGNIN_ALERT_FROM || '';
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
+const SIGNIN_ALERT_TEMPLATE_ID = process.env.SIGNIN_ALERT_TEMPLATE_ID || '';
 const SIGNIN_ALERT_PASSWORD_CHANGE_URL =
     process.env.SIGNIN_ALERT_PASSWORD_CHANGE_URL ||
     'https://academy.chefuinc.com/settings/account';
@@ -162,15 +163,6 @@ const createDeviceFingerprint = (details: {
         .update(`${details.credentialId}|${details.origin}`)
         .digest('hex');
 
-const escapeHtml = (s: string): string =>
-    s
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;')
-        .replace(/\//g, '&#x2F;');
-
 const normalizeFromAddress = (raw: string): string | null => {
     const value = raw.trim();
     if (!value) return null;
@@ -213,9 +205,9 @@ const sendSignInAlertEmail = async (
     },
 ) => {
     const fromAddress = normalizeFromAddress(SIGNIN_ALERT_FROM);
-    if (!fromAddress || !RESEND_API_KEY) {
+    if (!fromAddress || !RESEND_API_KEY || !SIGNIN_ALERT_TEMPLATE_ID) {
         logger.warn(
-            'SIGNIN_ALERT_FROM is invalid (or missing) or RESEND_API_KEY is missing',
+            'SIGNIN_ALERT_FROM is invalid (or missing), RESEND_API_KEY is missing, or SIGNIN_ALERT_TEMPLATE_ID is missing',
         );
         return;
     }
@@ -239,44 +231,9 @@ const sendSignInAlertEmail = async (
     }
 
     const signedInAt = new Date().toISOString();
-    const safeName = escapeHtml(user.displayName || user.email);
-    const safeSignedInAt = escapeHtml(signedInAt);
-    const safeIpAddress = escapeHtml(details.ipAddress);
-    const safeOrigin = escapeHtml(details.origin);
-    const safeUserAgent = escapeHtml(details.userAgent);
-    const safeCredentialId = escapeHtml(details.credentialId);
     const passwordChangeUrl =
         normalizeActionUrl(SIGNIN_ALERT_PASSWORD_CHANGE_URL) ||
         'https://academy.chefuinc.com/settings/account';
-    const safePasswordChangeUrl = escapeHtml(passwordChangeUrl);
-    const text = [
-        `Hi ${user.displayName || user.email},`,
-        '',
-        'We detected a sign-in to your CheFu Academy account.',
-        '',
-        `Time (UTC): ${signedInAt}`,
-        `IP address: ${details.ipAddress}`,
-        `Origin: ${details.origin}`,
-        `Device: ${details.userAgent}`,
-        `Credential: ${details.credentialId}`,
-        '',
-        'If this was not you, secure your account immediately.',
-        `Change your password now: ${passwordChangeUrl}`,
-    ].join('\n');
-
-    const html = `
-        <p>Hi ${safeName},</p>
-        <p>We detected a sign-in to your CheFu Academy account.</p>
-        <ul>
-            <li><strong>Time (UTC):</strong> ${safeSignedInAt}</li>
-            <li><strong>IP address:</strong> ${safeIpAddress}</li>
-            <li><strong>Origin:</strong> ${safeOrigin}</li>
-            <li><strong>Device:</strong> ${safeUserAgent}</li>
-            <li><strong>Credential:</strong> ${safeCredentialId}</li>
-        </ul>
-        <p>If this was not you, secure your account immediately.</p>
-        <p><a href="${safePasswordChangeUrl}">Change your password now</a></p>
-    `;
 
     const response = await fetch('https://api.resend.com/emails', {
         method: 'POST',
@@ -288,8 +245,19 @@ const sendSignInAlertEmail = async (
             from: fromAddress,
             to: [user.email],
             subject: `Sign-in alert for ${RP_NAME}`,
-            text,
-            html,
+            template: {
+                id: SIGNIN_ALERT_TEMPLATE_ID,
+                variables: {
+                    USER_NAME: user.displayName || user.email,
+                    SIGNED_IN_AT: signedInAt,
+                    IP_ADDRESS: details.ipAddress,
+                    ORIGIN: details.origin,
+                    USER_AGENT: details.userAgent,
+                    CREDENTIAL_ID: details.credentialId,
+                    PASSWORD_CHANGE_URL: passwordChangeUrl,
+                    APP_NAME: RP_NAME,
+                },
+            },
         }),
     });
 
