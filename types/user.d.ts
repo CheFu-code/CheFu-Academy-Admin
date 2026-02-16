@@ -17,6 +17,7 @@ export interface User {
     lastSeen: Timestamp;
     member: boolean;
     onboardingComplete: boolean;
+    appGuideComplete?: boolean;
     provider: string;
     roles: string[];
     subscriptionStatus: string;

@@ -10,6 +10,7 @@ export default function RedirectIfNoCountry() {
 
     useEffect(() => {
         if (!user || loading) return;
+        if (!user.onboardingComplete) return;
 
         const userCountry = user?.country;
 
