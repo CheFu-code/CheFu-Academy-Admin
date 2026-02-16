@@ -74,6 +74,7 @@ export default function AppGuideOnboarding() {
     const [step, setStep] = useState(0);
     const [saving, setSaving] = useState(false);
     const [completedLocally, setCompletedLocally] = useState(false);
+    const [collapsed, setCollapsed] = useState(false);
 
     const isAppArea = useMemo(
         () =>
@@ -89,6 +90,7 @@ export default function AppGuideOnboarding() {
     if (!isAppArea) return null;
     if (!user.onboardingComplete) return null;
     if (completedLocally || user.appGuideComplete) return null;
+    if (collapsed) return null;
 
     const current = guideSteps[step];
     const Icon = current.icon;
@@ -172,7 +174,10 @@ export default function AppGuideOnboarding() {
                         <div className="flex flex-wrap gap-2">
                             <Button
                                 variant="outline"
-                                onClick={() => router.push(current.route)}
+                                onClick={() => {
+                                    setCollapsed(true);
+                                    router.push(current.route);
+                                }}
                                 disabled={saving}
                             >
                                 Open This Section

@@ -19,7 +19,7 @@ import { db } from '@/lib/firebase';
 import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { Sparkles } from 'lucide-react';
 import { usePathname } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import countryList from 'react-select-country-list';
 import { toast } from 'sonner';
 
@@ -51,9 +51,13 @@ export default function OnboardingGate() {
         marketing: false,
         security: true,
     });
+    const initializedUserRef = useRef<string | null>(null);
 
     useEffect(() => {
         if (!user) return;
+        if (initializedUserRef.current === user.uid) return;
+
+        initializedUserRef.current = user.uid;
         setFullname(user.fullname || '');
         setBio(user.bio || '');
         setLanguage(user.language || 'en');
@@ -92,7 +96,10 @@ export default function OnboardingGate() {
     };
 
     const handleComplete = async () => {
-        if (!user?.email) return;
+        if (!user?.email) {
+            toast.error('Email is required to complete onboarding.');
+            return;
+        }
         if (!countryCode) {
             toast.error('Please select your country before finishing.');
             return;
