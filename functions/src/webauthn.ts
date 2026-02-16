@@ -18,6 +18,7 @@ import type {
     AuthenticatorTransportFuture,
 } from '@simplewebauthn/server';
 import { z } from 'zod';
+import { normalizeFromAddress } from './emailUtils';
 
 // --- Firebase Admin init ---
 initializeApp();
@@ -116,7 +117,7 @@ type AppUserDoc = {
 const areSecurityEmailsEnabled = async (email: string) => {
     const appUserDocSnap = await db.collection('users').doc(email).get();
     const appUserDoc = appUserDocSnap.data() as AppUserDoc | undefined;
-    return appUserDoc?.emailPreferences?.security === true;
+    return appUserDoc?.emailPreferences?.security ?? true;
 };
 
 // --- Helpers ---
@@ -174,24 +175,6 @@ const createDeviceFingerprint = (details: {
     createHash('sha256')
         .update(`${details.credentialId}|${details.origin}`)
         .digest('hex');
-
-const normalizeFromAddress = (raw: string): string | null => {
-    const value = raw.trim();
-    if (!value) return null;
-
-    // Already valid: "name@domain.com" or "Name <name@domain.com>"
-    if (/\S+@\S+\.\S+/.test(value) && (value.includes('<') || !value.includes(' '))) {
-        return value;
-    }
-
-    // Repair common invalid format: "Name name@domain.com" -> "Name <name@domain.com>"
-    const emailMatch = value.match(/([^\s<>]+@[^\s<>]+\.[^\s<>]+)$/);
-    if (!emailMatch) return null;
-    const email = emailMatch[1];
-    const name = value.slice(0, value.length - email.length).trim();
-    if (!name) return email;
-    return `${name} <${email}>`;
-};
 
 const normalizeActionUrl = (raw: string): string | null => {
     const value = raw.trim();

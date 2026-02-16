@@ -14,17 +14,14 @@ import {
     DropdownMenuContent,
     DropdownMenuGroup,
     DropdownMenuItem,
-    DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useSignOut } from '@/hooks/useSignOut';
 import { UserDropdownProps } from '@/types/user';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 
 export default function UserDropdown({ user }: UserDropdownProps) {
-    const router = useRouter()
     const { handleLogout } = useSignOut()
 
     return (
@@ -51,14 +48,16 @@ export default function UserDropdown({ user }: UserDropdownProps) {
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="max-w-64">
-                <DropdownMenuLabel onClick={() => router.push('/settings/account')} className="flex min-w-0 flex-col cursor-pointer">
-                    <span className="text-foreground truncate text-sm font-medium">
-                        {user?.fullname}
-                    </span>
-                    <span className="text-muted-foreground truncate text-xs font-normal">
-                        {user?.email}
-                    </span>
-                </DropdownMenuLabel>
+                <DropdownMenuItem asChild>
+                    <Link href="/settings/account" className="flex min-w-0 flex-col">
+                        <span className="text-foreground truncate text-sm font-medium">
+                            {user?.fullname}
+                        </span>
+                        <span className="text-muted-foreground truncate text-xs font-normal">
+                            {user?.email}
+                        </span>
+                    </Link>
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
                     <DropdownMenuItem asChild>
