@@ -1,6 +1,7 @@
 'use client';
 
 import { usePracticeCourses } from '@/hooks/usePracticeCourses';
+import { Button } from '@/components/ui/button';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -59,14 +60,34 @@ const QuizViewUI = () => {
                     </Card>
                 ))}
                 {!loading && quizzes.length === 0 && (
-                    <p className="text-sm text-muted-foreground">
-                        No quiz data found in your courses yet.
-                    </p>
+                    <Card className="col-span-2 sm:col-span-3 lg:col-span-4 border-dashed">
+                        <CardHeader className="text-center space-y-2">
+                            <CardTitle>No Quizzes Yet</CardTitle>
+                            <CardDescription>
+                                We couldn&apos;t find any courses with quiz content in your
+                                account.
+                            </CardDescription>
+                            <div className="pt-2">
+                                <Button
+                                    variant="outline"
+                                    onClick={() => router.push('/courses/my-courses')}
+                                >
+                                    Open My Courses
+                                </Button>
+                            </div>
+                        </CardHeader>
+                    </Card>
                 )}
                 {loading && (
-                    <p className="text-sm text-muted-foreground">
-                        Loading quizzes...
-                    </p>
+                    <Card className="col-span-2 sm:col-span-3 lg:col-span-4">
+                        <CardHeader className="text-center space-y-3">
+                            <CardTitle>Loading Quizzes...</CardTitle>
+                            <CardDescription>
+                                Please wait while we fetch your available quiz sets.
+                            </CardDescription>
+                            <div className="mx-auto h-1.5 w-28 animate-pulse rounded-full bg-primary/25" />
+                        </CardHeader>
+                    </Card>
                 )}
             </div>
         </div>

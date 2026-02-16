@@ -127,7 +127,15 @@ const Quiz = () => {
                             You got <span className="font-semibold">{score}</span> out of{' '}
                             <span className="font-semibold">{quizzes.length}</span>.
                         </p>
-                        <Button onClick={restartQuiz}>Try Again</Button>
+                        <div className="flex flex-wrap gap-2">
+                            <Button onClick={restartQuiz}>Try Again</Button>
+                            <Button
+                                variant="outline"
+                                onClick={() => router.push('/courses/practice/quiz')}
+                            >
+                                Back to Quiz List
+                            </Button>
+                        </div>
                     </CardContent>
                 </Card>
             </div>

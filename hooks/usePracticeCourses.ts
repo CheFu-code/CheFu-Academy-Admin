@@ -12,6 +12,7 @@ export const usePracticeCourses = () => {
 
     useEffect(() => {
         const unsubscribe = getAuth().onAuthStateChanged(async user => {
+            setLoading(true);
             if (!user?.email) {
                 setCourses([]);
                 setLoading(false);
