@@ -18,24 +18,14 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { auth } from '@/lib/firebase';
+import { useSignOut } from '@/hooks/useSignOut';
 import { UserDropdownProps } from '@/types/user';
-import { signOut } from 'firebase/auth';
 import Link from 'next/link';
-import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 
 export default function UserDropdown({ user }: UserDropdownProps) {
-    const router=useRouter()
-    const handleLogout = async () => {
-        try {
-            await signOut(auth);
-            toast.success('Logged out successfully!');
-        } catch (error) {
-            console.error('Logout failed:', error);
-            toast.error('Logout failed. Please try again.');
-        }
-    };
+    const router = useRouter()
+    const { handleLogout } = useSignOut()
 
     return (
         <DropdownMenu>
@@ -61,7 +51,7 @@ export default function UserDropdown({ user }: UserDropdownProps) {
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="max-w-64">
-                <DropdownMenuLabel onClick={()=>router.push('/settings/account')} className="flex min-w-0 flex-col cursor-pointer">
+                <DropdownMenuLabel onClick={() => router.push('/settings/account')} className="flex min-w-0 flex-col cursor-pointer">
                     <span className="text-foreground truncate text-sm font-medium">
                         {user?.fullname}
                     </span>

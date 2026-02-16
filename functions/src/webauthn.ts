@@ -42,6 +42,12 @@ const ALLOW_VERCEL_PREVIEWS = process.env.WEBAUTHN_ALLOW_VERCEL_PREVIEWS === 'tr
 const SIGNIN_ALERT_FROM = process.env.SIGNIN_ALERT_FROM || '';
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 const SIGNIN_ALERT_TEMPLATE_ID = process.env.SIGNIN_ALERT_TEMPLATE_ID || '';
+const PASSKEY_ADDED_TEMPLATE_ID = process.env.PASSKEY_ADDED_TEMPLATE_ID || '';
+const PASSKEY_ADDED_FROM = process.env.PASSKEY_ADDED_FROM || SIGNIN_ALERT_FROM;
+const PASSKEY_ADDED_SECURITY_URL =
+    process.env.PASSKEY_ADDED_SECURITY_URL || 'https://academy.chefuinc.com/settings/account';
+const PASSKEY_ADDED_SUPPORT_EMAIL =
+    process.env.PASSKEY_ADDED_SUPPORT_EMAIL || 'support@chefuinc.com';
 const SIGNIN_ALERT_PASSWORD_CHANGE_URL =
     process.env.SIGNIN_ALERT_PASSWORD_CHANGE_URL ||
     'https://academy.chefuinc.com/settings/account';
@@ -105,6 +111,12 @@ type AppUserDoc = {
     emailPreferences?: {
         security?: boolean;
     };
+};
+
+const areSecurityEmailsEnabled = async (email: string) => {
+    const appUserDocSnap = await db.collection('users').doc(email).get();
+    const appUserDoc = appUserDocSnap.data() as AppUserDoc | undefined;
+    return appUserDoc?.emailPreferences?.security === true;
 };
 
 // --- Helpers ---
@@ -218,9 +230,7 @@ const sendSignInAlertEmail = async (
         return;
     }
 
-    const appUserDocSnap = await db.collection('users').doc(user.email).get();
-    const appUserDoc = appUserDocSnap.data() as AppUserDoc | undefined;
-    const securityEmailsEnabled = appUserDoc?.emailPreferences?.security === true;
+    const securityEmailsEnabled = await areSecurityEmailsEnabled(user.email);
     if (!securityEmailsEnabled) {
         const emailHash = createHash('sha256').update(user.email).digest('hex');
         logger.info('Skipping sign-in alert email because security emails are disabled', {
@@ -264,6 +274,75 @@ const sendSignInAlertEmail = async (
     if (!response.ok) {
         const errorBody = await response.text();
         throw new Error(`Resend request failed: ${response.status} ${errorBody}`);
+    }
+};
+
+const sendPasskeyAddedEmail = async (
+    uid: string,
+    details: {
+        origin: string;
+        ipAddress: string;
+        userAgent: string;
+        addedAt: string;
+    },
+) => {
+    const fromAddress = normalizeFromAddress(PASSKEY_ADDED_FROM);
+    if (!fromAddress || !RESEND_API_KEY || !PASSKEY_ADDED_TEMPLATE_ID) {
+        logger.warn(
+            'PASSKEY_ADDED_FROM is invalid (or missing), RESEND_API_KEY is missing, or PASSKEY_ADDED_TEMPLATE_ID is missing',
+        );
+        return;
+    }
+
+    const user = await auth.getUser(uid);
+    if (!user.email) {
+        logger.warn('Skipping passkey-added email because user has no email', { uid });
+        return;
+    }
+
+    const securityEmailsEnabled = await areSecurityEmailsEnabled(user.email);
+    if (!securityEmailsEnabled) {
+        const emailHash = createHash('sha256').update(user.email).digest('hex');
+        logger.info('Skipping passkey-added email because security emails are disabled', {
+            uid,
+            emailHash,
+        });
+        return;
+    }
+
+    const securityUrl =
+        normalizeActionUrl(PASSKEY_ADDED_SECURITY_URL) ||
+        'https://academy.chefuinc.com/settings/account';
+    const response = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${RESEND_API_KEY}`,
+        },
+        body: JSON.stringify({
+            from: fromAddress,
+            to: [user.email],
+            subject: `New passkey added for ${RP_NAME}`,
+            template: {
+                id: PASSKEY_ADDED_TEMPLATE_ID,
+                variables: {
+                    USER_NAME: user.displayName || user.email,
+                    DEVICE: details.userAgent,
+                    ADDED_AT: details.addedAt,
+                    ORIGIN: details.origin,
+                    IP_ADDRESS: details.ipAddress,
+                    SECURITY_URL: securityUrl,
+                    SUPPORT_EMAIL: PASSKEY_ADDED_SUPPORT_EMAIL,
+                    APP_NAME: RP_NAME,
+                    YEAR: new Date().getUTCFullYear().toString(),
+                },
+            },
+        }),
+    });
+
+    if (!response.ok) {
+        const errorBody = await response.text();
+        throw new Error(`Passkey-added email failed: ${response.status} ${errorBody}`);
     }
 };
 
@@ -440,6 +519,19 @@ export const webauthnApi = onRequest(
                             ),
                             newPasskey,
                         ],
+                    });
+
+                    const origin = expectedOrigin;
+                    const userAgent = getUserAgent(req);
+                    const ipAddress = getClientIp(req);
+                    const addedAt = new Date().toISOString();
+                    void sendPasskeyAddedEmail(resolvedUid, {
+                        origin,
+                        ipAddress,
+                        userAgent,
+                        addedAt,
+                    }).catch((error: unknown) => {
+                        logger.error('Failed to send passkey-added email', error);
                     });
 
                     return void res.status(200).json({ verified: true });
