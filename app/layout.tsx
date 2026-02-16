@@ -8,6 +8,8 @@ import Script from 'next/script';
 import './globals.css';
 import { TrackPageView } from '@/components/Cookies/TrackPageView';
 import RedirectIfNoCountry from '@/components/RedirectIfNoCountry';
+import OnboardingGate from '@/components/Onboarding/OnboardingGate';
+import AppGuideOnboarding from '@/components/Onboarding/AppGuideOnboarding';
 
 const geistSans = Geist({
     variable: '--font-geist-sans',
@@ -59,6 +61,8 @@ export default function RootLayout({
                     <ConsentProvider>
                         <TrackPageView />
                         <RedirectIfNoCountry />
+                        <OnboardingGate />
+                        <AppGuideOnboarding />
                         {children}
                         <CookieBanner />
                     </ConsentProvider>
