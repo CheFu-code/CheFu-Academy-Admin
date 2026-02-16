@@ -33,7 +33,7 @@ export default function UserDropdown({ user }: UserDropdownProps) {
                 >
                     <Avatar>
                         <AvatarImage
-                            src={user?.profilePicture || '/logo.jpg'}
+                            src={user?.profilePicture}
                             alt="Profile image"
                         />
                         <AvatarFallback>

@@ -1,11 +1,5 @@
-// functions/src/webauthn.ts
-import { initializeApp } from 'firebase-admin/app';
-import { getAuth } from 'firebase-admin/auth';
-import { getFirestore } from 'firebase-admin/firestore';
 import { onRequest } from 'firebase-functions/v2/https';
 import * as logger from 'firebase-functions/logger';
-import type { Request, Response } from 'express';
-import { createHash } from 'node:crypto';
 import {
     generateRegistrationOptions,
     verifyRegistrationResponse,
@@ -15,321 +9,23 @@ import {
 import type {
     RegistrationResponseJSON,
     AuthenticationResponseJSON,
-    AuthenticatorTransportFuture,
 } from '@simplewebauthn/server';
 import { z } from 'zod';
-import { normalizeFromAddress } from './emailUtils';
+import { auth, RP_ID, RP_NAME } from './webauthn/config';
+import { sendPasskeyAddedEmail, sendSignInAlertEmail } from './webauthn/emails';
+import {
+    applyCorsHeaders,
+    createDeviceFingerprint,
+    ensureOrigin,
+    getBearerToken,
+    getClientIp,
+    getUserAgent,
+    getUserDoc,
+    resolveUid,
+    setUserDoc,
+} from './webauthn/helpers';
+import type { Passkey, WebAuthnUserDoc } from './webauthn/types';
 
-// --- Firebase Admin init ---
-initializeApp();
-const db = getFirestore();
-const auth = getAuth();
-
-// --- CONFIG (tune to your domain) ---
-const RP_NAME = process.env.RP_NAME || 'CheFu Academy';
-const RP_ID = process.env.RP_ID || undefined; // leave undefined to accept the Host header's domain
-// Allowed origins for WebAuthn ceremonies.
-const defaultOrigins = [
-    'https://cheforumreal.web.app',
-    'https://academy.chefuinc.com',
-    'http://localhost:3000',
-];
-const envOrigins = (process.env.WEBAUTHN_ALLOWED_ORIGINS || '')
-    .split(',')
-    .map((v) => v.trim())
-    .filter(Boolean);
-const ORIGINS = new Set<string>([...defaultOrigins, ...envOrigins]);
-const ALLOW_VERCEL_PREVIEWS = process.env.WEBAUTHN_ALLOW_VERCEL_PREVIEWS === 'true';
-const SIGNIN_ALERT_FROM = process.env.SIGNIN_ALERT_FROM || '';
-const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
-const SIGNIN_ALERT_TEMPLATE_ID = process.env.SIGNIN_ALERT_TEMPLATE_ID || '';
-const PASSKEY_ADDED_TEMPLATE_ID = process.env.PASSKEY_ADDED_TEMPLATE_ID || '';
-const PASSKEY_ADDED_FROM = process.env.PASSKEY_ADDED_FROM || SIGNIN_ALERT_FROM;
-const PASSKEY_ADDED_SECURITY_URL =
-    process.env.PASSKEY_ADDED_SECURITY_URL || 'https://academy.chefuinc.com/settings/account';
-const PASSKEY_ADDED_SUPPORT_EMAIL =
-    process.env.PASSKEY_ADDED_SUPPORT_EMAIL || 'support@chefuinc.com';
-const SIGNIN_ALERT_PASSWORD_CHANGE_URL =
-    process.env.SIGNIN_ALERT_PASSWORD_CHANGE_URL ||
-    'https://academy.chefuinc.com/settings/account';
-
-const isAllowedOrigin = (origin: string) => {
-    if (ORIGINS.has(origin)) return true;
-    if (!ALLOW_VERCEL_PREVIEWS) return false;
-    try {
-        const host = new URL(origin).hostname.toLowerCase();
-        return host.endsWith('.vercel.app');
-    } catch {
-        return false;
-    }
-};
-
-// Store users & credentials in Firestore
-const USERS = db.collection('webauthnUsers');
-
-const applyCorsHeaders = (req: Request, res: Response): boolean => {
-    const origin = req.headers.origin;
-    if (typeof origin !== 'string' || !origin) return true;
-    if (!isAllowedOrigin(origin)) return false;
-
-    res.set('Access-Control-Allow-Origin', origin);
-    res.set('Vary', 'Origin');
-    res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    res.set('Access-Control-Max-Age', '3600');
-    return true;
-};
-
-// --- Types ---
-type Passkey = {
-    id: string; // credentialID (base64url)
-    publicKey: Buffer; // raw public key
-    counter: number;
-    deviceType: 'singleDevice' | 'multiDevice';
-    backedUp: boolean;
-    transports?: AuthenticatorTransportFuture[];
-    webauthnUserID: string; // base64url "user.id"
-};
-
-type WebAuthnUserDoc = {
-    username: string;
-    challenge?: string | null;
-    credentials: Passkey[];
-    signInDevices?: SignInDevice[];
-};
-
-type SignInDevice = {
-    key: string;
-    label: string;
-    firstSeenAt: string;
-    lastSeenAt: string;
-    lastIpAddress: string;
-    credentialId: string;
-    origin: string;
-};
-
-type AppUserDoc = {
-    emailPreferences?: {
-        security?: boolean;
-    };
-};
-
-const areSecurityEmailsEnabled = async (email: string) => {
-    const appUserDocSnap = await db.collection('users').doc(email).get();
-    const appUserDoc = appUserDocSnap.data() as AppUserDoc | undefined;
-    return appUserDoc?.emailPreferences?.security ?? true;
-};
-
-// --- Helpers ---
-const getUserDoc = async (uid: string) =>
-    (await USERS.doc(uid).get()).data() as WebAuthnUserDoc | undefined;
-
-const setUserDoc = (uid: string, data: Partial<WebAuthnUserDoc>) =>
-    USERS.doc(uid).set(data, { merge: true });
-
-const resolveUid = async (identifier: string): Promise<string> => {
-    const value = identifier.trim();
-    if (!value.includes('@')) return value;
-    try {
-        const user = await auth.getUserByEmail(value);
-        return user.uid;
-    } catch (error: unknown) {
-        if (
-            typeof error === 'object' &&
-            error !== null &&
-            'code' in error &&
-            (error as { code?: string }).code === 'auth/user-not-found'
-        ) {
-            throw new Error('user-not-registered');
-        }
-        throw error;
-    }
-};
-
-const ensureOrigin = (origin: string) => {
-    if (!isAllowedOrigin(origin)) throw new Error(`Origin not allowed: ${origin}`);
-    return origin;
-};
-
-const getBearerToken = (authHeader?: string) => {
-    if (!authHeader) return null;
-    const [scheme, token] = authHeader.split(' ');
-    if (scheme !== 'Bearer' || !token) return null;
-    return token;
-};
-
-const getClientIp = (req: Request) => {
-    const forwarded = req.headers['x-forwarded-for'];
-    const forwardedValue = Array.isArray(forwarded) ? forwarded[0] : forwarded || '';
-    const firstForwardedIp = forwardedValue.split(',')[0]?.trim();
-    return firstForwardedIp || req.ip || req.socket.remoteAddress || 'unknown';
-};
-
-const getUserAgent = (req: Request) =>
-    (req.headers['user-agent'] as string | undefined) || 'unknown';
-
-const createDeviceFingerprint = (details: {
-    credentialId: string;
-    origin: string;
-}) =>
-    createHash('sha256')
-        .update(`${details.credentialId}|${details.origin}`)
-        .digest('hex');
-
-const normalizeActionUrl = (raw: string): string | null => {
-    const value = raw.trim();
-    if (!value) return null;
-    try {
-        const parsed = new URL(value);
-        if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
-            return null;
-        }
-        return parsed.toString();
-    } catch {
-        return null;
-    }
-};
-
-const sendSignInAlertEmail = async (
-    uid: string,
-    details: {
-        origin: string;
-        credentialId: string;
-        ipAddress: string;
-        userAgent: string;
-    },
-) => {
-    const fromAddress = normalizeFromAddress(SIGNIN_ALERT_FROM);
-    if (!fromAddress || !RESEND_API_KEY || !SIGNIN_ALERT_TEMPLATE_ID) {
-        logger.warn(
-            'SIGNIN_ALERT_FROM is invalid (or missing), RESEND_API_KEY is missing, or SIGNIN_ALERT_TEMPLATE_ID is missing',
-        );
-        return;
-    }
-
-    const user = await auth.getUser(uid);
-    if (!user.email) {
-        logger.warn('Skipping sign-in alert email because user has no email', { uid });
-        return;
-    }
-
-    const securityEmailsEnabled = await areSecurityEmailsEnabled(user.email);
-    if (!securityEmailsEnabled) {
-        const emailHash = createHash('sha256').update(user.email).digest('hex');
-        logger.info('Skipping sign-in alert email because security emails are disabled', {
-            uid,
-            emailHash,
-        });
-        return;
-    }
-
-    const signedInAt = new Date().toISOString();
-    const passwordChangeUrl =
-        normalizeActionUrl(SIGNIN_ALERT_PASSWORD_CHANGE_URL) ||
-        'https://academy.chefuinc.com/settings/account';
-
-    const response = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${RESEND_API_KEY}`,
-        },
-        body: JSON.stringify({
-            from: fromAddress,
-            to: [user.email],
-            subject: `Sign-in alert for ${RP_NAME}`,
-            template: {
-                id: SIGNIN_ALERT_TEMPLATE_ID,
-                variables: {
-                    USER_NAME: user.displayName || user.email,
-                    SIGNED_IN_AT: signedInAt,
-                    IP_ADDRESS: details.ipAddress,
-                    ORIGIN: details.origin,
-                    USER_AGENT: details.userAgent,
-                    CREDENTIAL_ID: details.credentialId,
-                    PASSWORD_CHANGE_URL: passwordChangeUrl,
-                    APP_NAME: RP_NAME,
-                },
-            },
-        }),
-    });
-
-    if (!response.ok) {
-        const errorBody = await response.text();
-        throw new Error(`Resend request failed: ${response.status} ${errorBody}`);
-    }
-};
-
-const sendPasskeyAddedEmail = async (
-    uid: string,
-    details: {
-        origin: string;
-        ipAddress: string;
-        userAgent: string;
-        addedAt: string;
-    },
-) => {
-    const fromAddress = normalizeFromAddress(PASSKEY_ADDED_FROM);
-    if (!fromAddress || !RESEND_API_KEY || !PASSKEY_ADDED_TEMPLATE_ID) {
-        logger.warn(
-            'PASSKEY_ADDED_FROM is invalid (or missing), RESEND_API_KEY is missing, or PASSKEY_ADDED_TEMPLATE_ID is missing',
-        );
-        return;
-    }
-
-    const user = await auth.getUser(uid);
-    if (!user.email) {
-        logger.warn('Skipping passkey-added email because user has no email', { uid });
-        return;
-    }
-
-    const securityEmailsEnabled = await areSecurityEmailsEnabled(user.email);
-    if (!securityEmailsEnabled) {
-        const emailHash = createHash('sha256').update(user.email).digest('hex');
-        logger.info('Skipping passkey-added email because security emails are disabled', {
-            uid,
-            emailHash,
-        });
-        return;
-    }
-
-    const securityUrl =
-        normalizeActionUrl(PASSKEY_ADDED_SECURITY_URL) ||
-        'https://academy.chefuinc.com/settings/account';
-    const response = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${RESEND_API_KEY}`,
-        },
-        body: JSON.stringify({
-            from: fromAddress,
-            to: [user.email],
-            subject: `New passkey added for ${RP_NAME}`,
-            template: {
-                id: PASSKEY_ADDED_TEMPLATE_ID,
-                variables: {
-                    USER_NAME: user.displayName || user.email,
-                    DEVICE: details.userAgent,
-                    ADDED_AT: details.addedAt,
-                    ORIGIN: details.origin,
-                    IP_ADDRESS: details.ipAddress,
-                    SECURITY_URL: securityUrl,
-                    SUPPORT_EMAIL: PASSKEY_ADDED_SUPPORT_EMAIL,
-                    APP_NAME: RP_NAME,
-                    YEAR: new Date().getUTCFullYear().toString(),
-                },
-            },
-        }),
-    });
-
-    if (!response.ok) {
-        const errorBody = await response.text();
-        throw new Error(`Passkey-added email failed: ${response.status} ${errorBody}`);
-    }
-};
-
-// API schema
 const BodySchema = z.object({
     operation: z.enum([
         'reg-options',
@@ -339,11 +35,10 @@ const BodySchema = z.object({
         'authn-verify',
     ]),
     uid: z.string().min(1),
-    username: z.string().optional(), // for registration
-    response: z.any().optional(), // RegistrationResponseJSON | AuthenticationResponseJSON
+    username: z.string().optional(),
+    response: z.any().optional(),
 });
 
-// --- 2nd-gen HTTPS handler (single endpoint with operation switch) ---
 export const webauthnApi = onRequest(
     {
         region: 'us-central1',
@@ -371,7 +66,6 @@ export const webauthnApi = onRequest(
             const expectedOrigin = (req.headers.origin as string) || '';
             ensureOrigin(expectedOrigin);
 
-            // Decide RPID
             const forwardedHost =
                 ((req.headers['x-forwarded-host'] as string | undefined) ||
                     req.headers.host ||
@@ -393,7 +87,6 @@ export const webauthnApi = onRequest(
                 return void res.status(500).json({ error: 'rp-id-not-configured' });
             }
 
-            // Load and normalize user doc to avoid crashes on legacy/partial records
             const loadedUserDoc = await getUserDoc(resolvedUid);
             const userDoc: WebAuthnUserDoc = {
                 username: loadedUserDoc?.username || username || resolvedUid,
@@ -407,251 +100,217 @@ export const webauthnApi = onRequest(
             };
 
             if (operation === 'reg-options') {
-                    const idToken = getBearerToken(
-                        req.headers.authorization as string | undefined,
-                    );
-                    if (!idToken) {
-                        return void res.status(401).json({ error: 'auth-required' });
-                    }
-                    const decoded = await auth.verifyIdToken(idToken);
-                    if (decoded.uid !== resolvedUid) {
-                        return void res.status(403).json({ error: 'forbidden' });
-                    }
-
-                    // Generate options for registration
-                    const excludeCredentials = userDoc.credentials.map(
-                        (cred) => ({
-                            id: cred.id,
-                            type: 'public-key' as const,
-                            transports: cred.transports,
-                        }),
-                    );
-
-                    const options = await generateRegistrationOptions({
-                        rpName: RP_NAME,
-                        rpID: effectiveRPID,
-                        userName: userDoc.username,
-                        // Using uid as backing user handle is common
-                        userID: Buffer.from(resolvedUid),
-                        authenticatorSelection: {
-                            // let the client attachment be flexible; you already chose defaults in UI
-                            residentKey: 'preferred',
-                            requireResidentKey: false,
-                        },
-                        excludeCredentials,
-                    });
-
-                    await setUserDoc(resolvedUid, {
-                        challenge: options.challenge,
-                        username: userDoc.username,
-                    });
-                    return void res.status(200).json({ options });
+                const idToken = getBearerToken(req.headers.authorization as string | undefined);
+                if (!idToken) {
+                    return void res.status(401).json({ error: 'auth-required' });
                 }
+                const decoded = await auth.verifyIdToken(idToken);
+                if (decoded.uid !== resolvedUid) {
+                    return void res.status(403).json({ error: 'forbidden' });
+                }
+
+                const excludeCredentials = userDoc.credentials.map((cred) => ({
+                    id: cred.id,
+                    type: 'public-key' as const,
+                    transports: cred.transports,
+                }));
+
+                const options = await generateRegistrationOptions({
+                    rpName: RP_NAME,
+                    rpID: effectiveRPID,
+                    userName: userDoc.username,
+                    userID: Buffer.from(resolvedUid),
+                    authenticatorSelection: {
+                        residentKey: 'preferred',
+                        requireResidentKey: false,
+                    },
+                    excludeCredentials,
+                });
+
+                await setUserDoc(resolvedUid, {
+                    challenge: options.challenge,
+                    username: userDoc.username,
+                });
+                return void res.status(200).json({ options });
+            }
 
             if (operation === 'reg-verify') {
-                    const idToken = getBearerToken(
-                        req.headers.authorization as string | undefined,
-                    );
-                    if (!idToken) {
-                        return void res.status(401).json({ error: 'auth-required' });
-                    }
-                    const decoded = await auth.verifyIdToken(idToken);
-                    if (decoded.uid !== resolvedUid) {
-                        return void res.status(403).json({ error: 'forbidden' });
-                    }
-
-                    const cred = response as RegistrationResponseJSON;
-                    if (!userDoc.challenge) {
-                        return void res.status(400).json({
-                            error: 'missing stored challenge for verification',
-                        });
-                    }
-                    const expectedChallenge = userDoc.challenge;
-                    const verification = await verifyRegistrationResponse({
-                        response: cred,
-                        expectedChallenge,
-                        expectedRPID: effectiveRPID,
-                        expectedOrigin,
-                    });
-
-                    if (
-                        !verification.verified ||
-                        !verification.registrationInfo
-                    ) {
-                        return void res.status(400).json({ verified: false });
-                    }
-
-                    const { credential, credentialDeviceType, credentialBackedUp } =
-                        verification.registrationInfo;
-
-                    const newPasskey: Passkey = {
-                        id: credential.id,
-                        publicKey: Buffer.from(credential.publicKey),
-                        counter: credential.counter,
-                        deviceType: credentialDeviceType,
-                        backedUp: credentialBackedUp,
-                        transports: credential.transports,
-                        webauthnUserID: Buffer.from(resolvedUid).toString('base64url'),
-                    };
-
-                    await setUserDoc(resolvedUid, {
-                        challenge: null,
-                        credentials: [
-                            ...userDoc.credentials.filter(
-                                (c) => c.id !== newPasskey.id,
-                            ),
-                            newPasskey,
-                        ],
-                    });
-
-                    const origin = expectedOrigin;
-                    const userAgent = getUserAgent(req);
-                    const ipAddress = getClientIp(req);
-                    const addedAt = new Date().toISOString();
-                    void sendPasskeyAddedEmail(resolvedUid, {
-                        origin,
-                        ipAddress,
-                        userAgent,
-                        addedAt,
-                    }).catch((error: unknown) => {
-                        logger.error('Failed to send passkey-added email', error);
-                    });
-
-                    return void res.status(200).json({ verified: true });
+                const idToken = getBearerToken(req.headers.authorization as string | undefined);
+                if (!idToken) {
+                    return void res.status(401).json({ error: 'auth-required' });
                 }
+                const decoded = await auth.verifyIdToken(idToken);
+                if (decoded.uid !== resolvedUid) {
+                    return void res.status(403).json({ error: 'forbidden' });
+                }
+
+                const cred = response as RegistrationResponseJSON;
+                if (!userDoc.challenge) {
+                    return void res.status(400).json({
+                        error: 'missing stored challenge for verification',
+                    });
+                }
+                const expectedChallenge = userDoc.challenge;
+                const verification = await verifyRegistrationResponse({
+                    response: cred,
+                    expectedChallenge,
+                    expectedRPID: effectiveRPID,
+                    expectedOrigin,
+                });
+
+                if (!verification.verified || !verification.registrationInfo) {
+                    return void res.status(400).json({ verified: false });
+                }
+
+                const { credential, credentialDeviceType, credentialBackedUp } =
+                    verification.registrationInfo;
+
+                const newPasskey: Passkey = {
+                    id: credential.id,
+                    publicKey: Buffer.from(credential.publicKey),
+                    counter: credential.counter,
+                    deviceType: credentialDeviceType,
+                    backedUp: credentialBackedUp,
+                    transports: credential.transports,
+                    webauthnUserID: Buffer.from(resolvedUid).toString('base64url'),
+                };
+
+                await setUserDoc(resolvedUid, {
+                    challenge: null,
+                    credentials: [
+                        ...userDoc.credentials.filter((c) => c.id !== newPasskey.id),
+                        newPasskey,
+                    ],
+                });
+
+                const origin = expectedOrigin;
+                const userAgent = getUserAgent(req);
+                const ipAddress = getClientIp(req);
+                const addedAt = new Date().toISOString();
+                void sendPasskeyAddedEmail(resolvedUid, {
+                    origin,
+                    ipAddress,
+                    userAgent,
+                    addedAt,
+                }).catch((error: unknown) => {
+                    logger.error('Failed to send passkey-added email', error);
+                });
+
+                return void res.status(200).json({ verified: true });
+            }
 
             if (operation === 'authn-options') {
-                    if (userDoc.credentials.length === 0) {
-                        return void res
-                            .status(404)
-                            .json({ error: 'no-passkeys-enrolled' });
-                    }
-
-                    const allowCredentials = userDoc.credentials.map(
-                        (cred) => ({
-                            id: cred.id,
-                            type: 'public-key' as const,
-                            transports: cred.transports,
-                        }),
-                    );
-
-                    const options = await generateAuthenticationOptions({
-                        rpID: effectiveRPID,
-                        allowCredentials,
-                        userVerification: 'preferred',
-                    });
-
-                    await setUserDoc(resolvedUid, { challenge: options.challenge });
-                    return void res.status(200).json({ options });
+                if (userDoc.credentials.length === 0) {
+                    return void res.status(404).json({ error: 'no-passkeys-enrolled' });
                 }
+
+                const allowCredentials = userDoc.credentials.map((cred) => ({
+                    id: cred.id,
+                    type: 'public-key' as const,
+                    transports: cred.transports,
+                }));
+
+                const options = await generateAuthenticationOptions({
+                    rpID: effectiveRPID,
+                    allowCredentials,
+                    userVerification: 'preferred',
+                });
+
+                await setUserDoc(resolvedUid, { challenge: options.challenge });
+                return void res.status(200).json({ options });
+            }
 
             if (operation === 'has-passkeys') {
-                    return void res
-                        .status(200)
-                        .json({ enrolled: userDoc.credentials.length > 0 });
-                }
+                return void res.status(200).json({ enrolled: userDoc.credentials.length > 0 });
+            }
 
             if (operation === 'authn-verify') {
-                    const cred = response as AuthenticationResponseJSON;
-                    if (!userDoc.challenge) {
-                        return void res.status(400).json({
-                            error: 'missing stored challenge for verification',
-                        });
-                    }
-                    const expectedChallenge = userDoc.challenge;
-
-                    // Lookup by credential ID
-                    const credID = cred.rawId;
-                    const match = userDoc.credentials.find(
-                        (c) => c.id === credID,
-                    );
-                    if (!match) {
-                        return void res
-                            .status(404)
-                            .json({ error: 'credential-not-found' });
-                    }
-
-                    const verification = await verifyAuthenticationResponse({
-                        response: cred,
-                        expectedChallenge,
-                        expectedRPID: effectiveRPID,
-                        expectedOrigin,
-                        credential: {
-                            id: match.id,
-                            publicKey: Uint8Array.from(match.publicKey),
-                            counter: match.counter,
-                            transports: match.transports,
-                        },
+                const cred = response as AuthenticationResponseJSON;
+                if (!userDoc.challenge) {
+                    return void res.status(400).json({
+                        error: 'missing stored challenge for verification',
                     });
-
-                    if (
-                        !verification.verified ||
-                        !verification.authenticationInfo
-                    ) {
-                        return void res.status(401).json({ verified: false });
-                    }
-
-                    // Update counter to prevent replays
-                    const { newCounter } = verification.authenticationInfo;
-                    match.counter = newCounter;
-
-                    const origin = expectedOrigin;
-                    const userAgent = getUserAgent(req);
-                    const ipAddress = getClientIp(req);
-                    const credentialId = cred.rawId;
-                    const nowIso = new Date().toISOString();
-                    const deviceKey = createDeviceFingerprint({
-                        credentialId,
-                        origin,
-                    });
-                    const existingDevice = userDoc.signInDevices?.find(
-                        (d) => d.key === deviceKey,
-                    );
-
-                    const updatedDevices = existingDevice
-                        ? userDoc.signInDevices!.map((d) =>
-                              d.key === deviceKey
-                                  ? {
-                                        ...d,
-                                        lastSeenAt: nowIso,
-                                        lastIpAddress: ipAddress,
-                                    }
-                                  : d,
-                          )
-                        : [
-                              ...(userDoc.signInDevices || []),
-                              {
-                                  key: deviceKey,
-                                  label: userAgent,
-                                  firstSeenAt: nowIso,
-                                  lastSeenAt: nowIso,
-                                  lastIpAddress: ipAddress,
-                                  credentialId,
-                                  origin,
-                              },
-                          ];
-
-                    await setUserDoc(resolvedUid, {
-                        challenge: null,
-                        credentials: userDoc.credentials,
-                        signInDevices: updatedDevices,
-                    });
-
-                    void sendSignInAlertEmail(resolvedUid, {
-                        origin,
-                        credentialId,
-                        ipAddress,
-                        userAgent,
-                    }).catch((error: unknown) => {
-                        logger.error('Failed to send sign-in alert email', error);
-                    });
-
-                    // Sign into Firebase: mint custom token for this uid
-                    const token = await auth.createCustomToken(resolvedUid);
-                    return void res
-                        .status(200)
-                        .json({ verified: true, customToken: token });
                 }
+                const expectedChallenge = userDoc.challenge;
+
+                const credID = cred.rawId;
+                const match = userDoc.credentials.find((c) => c.id === credID);
+                if (!match) {
+                    return void res.status(404).json({ error: 'credential-not-found' });
+                }
+
+                const verification = await verifyAuthenticationResponse({
+                    response: cred,
+                    expectedChallenge,
+                    expectedRPID: effectiveRPID,
+                    expectedOrigin,
+                    credential: {
+                        id: match.id,
+                        publicKey: Uint8Array.from(match.publicKey),
+                        counter: match.counter,
+                        transports: match.transports,
+                    },
+                });
+
+                if (!verification.verified || !verification.authenticationInfo) {
+                    return void res.status(401).json({ verified: false });
+                }
+
+                const { newCounter } = verification.authenticationInfo;
+                match.counter = newCounter;
+
+                const origin = expectedOrigin;
+                const userAgent = getUserAgent(req);
+                const ipAddress = getClientIp(req);
+                const credentialId = cred.rawId;
+                const nowIso = new Date().toISOString();
+                const deviceKey = createDeviceFingerprint({
+                    credentialId,
+                    origin,
+                });
+                const existingDevice = userDoc.signInDevices?.find((d) => d.key === deviceKey);
+
+                const updatedDevices = existingDevice
+                    ? userDoc.signInDevices!.map((d) =>
+                          d.key === deviceKey
+                              ? {
+                                    ...d,
+                                    lastSeenAt: nowIso,
+                                    lastIpAddress: ipAddress,
+                                }
+                              : d,
+                      )
+                    : [
+                          ...(userDoc.signInDevices || []),
+                          {
+                              key: deviceKey,
+                              label: userAgent,
+                              firstSeenAt: nowIso,
+                              lastSeenAt: nowIso,
+                              lastIpAddress: ipAddress,
+                              credentialId,
+                              origin,
+                          },
+                      ];
+
+                await setUserDoc(resolvedUid, {
+                    challenge: null,
+                    credentials: userDoc.credentials,
+                    signInDevices: updatedDevices,
+                });
+
+                void sendSignInAlertEmail(resolvedUid, {
+                    origin,
+                    credentialId,
+                    ipAddress,
+                    userAgent,
+                }).catch((error: unknown) => {
+                    logger.error('Failed to send sign-in alert email', error);
+                });
+
+                const token = await auth.createCustomToken(resolvedUid);
+                return void res.status(200).json({ verified: true, customToken: token });
+            }
 
             return void res.status(400).json({ error: 'unknown-operation' });
         } catch (err: unknown) {
@@ -660,9 +319,8 @@ export const webauthnApi = onRequest(
             if (/user-not-registered/i.test(message)) {
                 return void res.status(404).json({ error: 'user-not-registered' });
             }
-            return void res
-                .status(500)
-                .json({ error: 'internal', message: 'Internal server error' });
+            return void res.status(500).json({ error: 'internal', message: 'Internal server error' });
         }
     },
 );
+

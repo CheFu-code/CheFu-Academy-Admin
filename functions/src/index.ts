@@ -30,3 +30,4 @@ setGlobalOptions({ maxInstances: 10 });
 // });
 export { webauthnApi } from './webauthn';
 export { sendWelcomeEmailOnUserCreate } from './welcomeEmail';
+export { sendPasswordChangedEmail } from './passwordChangedEmail';
