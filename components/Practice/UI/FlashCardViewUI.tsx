@@ -1,6 +1,7 @@
 'use client';
 
 import { usePracticeCourses } from '@/hooks/usePracticeCourses';
+import { Button } from '@/components/ui/button';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -59,14 +60,34 @@ const FlashCardViewUI = () => {
                     </Card>
                 ))}
                 {!loading && flashcards.length === 0 && (
-                    <p className="text-sm text-muted-foreground">
-                        No flashcards found in your courses yet.
-                    </p>
+                    <Card className="col-span-2 sm:col-span-3 lg:col-span-4 border-dashed">
+                        <CardHeader className="text-center space-y-2">
+                            <CardTitle>No Flashcard Practice Yet</CardTitle>
+                            <CardDescription>
+                                We couldn&apos;t find any courses with flashcards in your
+                                account.
+                            </CardDescription>
+                            <div className="pt-2">
+                                <Button
+                                    variant="outline"
+                                    onClick={() => router.push('/courses/my-courses')}
+                                >
+                                    Open My Courses
+                                </Button>
+                            </div>
+                        </CardHeader>
+                    </Card>
                 )}
                 {loading && (
-                    <p className="text-sm text-muted-foreground">
-                        Loading flashcards...
-                    </p>
+                    <Card className="col-span-2 sm:col-span-3 lg:col-span-4">
+                        <CardHeader className="text-center space-y-3">
+                            <CardTitle>Loading Flashcard Practice</CardTitle>
+                            <CardDescription>
+                                Please wait while we fetch your available flashcard sets.
+                            </CardDescription>
+                            <div className="mx-auto h-1.5 w-28 animate-pulse rounded-full bg-primary/25" />
+                        </CardHeader>
+                    </Card>
                 )}
             </div>
         </div>
