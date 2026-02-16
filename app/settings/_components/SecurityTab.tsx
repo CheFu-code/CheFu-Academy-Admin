@@ -15,7 +15,7 @@ import {
     reauthenticateWithPopup,
     updatePassword,
 } from 'firebase/auth';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import SecurityTabUI from './UI/SecurityTabUI';
 
@@ -30,6 +30,28 @@ const SecurityTab = () => {
     const [loadingDelete, setLoadingDelete] = useState(false);
     const [loadingChange, setLoadingChange] = useState(false);
     const [loadingPasskey, setLoadingPasskey] = useState(false);
+    const [generatedPassword, setGeneratedPassword] = useState('');
+    const [passkeySupport, setPasskeySupport] = useState<
+        'checking' | 'supported' | 'unsupported'
+    >('checking');
+
+    useEffect(() => {
+        let mounted = true;
+        const checkSupport = async () => {
+            try {
+                const ready = await isPasskeyReady();
+                if (!mounted) return;
+                setPasskeySupport(ready ? 'supported' : 'unsupported');
+            } catch {
+                if (!mounted) return;
+                setPasskeySupport('unsupported');
+            }
+        };
+        void checkSupport();
+        return () => {
+            mounted = false;
+        };
+    }, []);
 
     // Utility: check if user has password provider linked
     const userHasPasswordProvider = () => {
@@ -194,6 +216,69 @@ const SecurityTab = () => {
         }
     };
 
+    const handleGenerateStrongPassword = () => {
+        const charset =
+            'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%^&*()-_=+';
+        const bytes = new Uint32Array(20);
+        crypto.getRandomValues(bytes);
+        const next = Array.from(bytes, b => charset[b % charset.length]).join(
+            '',
+        );
+        setGeneratedPassword(next);
+        toast.success('Strong password generated.');
+    };
+
+    const handleCopyGeneratedPassword = async () => {
+        if (!generatedPassword) {
+            toast.error('Generate a password first.');
+            return;
+        }
+        try {
+            await navigator.clipboard.writeText(generatedPassword);
+            toast.success('Password copied to clipboard.');
+        } catch {
+            toast.error('Could not copy password.');
+        }
+    };
+
+    const handleUseGeneratedPassword = () => {
+        if (!generatedPassword) {
+            toast.error('Generate a password first.');
+            return;
+        }
+        setNewPassword(generatedPassword);
+        setOpenChange(true);
+        toast.success('Password inserted into Change Password form.');
+    };
+
+    const handleCopySecuritySnapshot = async () => {
+        const user = auth.currentUser;
+        if (!user) {
+            toast.error('No user is logged in.');
+            return;
+        }
+
+        const providerIds =
+            user.providerData.map(provider => provider.providerId).join(', ') ||
+            'none';
+
+        const snapshot = [
+            `Email: ${user.email || 'N/A'}`,
+            `UID: ${user.uid}`,
+            `Providers: ${providerIds}`,
+            `Created: ${user.metadata.creationTime || 'N/A'}`,
+            `Last Sign In: ${user.metadata.lastSignInTime || 'N/A'}`,
+            `Passkey Support: ${passkeySupport}`,
+        ].join('\n');
+
+        try {
+            await navigator.clipboard.writeText(snapshot);
+            toast.success('Security snapshot copied.');
+        } catch {
+            toast.error('Could not copy security snapshot.');
+        }
+    };
+
     return (
         <SecurityTabUI
             openDelete={openDelete}
@@ -218,6 +303,12 @@ const SecurityTab = () => {
             handleEnrollPasskey={() => void handleEnrollPasskey()}
             handleConfirmEnrollPasskey={handleConfirmEnrollPasskey}
             hasPasswordProvider={userHasPasswordProvider()}
+            passkeySupport={passkeySupport}
+            generatedPassword={generatedPassword}
+            handleGenerateStrongPassword={handleGenerateStrongPassword}
+            handleCopyGeneratedPassword={handleCopyGeneratedPassword}
+            handleUseGeneratedPassword={handleUseGeneratedPassword}
+            handleCopySecuritySnapshot={handleCopySecuritySnapshot}
         />
     );
 };

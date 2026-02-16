@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import {
     Card,
     CardContent,
@@ -17,7 +18,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { TabsContent } from '@/components/ui/tabs';
-import { KeyRound } from 'lucide-react';
+import { ClipboardCheck, KeyRound, ShieldCheck } from 'lucide-react';
 
 const SecurityTabUI = ({
     openDelete,
@@ -42,6 +43,12 @@ const SecurityTabUI = ({
     handleEnrollPasskey,
     handleConfirmEnrollPasskey,
     hasPasswordProvider,
+    passkeySupport,
+    generatedPassword,
+    handleGenerateStrongPassword,
+    handleCopyGeneratedPassword,
+    handleUseGeneratedPassword,
+    handleCopySecuritySnapshot,
 }: {
     openDelete: boolean;
     setOpenDelete: (value: boolean) => void;
@@ -65,10 +72,16 @@ const SecurityTabUI = ({
     handleEnrollPasskey: () => void;
     handleConfirmEnrollPasskey: () => void;
     hasPasswordProvider: boolean;
+    passkeySupport: 'checking' | 'supported' | 'unsupported';
+    generatedPassword: string;
+    handleGenerateStrongPassword: () => void;
+    handleCopyGeneratedPassword: () => void;
+    handleUseGeneratedPassword: () => void;
+    handleCopySecuritySnapshot: () => void;
 }) => {
 
     return (
-        <TabsContent value="security" className="mt-4 sm:mt-6 px-2 sm:px-4">
+        <TabsContent value="security" className="mt-4 space-y-4 px-2 sm:mt-6 sm:px-4">
             {/* Security Settings */}
             <Card>
                 <CardHeader>
@@ -246,6 +259,86 @@ const SecurityTabUI = ({
                             </DialogFooter>
                         </DialogContent>
                     </Dialog>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-base sm:text-lg">Security Tools</CardTitle>
+                    <CardDescription className="text-xs sm:text-sm">
+                        Extra tools to harden and audit your account access.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3">
+                        <div className="flex items-center gap-2">
+                            <ShieldCheck className="h-4 w-4" />
+                            <span className="text-sm font-medium">Passkey compatibility</span>
+                        </div>
+                        <Badge
+                            variant={
+                                passkeySupport === 'supported'
+                                    ? 'default'
+                                    : passkeySupport === 'unsupported'
+                                        ? 'destructive'
+                                        : 'secondary'
+                            }
+                        >
+                            {passkeySupport === 'checking'
+                                ? 'Checking...'
+                                : passkeySupport === 'supported'
+                                    ? 'Supported'
+                                    : 'Not supported'}
+                        </Badge>
+                    </div>
+
+                    <div className="space-y-2 rounded-lg border p-3">
+                        <p className="text-sm font-medium">Strong password generator</p>
+                        <div className="flex flex-col gap-2 sm:flex-row">
+                            <Input
+                                readOnly
+                                value={generatedPassword}
+                                placeholder="Generate a strong password"
+                            />
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={handleGenerateStrongPassword}
+                            >
+                                Generate
+                            </Button>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={handleCopyGeneratedPassword}
+                            >
+                                Copy Password
+                            </Button>
+                            <Button
+                                type="button"
+                                onClick={handleUseGeneratedPassword}
+                            >
+                                Use in Change Password
+                            </Button>
+                        </div>
+                    </div>
+
+                    <div className="rounded-lg border p-3">
+                        <p className="mb-2 text-sm font-medium">Security snapshot</p>
+                        <p className="mb-3 text-xs text-muted-foreground">
+                            Copy account security metadata for support or personal audit.
+                        </p>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={handleCopySecuritySnapshot}
+                        >
+                            <ClipboardCheck className="mr-2 h-4 w-4" />
+                            Copy Security Snapshot
+                        </Button>
+                    </div>
                 </CardContent>
             </Card>
         </TabsContent>
