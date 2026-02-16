@@ -1,259 +1,237 @@
 'use client';
+
 import {
     Accordion,
     AccordionContent,
     AccordionItem,
     AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { Button } from '@/components/ui/button';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
+import { ArrowLeft, Mail, Phone, Shield } from 'lucide-react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+
+const policySections = [
+    {
+        value: 'collection',
+        title: 'Information We Collect',
+        content: (
+            <>
+                <p className="mb-2 text-sm text-muted-foreground">
+                    We may collect the following types of information:
+                </p>
+                <ul className="ml-5 list-disc space-y-1 text-sm text-muted-foreground">
+                    <li>Personal information you provide (name, email, etc.).</li>
+                    <li>Usage data (how you use our platform).</li>
+                    <li>Cookies and tracking technologies.</li>
+                </ul>
+            </>
+        ),
+    },
+    {
+        value: 'rights',
+        title: 'Your Rights',
+        content: (
+            <ul className="ml-5 list-disc space-y-1 text-sm text-muted-foreground">
+                <li>
+                    <span className="font-semibold">Access:</span> Request a copy of your data.
+                </li>
+                <li>
+                    <span className="font-semibold">Correction:</span> Update your data.
+                </li>
+                <li>
+                    <span className="font-semibold">Deletion:</span> Delete your account/data
+                    (subject to legal retention).
+                </li>
+            </ul>
+        ),
+    },
+    {
+        value: 'usage',
+        title: 'How We Use Your Information',
+        content: (
+            <ul className="ml-5 list-disc space-y-1 text-sm text-muted-foreground">
+                <li>To provide and maintain our services.</li>
+                <li>To improve user experience.</li>
+                <li>For analytics and monitoring.</li>
+                <li>To communicate important updates and announcements.</li>
+            </ul>
+        ),
+    },
+    {
+        value: 'sharing',
+        title: 'Sharing & Disclosure',
+        content: (
+            <>
+                <p className="mb-2 text-sm text-muted-foreground">
+                    We do not sell your personal information. We may share information:
+                </p>
+                <ul className="ml-5 list-disc space-y-1 text-sm text-muted-foreground">
+                    <li>With service providers to help operate our platform.</li>
+                    <li>When required by law or legal processes.</li>
+                    <li>To protect our rights or the safety of others.</li>
+                </ul>
+            </>
+        ),
+    },
+    {
+        value: 'security',
+        title: 'Data Security',
+        content: (
+            <p className="text-sm text-muted-foreground">
+                We implement industry-standard measures to protect your data from
+                unauthorized access, disclosure, or destruction. However, no method of
+                transmission over the internet or electronic storage is 100% secure.
+            </p>
+        ),
+    },
+    {
+        value: 'marketing',
+        title: 'Marketing Communications',
+        content: (
+            <ul className="ml-5 list-disc space-y-1 text-sm text-muted-foreground">
+                <li>We send updates with an opt-out option.</li>
+                <li>
+                    You can manage <Link href="/settings/account" className="text-primary">email preferences</Link>{' '}
+                    in settings.
+                </li>
+            </ul>
+        ),
+    },
+    {
+        value: 'cookies',
+        title: 'Cookies & Tracking',
+        content: (
+            <p className="text-sm text-muted-foreground">
+                We use cookies and similar technologies to enhance your experience,
+                analyze usage, and provide personalized content.
+            </p>
+        ),
+    },
+    {
+        value: 'links',
+        title: 'Links to Other Sites',
+        content: (
+            <p className="text-sm text-muted-foreground">
+                CheFu Academy may link to external sites. We are not responsible for
+                their policies.
+            </p>
+        ),
+    },
+    {
+        value: 'children',
+        title: "Children's Privacy",
+        content: (
+            <p className="text-sm text-muted-foreground">
+                Our services are not intended for children under 13. We do not knowingly
+                collect personal information from children.
+            </p>
+        ),
+    },
+    {
+        value: 'changes',
+        title: 'Changes to Privacy Policy',
+        content: (
+            <p className="text-sm text-muted-foreground">
+                We may update this Privacy Policy from time to time. Continued use of our
+                services constitutes acceptance of any changes.
+            </p>
+        ),
+    },
+    {
+        value: 'contact',
+        title: 'Contact Us',
+        content: (
+            <ul className="ml-5 list-disc space-y-1 text-sm text-muted-foreground">
+                <li>Email: chefu.inc@gmail.com</li>
+                <li>Phone: +27 (60) 603-1205</li>
+                <li>Address: 145 CheFu Street, Dinga, Limpopo, South Africa</li>
+            </ul>
+        ),
+    },
+];
 
 const PrivacyPolicy = () => {
     const router = useRouter();
     const currentYear = new Date().getFullYear();
 
     return (
-        <div className="max-w-4xl mx-auto p-6 space-y-6">
-            <h1
-                onClick={() => router.push('/courses')}
-                className="text-3xl font-bold cursor-pointer"
-            >
-                Privacy Policy
-            </h1>
-            <p className="text-muted-foreground text-sm">
-                Last updated: January 18, 2026
-            </p>
+        <div className="mx-auto max-w-6xl space-y-6 p-4 sm:p-6">
+            <Button variant="ghost" className="w-fit" onClick={() => router.push('/courses')}>
+                <ArrowLeft className="mr-1.5 h-4 w-4" />
+                Back to Courses
+            </Button>
 
-            <ScrollArea className="h-[600px] border rounded-md p-4">
-                <div className="space-y-4">
-                    {/* Introduction */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Introduction</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-sm text-muted-foreground">
-                                Your privacy is important to us. This Privacy
-                                Policy explains how we collect, use, and protect
-                                your information when you use our services.
-                            </p>
-                        </CardContent>
-                    </Card>
+            <Card className="border-border/60 bg-linear-to-br from-blue-500/10 via-indigo-500/5 to-transparent">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-2xl sm:text-3xl">
+                        <Shield className="h-6 w-6" />
+                        Privacy Policy
+                    </CardTitle>
+                    <CardDescription>
+                        Last updated: January 18, 2026
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-sm text-muted-foreground sm:text-base">
+                        Your privacy is important to us. This policy explains how we
+                        collect, use, and protect your information when you use CheFu
+                        Academy.
+                    </p>
+                </CardContent>
+            </Card>
 
-                    {/* Information Collection */}
-                    <Accordion type="single" collapsible>
-                        <AccordionItem value="collection">
-                            <AccordionTrigger>
-                                Information We Collect
-                            </AccordionTrigger>
-                            <AccordionContent>
-                                <p className="text-sm text-muted-foreground mb-2">
-                                    We may collect the following types of
-                                    information:
-                                </p>
-                                <ul className="list-disc ml-5 space-y-1 text-sm text-muted-foreground">
-                                    <li>
-                                        Personal information you provide (name,
-                                        email, etc.).
-                                    </li>
-                                    <li>
-                                        Usage data (how you use our platform).
-                                    </li>
-                                    <li>Cookies and tracking technologies.</li>
-                                </ul>
-                            </AccordionContent>
-                        </AccordionItem>
+            <div className="grid gap-4 lg:grid-cols-[1.2fr_2fr]">
+                <Card className="border-border/60">
+                    <CardHeader>
+                        <CardTitle className="text-lg">Quick Contact</CardTitle>
+                        <CardDescription>
+                            Reach out if you have privacy or data-related questions.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-3 text-sm">
+                        <div className="flex items-center gap-2 rounded-lg border p-3">
+                            <Mail className="h-4 w-4 text-muted-foreground" />
+                            <a href="mailto:support@chefuinc.com" className="text-primary hover:underline">
+                                support@chefuinc.com
+                            </a>
+                        </div>
+                        <div className="flex items-center gap-2 rounded-lg border p-3">
+                            <Phone className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-muted-foreground">+27 (60) 603-1205</span>
+                        </div>
+                    </CardContent>
+                </Card>
 
-                        <AccordionItem value="rights">
-                            <AccordionTrigger>Your Rights</AccordionTrigger>
-                            <AccordionContent>
-                                <ul className="list-disc ml-5 space-y-1 text-sm text-muted-foreground">
-                                    <li>
-                                        <span className="font-semibold">
-                                            Access
-                                        </span>
-                                        : Request a copy of your data
-                                    </li>
-                                    <li>
-                                        <span className="font-semibold">
-                                            Correction
-                                        </span>
-                                        : Update your data
-                                    </li>
-                                    <li>
-                                        <span className="font-semibold">
-                                            Deletion
-                                        </span>
-                                        : Delete your account/data (subject to
-                                        legal retention)
-                                    </li>
-                                </ul>
-                            </AccordionContent>
-                        </AccordionItem>
+                <Card className="border-border/60 shadow-sm">
+                    <CardHeader>
+                        <CardTitle className="text-lg">Policy Details</CardTitle>
+                        <CardDescription>
+                            Expand each section to review details.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Accordion type="single" collapsible>
+                            {policySections.map(section => (
+                                <AccordionItem key={section.value} value={section.value}>
+                                    <AccordionTrigger>{section.title}</AccordionTrigger>
+                                    <AccordionContent>{section.content}</AccordionContent>
+                                </AccordionItem>
+                            ))}
+                        </Accordion>
+                    </CardContent>
+                </Card>
+            </div>
 
-                        {/* How Information is Used */}
-                        <AccordionItem value="usage">
-                            <AccordionTrigger>
-                                How We Use Your Information
-                            </AccordionTrigger>
-                            <AccordionContent>
-                                <ul className="list-disc ml-5 space-y-1 text-sm text-muted-foreground">
-                                    <li>
-                                        To provide and maintain our services.
-                                    </li>
-                                    <li>To improve user experience.</li>
-                                    <li>For analytics and monitoring.</li>
-                                    <li>
-                                        To communicate important updates and
-                                        announcements.
-                                    </li>
-                                </ul>
-                            </AccordionContent>
-                        </AccordionItem>
-
-                        {/* Sharing and Disclosure */}
-                        <AccordionItem value="sharing">
-                            <AccordionTrigger>
-                                Sharing & Disclosure
-                            </AccordionTrigger>
-                            <AccordionContent>
-                                <p className="text-sm text-muted-foreground mb-2">
-                                    We do not sell your personal information. We
-                                    may share information:
-                                </p>
-                                <ul className="list-disc ml-5 space-y-1 text-sm text-muted-foreground">
-                                    <li>
-                                        With service providers to help operate
-                                        our platform.
-                                    </li>
-                                    <li>
-                                        When required by law or legal processes.
-                                    </li>
-                                    <li>
-                                        To protect our rights or the safety of
-                                        others.
-                                    </li>
-                                </ul>
-                            </AccordionContent>
-                        </AccordionItem>
-
-                        {/* Security */}
-                        <AccordionItem value="security">
-                            <AccordionTrigger>Data Security</AccordionTrigger>
-                            <AccordionContent>
-                                <p className="text-sm text-muted-foreground">
-                                    We implement industry-standard measures to
-                                    protect your data from unauthorized access,
-                                    disclosure, or destruction. However, no
-                                    method of transmission over the internet or
-                                    electronic storage is 100% secure.
-                                </p>
-                            </AccordionContent>
-                        </AccordionItem>
-
-                        <AccordionItem value="marketing">
-                            <AccordionTrigger>
-                                Marketing Communications
-                            </AccordionTrigger>
-                            <AccordionContent>
-                                <ul className="list-disc ml-5 space-y-1 text-sm text-muted-foreground">
-                                    <li>
-                                        We&apos;ll send updates with opt-out
-                                        option
-                                    </li>
-                                    <li>
-                                        You can manage{' '}
-                                        <a
-                                            className="text-primary"
-                                            href="/settings/account"
-                                        >
-                                            email preferences
-                                        </a>{' '}
-                                        in settings
-                                    </li>
-                                </ul>
-                            </AccordionContent>
-                        </AccordionItem>
-
-                        {/* Cookies */}
-                        <AccordionItem value="cookies">
-                            <AccordionTrigger>
-                                Cookies & Tracking
-                            </AccordionTrigger>
-                            <AccordionContent>
-                                <p className="text-sm text-muted-foreground">
-                                    We use cookies and similar technologies to
-                                    enhance your experience, analyze usage, and
-                                    provide personalized content.
-                                </p>
-                            </AccordionContent>
-                        </AccordionItem>
-
-                        <AccordionItem value="links">
-                            <AccordionTrigger>
-                                Links to Other Sites
-                            </AccordionTrigger>
-                            <AccordionContent>
-                                <p className="text-sm text-muted-foreground">
-                                    CheFu Academy may link to external sites. We
-                                    are not responsible for their policies.
-                                </p>
-                            </AccordionContent>
-                        </AccordionItem>
-
-                        {/* Children */}
-                        <AccordionItem value="children">
-                            <AccordionTrigger>
-                                Children&apos;s Privacy
-                            </AccordionTrigger>
-                            <AccordionContent>
-                                <p className="text-sm text-muted-foreground">
-                                    Our services are not intended for children
-                                    under 13. We do not knowingly collect
-                                    personal information from children.
-                                </p>
-                            </AccordionContent>
-                        </AccordionItem>
-
-                        {/* Changes */}
-                        <AccordionItem value="changes">
-                            <AccordionTrigger>
-                                Changes to Privacy Policy
-                            </AccordionTrigger>
-                            <AccordionContent>
-                                <p className="text-sm text-muted-foreground">
-                                    We may update this Privacy Policy from time
-                                    to time. Continued use of our services
-                                    constitutes acceptance of any changes.
-                                </p>
-                            </AccordionContent>
-                        </AccordionItem>
-
-                        {/* Contact */}
-                        <AccordionItem value="contact">
-                            <AccordionTrigger>Contact Us</AccordionTrigger>
-                            <AccordionContent>
-                                <p className="text-sm text-muted-foreground">
-                                    For any questions regarding this Privacy
-                                    Policy:
-                                </p>
-                                <ul className="list-disc ml-5 space-y-1 text-sm text-muted-foreground">
-                                    <li>Email: chefu.inc@gmail.com</li>
-                                    <li>Phone: +27 (60) 603 - 1205</li>
-                                    <li>
-                                        Address: 145 CheFu Street, Dinga,
-                                        Limpopo, South Africa
-                                    </li>
-                                </ul>
-                            </AccordionContent>
-                        </AccordionItem>
-                    </Accordion>
-                </div>
-            </ScrollArea>
-
-            <p className="text-sm text-muted-foreground text-center">
-                © {currentYear} CheFu Academy. All rights reserved.
+            <p className="text-center text-xs text-muted-foreground sm:text-sm">
+                Copyright {currentYear} CheFu Academy. All rights reserved.
             </p>
         </div>
     );

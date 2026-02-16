@@ -1,15 +1,22 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuthUser } from '@/hooks/useAuthUser';
 import { db } from '@/lib/firebase';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { ArrowLeft, Bug, Lightbulb, MessageSquareHeart } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 const Feedback = () => {
@@ -20,6 +27,13 @@ const Feedback = () => {
     const [email, setEmail] = useState('');
     const [message, setMessage] = useState('');
     const [loading, setLoading] = useState(false);
+    const messageLength = message.trim().length;
+
+    useEffect(() => {
+        if (!user) return;
+        setName(prev => prev || user.fullname || '');
+        setEmail(prev => prev || user.email || '');
+    }, [user]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -61,82 +75,104 @@ const Feedback = () => {
     };
 
     return (
-        <>
-            <div className="max-w-xl mx-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
-                <h1
+        <div className="mx-auto max-w-6xl space-y-6 p-4 sm:p-6">
+            <div className="flex items-center justify-between gap-2">
+                <Button
+                    variant="ghost"
+                    className="w-fit"
                     onClick={() => router.push('/courses')}
-                    className="text-xl sm:text-2xl font-bold cursor-pointer"
                 >
-                    Feedback
-                </h1>
-                <p className="text-muted-foreground text-xs sm:text-sm">
-                    We value your feedback. Please share your thoughts,
-                    suggestions, or issues below.
-                </p>
+                    <ArrowLeft className="mr-1.5 h-4 w-4" />
+                    Back to Courses
+                </Button>
+            </div>
 
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-lg sm:text-xl">
-                            Submit Feedback
+            <div className="grid gap-4 lg:grid-cols-[1.05fr_1.35fr]">
+                <Card className="border-border/60 bg-linear-to-br from-sky-500/10 via-cyan-500/5 to-transparent">
+                    <CardHeader className="space-y-2">
+                        <CardTitle className="text-2xl sm:text-3xl">
+                            Help Us Improve CheFu Academy
                         </CardTitle>
+                        <CardDescription className="text-sm sm:text-base">
+                            Share what works, what feels confusing, and what you
+                            want next.
+                        </CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-3 sm:space-y-4">
-                        <form
-                            onSubmit={handleSubmit}
-                            className="space-y-3 sm:space-y-4"
-                        >
-                            <div>
-                                <Label
-                                    htmlFor="name"
-                                    className="text-sm sm:text-base"
-                                >
-                                    Name
-                                </Label>
+                    <CardContent className="space-y-3 text-sm text-muted-foreground">
+                        <div className="flex items-start gap-2 rounded-lg border bg-background/60 p-3">
+                            <Lightbulb className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
+                            <p>
+                                Suggest features that would make your learning
+                                flow faster or clearer.
+                            </p>
+                        </div>
+                        <div className="flex items-start gap-2 rounded-lg border bg-background/60 p-3">
+                            <Bug className="mt-0.5 h-4 w-4 shrink-0 text-rose-500" />
+                            <p>
+                                Report bugs with exact steps, so we can fix
+                                them quickly.
+                            </p>
+                        </div>
+                        <div className="flex items-start gap-2 rounded-lg border bg-background/60 p-3">
+                            <MessageSquareHeart className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
+                            <p>
+                                Your feedback directly shapes product
+                                priorities.
+                            </p>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card className="border-border/60 shadow-sm">
+                    <CardHeader>
+                        <CardTitle className="text-xl">Submit Feedback</CardTitle>
+                        <CardDescription>
+                            Please include enough detail for us to understand
+                            your context.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="name">Name</Label>
                                 <Input
                                     id="name"
-                                    placeholder="Your Name"
+                                    placeholder="Your name"
                                     value={name}
-                                    onChange={(e) => setName(e.target.value)}
-                                    className="text-sm sm:text-base"
+                                    onChange={e => setName(e.target.value)}
                                 />
                             </div>
 
-                            <div>
-                                <Label
-                                    htmlFor="email"
-                                    className="text-sm sm:text-base"
-                                >
-                                    Email
-                                </Label>
+                            <div className="grid gap-2">
+                                <Label htmlFor="email">Email</Label>
                                 <Input
                                     id="email"
                                     type="email"
                                     placeholder="example@email.com"
                                     value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    className="text-sm sm:text-base"
+                                    onChange={e => setEmail(e.target.value)}
                                 />
                             </div>
 
-                            <div>
-                                <Label
-                                    htmlFor="message"
-                                    className="text-sm sm:text-base"
-                                >
-                                    Message
-                                </Label>
+                            <div className="grid gap-2">
+                                <div className="flex items-center justify-between gap-2">
+                                    <Label htmlFor="message">Message</Label>
+                                    <span className="text-xs text-muted-foreground">
+                                        {messageLength} characters
+                                    </span>
+                                </div>
                                 <Textarea
                                     id="message"
-                                    placeholder="Write your feedback here..."
+                                    placeholder="What happened, what you expected, and any suggestions..."
                                     value={message}
-                                    onChange={(e) => setMessage(e.target.value)}
-                                    className="text-sm sm:text-base"
+                                    onChange={e => setMessage(e.target.value)}
+                                    className="min-h-40"
                                 />
                             </div>
 
                             <Button
                                 type="submit"
-                                className="w-full cursor-pointer sm:w-auto text-sm sm:text-base"
+                                className="w-full sm:w-auto"
                                 disabled={
                                     loading ||
                                     !name.trim() ||
@@ -144,16 +180,17 @@ const Feedback = () => {
                                     !message.trim()
                                 }
                             >
-                                {loading ? 'Submitting...' : 'Submit'}
+                                {loading ? 'Submitting...' : 'Submit Feedback'}
                             </Button>
                         </form>
                     </CardContent>
                 </Card>
             </div>
-            <p className="text-xs sm:text-sm text-muted-foreground text-center">
-                © {currentYear} CheFu Academy. All right reserved.
+
+            <p className="text-center text-xs text-muted-foreground sm:text-sm">
+                Copyright {currentYear} CheFu Academy. All rights reserved.
             </p>
-        </>
+        </div>
     );
 };
 

@@ -25,7 +25,7 @@ const QuestionAnswerViewUI = () => {
                     alt="Question and Answer"
                     src={'/notes.png'}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/20 to-transparent" />
+                <div className="absolute inset-0 bg-linear-to-t from-black/55 via-black/20 to-transparent" />
                 <div className="absolute left-4 top-4 rounded-full border border-white/30 bg-white/15 px-3 py-1 text-xs text-white backdrop-blur">
                     Practice Mode
                 </div>
@@ -46,7 +46,7 @@ const QuestionAnswerViewUI = () => {
                             className="group cursor-pointer overflow-hidden border-border/60 transition-all duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-md"
                             key={item.id}
                         >
-                            <div className="relative flex h-28 items-center justify-center bg-gradient-to-br from-emerald-500/20 to-teal-500/10">
+                            <div className="relative flex h-28 items-center justify-center bg-linear-to-br from-emerald-500/20 to-teal-500/10">
                                 <Image
                                     priority
                                     alt="Question and Answer"
