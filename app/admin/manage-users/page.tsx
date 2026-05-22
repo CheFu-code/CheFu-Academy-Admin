@@ -1,6 +1,7 @@
 'use client';
 
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
+import { getApiUrl } from '@/lib/api-url';
 import { db } from '@/lib/firebase';
 import { User } from '@/types/user';
 import { userMatches } from '@/utils/userSearch';
@@ -43,9 +44,10 @@ const ManageUsers = () => {
             setDeleting(true);
 
             // 1️⃣ Call your Next.js API route
-            const res = await fetch('/api/admin/delete-user', {
+            const res = await fetch(getApiUrl('/admin/delete-user'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
                 body: JSON.stringify({
                     uid: user.uid,
                     email: user.email, // ensure this matches your Firestore doc ID

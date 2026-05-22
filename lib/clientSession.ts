@@ -1,6 +1,7 @@
 'use client';
 
 import { auth } from '@/lib/firebase';
+import { getApiUrl } from '@/lib/api-url';
 
 export async function syncSessionCookie() {
     const currentUser = auth.currentUser;
@@ -11,11 +12,12 @@ export async function syncSessionCookie() {
     }
 
     const idToken = await currentUser.getIdToken(true);
-    const response = await fetch('/api/auth/session', {
+    const response = await fetch(getApiUrl('/auth/session'), {
         method: 'POST',
         headers: {
             Authorization: `Bearer ${idToken}`,
         },
+        credentials: 'include',
     });
 
     if (!response.ok) {
@@ -24,7 +26,8 @@ export async function syncSessionCookie() {
 }
 
 export async function clearSessionCookie() {
-    await fetch('/api/auth/session', {
+    await fetch(getApiUrl('/auth/session'), {
         method: 'DELETE',
+        credentials: 'include',
     });
 }

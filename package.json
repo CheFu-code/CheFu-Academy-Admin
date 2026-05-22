@@ -8,6 +8,10 @@
         "enable:totp": "tsx services/enable-totp-mfa.ts",
         "enable": "ts-node services/enable-totp-mfa.ts",
         "disable:totp": "tsx services/disable-totp-mfa.ts",
+        "backend:dev": "npm --prefix backend run dev",
+        "backend:build": "npm --prefix backend run build",
+        "backend:start": "npm --prefix backend run start",
+        "backend:lint": "npm --prefix backend run lint",
         "start": "next start",
         "lint": "eslint",
         "postbuild": "next-sitemap"

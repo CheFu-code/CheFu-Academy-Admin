@@ -1,6 +1,10 @@
 import { auth } from './firebase';
+import { getApiUrl } from './api-url';
 
-const API = '/api/send-password-changed-email';
+const API = getApiUrl(
+    '/email/password-changed',
+    '/api/send-password-changed-email',
+);
 
 export async function sendPasswordChangedAlert() {
     const currentUser = auth.currentUser;
@@ -16,7 +20,7 @@ export async function sendPasswordChangedAlert() {
             Authorization: `Bearer ${idToken}`,
         },
         body: JSON.stringify({}),
-        credentials: 'omit',
+        credentials: 'include',
     });
 
     if (!response.ok) {

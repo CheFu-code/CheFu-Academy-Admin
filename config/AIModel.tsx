@@ -1,4 +1,5 @@
 import { Content } from "@/types/ai";
+import { getApiUrl } from "@/lib/api-url";
 
 export const GenerateTopicsAIModel = [
     {
@@ -52,11 +53,12 @@ export async function generateCourse(contents: Content[]): Promise<string> {
 }
 
 async function generateAIContent(contents: Content[]): Promise<string> {
-    const response = await fetch('/api/ai/generate', {
+    const response = await fetch(getApiUrl('/ai/generate'), {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({ contents }),
     });
 

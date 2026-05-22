@@ -1,6 +1,7 @@
 'use client';
 
 import { RecaptchaVerifier } from 'firebase/auth';
+import { getApiUrl } from '@/lib/api-url';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
 import PhoneLoginForm from './_components/PhoneLoginForm';
@@ -28,13 +29,17 @@ const PhoneLogin = () => {
 
         setLoading(true);
         try {
-            const res = await fetch('/api/admin/send-otp', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
+            const res = await fetch(
+                getApiUrl('/auth/send-otp', '/api/admin/send-otp'),
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ phone: phoneNumber }),
                 },
-                body: JSON.stringify({ phone: phoneNumber }),
-            });
+            );
 
             const data = await res.json();
 
