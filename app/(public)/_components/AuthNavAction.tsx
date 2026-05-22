@@ -1,19 +1,19 @@
-'use client';
-
 import { buttonVariants } from '@/components/ui/button';
-import { useAuthUser } from '@/hooks/useAuthUser';
+import { getServerSessionMeta } from '@/lib/server-session';
 import Link from 'next/link';
-import UserDropdown from './UserDropdown';
 
-export default function AuthNavAction() {
-    const { user, loading } = useAuthUser();
+export default async function AuthNavAction() {
+    const session = await getServerSessionMeta();
 
-    if (loading) {
-        return <div className="h-9 w-20 rounded-md bg-muted" aria-hidden />;
-    }
-
-    if (user) {
-        return <UserDropdown user={user} />;
+    if (session) {
+        return (
+            <Link
+                href="/courses"
+                className={buttonVariants({ size: 'sm', variant: 'outline' })}
+            >
+                Dashboard
+            </Link>
+        );
     }
 
     return (

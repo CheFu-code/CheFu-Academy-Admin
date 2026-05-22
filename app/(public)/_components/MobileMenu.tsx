@@ -12,9 +12,8 @@ import { Menu } from 'lucide-react';
 import Link from 'next/link';
 import React from 'react';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
-import AuthNavAction from './AuthNavAction';
 
-const MobileMenu = () => {
+const MobileMenu = ({ authAction }: { authAction: React.ReactNode }) => {
     return (
         <div className="ml-auto md:hidden">
             <Sheet>
@@ -42,7 +41,7 @@ const MobileMenu = () => {
 
                         <div className="pt-4 border-t flex items-center justify-between">
                             <ThemeToggle />
-                            <AuthNavAction />
+                            {authAction}
                         </div>
                     </div>
                 </SheetContent>

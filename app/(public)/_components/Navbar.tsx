@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import AuthNavAction from './AuthNavAction';
 import DesktopMenu from './DesktopMenu';
 import MobileMenu from './MobileMenu';
 
@@ -22,7 +23,7 @@ export default function Navbar() {
                 </Link>
 
                 {/* Mobile Menu */}
-                <MobileMenu />
+                <MobileMenu authAction={<AuthNavAction />} />
                 <DesktopMenu />
             </div>
         </header>
