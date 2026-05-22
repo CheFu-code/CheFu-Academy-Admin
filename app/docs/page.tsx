@@ -1,14 +1,19 @@
-'use client';
-
 import Header from '@/components/Shared/Header';
-import { Button } from '@/components/ui/button';
+import { buttonVariants } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { WEBSITE_URL } from '@/constants/Data';
-import { useRouter } from 'next/navigation';
-import React from 'react';
+import type { Metadata } from 'next';
+import Link from 'next/link';
+
+export function generateMetadata(): Metadata {
+    return {
+        title: 'CheFu Academy Documentation',
+        description:
+            'Learn how to integrate the CheFu Academy SDK into web, mobile, and backend applications.',
+    };
+}
 
 const APIDoc = () => {
-    const router = useRouter();
     return (
         <div className="min-h-screen bg-background">
             <Header
@@ -175,13 +180,15 @@ const APIDoc = () => {
                     previous one, so we recommend following the documentation in
                     order.
                 </p>
-                <Button
-                    onClick={() => router.push('/docs/installation')}
-                    className="mt-2 cursor-pointer"
-                    variant={'outline'}
+                <Link
+                    href="/docs/installation"
+                    className={buttonVariants({
+                        variant: 'outline',
+                        className: 'mt-2',
+                    })}
                 >
                     Next
-                </Button>
+                </Link>
             </div>
         </div>
     );

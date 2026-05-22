@@ -1,14 +1,10 @@
-'use client';
-
-import { Button } from '@/components/ui/button';
+import { buttonVariants } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { plans } from '@/constants/Data';
 import { Check } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 const PricingSection = () => {
-    const router = useRouter();
-
     return (
         <section className="py-20  text-center">
             <h2 className="text-4xl font-bold mb-8">Choose Your Plan</h2>
@@ -41,25 +37,20 @@ const PricingSection = () => {
                                 </li>
                             ))}
                         </ul>
-                        <Button
-                            onClick={() => {
-                                if (
-                                    plan.price === '0' ||
-                                    plan.name === 'Free'
-                                ) {
-                                    router.push('/courses');
-                                } else {
-                                    router.push(
-                                        `/upgrade?price=${plan.price}&plan=${plan.name}`,
-                                    );
-                                }
-                            }}
-                            className="mt-auto cursor-pointer"
+                        <Link
+                            href={
+                                plan.price === '0' || plan.name === 'Free'
+                                    ? '/courses'
+                                    : `/upgrade?price=${plan.price}&plan=${plan.name}`
+                            }
+                            className={buttonVariants({
+                                className: 'mt-auto',
+                            })}
                         >
                             {plan.name === 'Free'
                                 ? 'Start Free'
                                 : 'Get Started'}
-                        </Button>
+                        </Link>
                     </Card>
                 ))}
             </div>

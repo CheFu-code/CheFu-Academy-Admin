@@ -1,13 +1,21 @@
 import { Content } from "@/types/ai";
 import { GoogleGenAI } from "@google/genai";
 
-const ai = new GoogleGenAI({
-    apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY,
-});
 const config = {
     responseMimeType: "application/json",
 };
 const model = "gemini-2.5-flash";
+
+function getAIClient() {
+    const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+
+    if (!apiKey) {
+        throw new Error("NEXT_PUBLIC_GEMINI_API_KEY is not configured");
+    }
+
+    return new GoogleGenAI({ apiKey });
+}
+
 export const GenerateTopicsAIModel = [
     {
         role: "user",
@@ -53,6 +61,7 @@ export const GenerateTopicsAIModel = [
 
 export async function generateTopics(contents: Content[]): Promise<string> {
     try {
+        const ai = getAIClient();
         if (!ai || !ai.models || !ai.models.generateContent) {
             throw new Error(
                 "GoogleGenAI SDK is not initialized or generateContent is missing"
@@ -86,6 +95,7 @@ function extractJsonFromText(text: string): string {
 
 export async function generateCourse(contents: Content[]): Promise<string> {
     try {
+        const ai = getAIClient();
         if (!ai || !ai.models || !ai.models.generateContent) {
             throw new Error(
                 "GoogleGenAI SDK is not initialized or generateContent is missing"

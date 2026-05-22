@@ -1,8 +1,15 @@
-'use client';
-
 import Header from '@/components/Shared/Header';
 import { Separator } from '@/components/ui/separator';
+import type { Metadata } from 'next';
 import CodeHighlighter from '../_components/CodeHighlighter';
+
+export function generateMetadata(): Metadata {
+    return {
+        title: 'Rate Limits | CheFu Academy Docs',
+        description:
+            'Understand CheFu Academy API request limits, throttling behavior, and retry best practices.',
+    };
+}
 
 const RateLimits = () => {
     return (

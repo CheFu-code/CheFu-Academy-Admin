@@ -3,14 +3,22 @@
 import admin from 'firebase-admin';
 import { NextResponse } from 'next/server';
 
-// 🔐 Initialize Admin SDK safely
-if (!admin.apps.length) {
-    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT!);
+function getFirebaseAdminApp() {
+    if (admin.apps.length) {
+        return admin.app();
+    }
 
-    admin.initializeApp({
+    const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT;
+
+    if (!serviceAccountJson) {
+        throw new Error('FIREBASE_SERVICE_ACCOUNT is not configured');
+    }
+
+    const serviceAccount = JSON.parse(serviceAccountJson);
+
+    return admin.initializeApp({
         credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
     });
-    console.log('Firebase Admin Initialized');
 }
 
 export async function POST(req: Request) {
@@ -24,11 +32,13 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Email required' }, { status: 400 });
         }
 
+        const adminApp = getFirebaseAdminApp();
+
         // 1️⃣ Delete Auth user
-        await admin.auth().deleteUser(uid);
+        await admin.auth(adminApp).deleteUser(uid);
 
         // 2️⃣ Delete Firestore doc
-        await admin.firestore().collection('users').doc(email).delete();
+        await admin.firestore(adminApp).collection('users').doc(email).delete();
 
         return NextResponse.json({ success: true });
     } catch (error: unknown) {

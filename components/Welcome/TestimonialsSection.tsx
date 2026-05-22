@@ -1,5 +1,3 @@
-'use client';
-
 import { Card } from '@/components/ui/card'; // optional, your Card component
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { testimonials } from '@/constants/Data';

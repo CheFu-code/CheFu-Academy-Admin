@@ -1,12 +1,4 @@
-'use client';
-
-import {
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
-} from '@/components/ui/accordion';
-import { Button } from '@/components/ui/button';
+import { buttonVariants } from '@/components/ui/button';
 import {
     Card,
     CardContent,
@@ -15,8 +7,16 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { ArrowLeft, Mail, Phone, Shield } from 'lucide-react';
+import type { Metadata } from 'next';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+
+export function generateMetadata(): Metadata {
+    return {
+        title: 'Privacy Policy | CheFu Academy',
+        description:
+            'Learn how CheFu Academy collects, uses, protects, and manages learner data.',
+    };
+}
 
 const policySections = [
     {
@@ -159,15 +159,20 @@ const policySections = [
 ];
 
 const PrivacyPolicy = () => {
-    const router = useRouter();
     const currentYear = new Date().getFullYear();
 
     return (
         <div className="mx-auto max-w-6xl space-y-6 p-4 sm:p-6">
-            <Button variant="ghost" className="w-fit" onClick={() => router.push('/courses')}>
+            <Link
+                href="/courses"
+                className={buttonVariants({
+                    variant: 'ghost',
+                    className: 'w-fit',
+                })}
+            >
                 <ArrowLeft className="mr-1.5 h-4 w-4" />
                 Back to Courses
-            </Button>
+            </Link>
 
             <Card className="border-border/60 bg-linear-to-br from-blue-500/10 via-indigo-500/5 to-transparent">
                 <CardHeader>
@@ -218,14 +223,19 @@ const PrivacyPolicy = () => {
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <Accordion type="single" collapsible>
+                        <div className="divide-y rounded-md border">
                             {policySections.map(section => (
-                                <AccordionItem key={section.value} value={section.value}>
-                                    <AccordionTrigger>{section.title}</AccordionTrigger>
-                                    <AccordionContent>{section.content}</AccordionContent>
-                                </AccordionItem>
+                                <details
+                                    key={section.value}
+                                    className="group p-4 open:bg-muted/30"
+                                >
+                                    <summary className="cursor-pointer list-none font-medium">
+                                        {section.title}
+                                    </summary>
+                                    <div className="mt-3">{section.content}</div>
+                                </details>
                             ))}
-                        </Accordion>
+                        </div>
                     </CardContent>
                 </Card>
             </div>

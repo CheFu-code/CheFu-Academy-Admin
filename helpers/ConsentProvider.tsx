@@ -22,32 +22,27 @@ const STORAGE_KEY = 'cookie_consent_choice';
 
 export function ConsentProvider({ children }: { children: ReactNode }) {
     const [consent, setConsentState] = useState<ConsentChoice>(null);
-    const [ready, setReady] = useState(false);
 
     useEffect(() => {
-        // SSR-safe: only touch localStorage on client
-        const saved =
-            typeof window !== 'undefined'
-                ? localStorage.getItem(STORAGE_KEY)
-                : null;
+        const saved = localStorage.getItem(STORAGE_KEY);
         if (saved === 'accepted' || saved === 'rejected') {
             setConsentState(saved);
         }
-        setReady(true);
     }, []);
 
     const setConsent = (choice: 'accepted' | 'rejected') => {
-        localStorage.setItem(STORAGE_KEY, choice);
+        if (typeof window !== 'undefined') {
+            localStorage.setItem(STORAGE_KEY, choice);
+        }
         setConsentState(choice);
     };
 
     const resetConsent = () => {
-        localStorage.removeItem(STORAGE_KEY);
+        if (typeof window !== 'undefined') {
+            localStorage.removeItem(STORAGE_KEY);
+        }
         setConsentState(null);
     };
-
-    // Avoid flashing before hydration completes
-    if (!ready) return null;
 
     return (
         <ConsentContext.Provider value={{ consent, setConsent, resetConsent }}>

@@ -1,9 +1,15 @@
-'use client';
-
 import Header from '@/components/Shared/Header';
 import { Separator } from '@/components/ui/separator';
-import React from 'react';
+import type { Metadata } from 'next';
 import CodeHighlighter from '../_components/CodeHighlighter';
+
+export function generateMetadata(): Metadata {
+    return {
+        title: 'Making Requests | CheFu Academy Docs',
+        description:
+            'Learn how to fetch resources, pass parameters, handle responses, and cache SDK requests.',
+    };
+}
 
 const MakingRequests = () => {
     return (

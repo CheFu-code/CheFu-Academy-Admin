@@ -8,6 +8,14 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 
 export default function SearchPage() {
+    return (
+        <Suspense fallback={<VideoCardSkeleton />}>
+            <SearchPageContent />
+        </Suspense>
+    );
+}
+
+function SearchPageContent() {
     const searchParams = useSearchParams();
     const query = searchParams.get('query') || '';
     const router = useRouter();
@@ -37,13 +45,11 @@ export default function SearchPage() {
     };
 
     return (
-        <Suspense fallback={<VideoCardSkeleton />}>
-            <SearchContent
-                loading={loading}
-                videos={videos}
-                goToVidDetails={goToVidDetails}
-                query={query}
-            />
-        </Suspense>
+        <SearchContent
+            loading={loading}
+            videos={videos}
+            goToVidDetails={goToVidDetails}
+            query={query}
+        />
     );
 }

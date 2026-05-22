@@ -1,9 +1,15 @@
-'use client';
-
 import Header from '@/components/Shared/Header';
 import { Separator } from '@/components/ui/separator';
-import React from 'react';
+import type { Metadata } from 'next';
 import CodeHighlighter from '../_components/CodeHighlighter';
+
+export function generateMetadata(): Metadata {
+    return {
+        title: 'Error Handling | CheFu Academy Docs',
+        description:
+            'Learn how to handle SDK errors, HTTP status codes, rate limits, and network failures.',
+    };
+}
 
 const ErrorHandling = () => {
     return (

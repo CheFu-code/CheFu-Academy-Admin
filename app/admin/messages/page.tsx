@@ -1,7 +1,6 @@
 'use client';
 
 import { useAuthUser } from '@/hooks/useAuthUser';
-import { useSearchParams } from 'next/navigation';
 import React, { useRef, useState } from 'react';
 import MessagesUI from '../_components/UI/MessagesUI';
 
@@ -11,7 +10,6 @@ const MessagePage = () => {
     const [messageInput, setMessageInput] = useState('');
     const [chatsLoading, setChatsLoading] = React.useState(false);
     const [messagesLoading, setMessagesLoading] = React.useState(false);
-    const [searchParams, setSearchParams] = useSearchParams();
     const messagesEndRef = useRef(null);
 
     const handleSend = (e: React.FormEvent<HTMLFormElement>) => {

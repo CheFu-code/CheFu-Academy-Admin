@@ -1,32 +1,29 @@
-'use client';
-
-import {
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
-} from '@/components/ui/accordion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { useRouter } from 'next/navigation';
+import type { Metadata } from 'next';
+import Link from 'next/link';
 import { FaExclamationCircle } from 'react-icons/fa';
 
-const Terms = () => {
-    const router = useRouter();
+export function generateMetadata(): Metadata {
+    return {
+        title: 'Terms of Service | CheFu Academy',
+        description:
+            'Review the CheFu Academy terms for accounts, usage, subscriptions, privacy, liability, and support.',
+    };
+}
 
+const Terms = () => {
     return (
         <div className="max-w-5xl mx-auto mb-10 p-2 space-y-6">
-            <h1
-                onClick={() => router.push('/')}
-                className="text-4xl font-extrabold cursor-pointer"
-            >
+            <Link href="/" className="block w-fit">
+                <h1 className="text-4xl font-extrabold">
                 Terms of Service
-            </h1>
+                </h1>
+            </Link>
             <p className="text-muted-foreground text-sm">
                 Last updated: September 3, 2025
             </p>
 
-            <ScrollArea className="h-[650px] border rounded-lg p-6">
+            <section className="max-h-[650px] overflow-y-auto border rounded-lg p-6">
                 <div className="space-y-6">
                     {/* Introduction */}
                     <Card className="bg-gray-100 dark:bg-gray-900">
@@ -48,12 +45,12 @@ const Terms = () => {
                     </Card>
 
                     {/* Account Terms */}
-                    <Accordion type="single" collapsible>
-                        <AccordionItem value="account">
-                            <AccordionTrigger>
+                    <div className="divide-y rounded-md border">
+                        <details className="group p-4 open:bg-muted/30">
+                            <summary className="cursor-pointer list-none font-medium">
                                 Account Registration & Responsibilities
-                            </AccordionTrigger>
-                            <AccordionContent>
+                            </summary>
+                            <div className="mt-3">
                                 <p className="text-sm text-muted-foreground mb-2">
                                     Users must provide accurate and up-to-date
                                     information when creating an account. You
@@ -77,13 +74,13 @@ const Terms = () => {
                                         for extra security.
                                     </li>
                                 </ul>
-                            </AccordionContent>
-                        </AccordionItem>
+                            </div>
+                        </details>
 
                         {/* Usage Policy */}
-                        <AccordionItem value="usage">
-                            <AccordionTrigger>Usage Policy</AccordionTrigger>
-                            <AccordionContent>
+                        <details className="group p-4 open:bg-muted/30">
+                            <summary className="cursor-pointer list-none font-medium">Usage Policy</summary>
+                            <div className="mt-3">
                                 <p className="text-sm text-muted-foreground mb-2">
                                     Users must not use the platform to:
                                 </p>
@@ -108,15 +105,15 @@ const Terms = () => {
                                         parties.
                                     </li>
                                 </ul>
-                            </AccordionContent>
-                        </AccordionItem>
+                            </div>
+                        </details>
 
                         {/* Subscription & Billing */}
-                        <AccordionItem value="billing">
-                            <AccordionTrigger>
+                        <details className="group p-4 open:bg-muted/30">
+                            <summary className="cursor-pointer list-none font-medium">
                                 Subscription & Billing
-                            </AccordionTrigger>
-                            <AccordionContent>
+                            </summary>
+                            <div className="mt-3">
                                 <p className="text-sm text-muted-foreground mb-2">
                                     Our services may include free and paid
                                     subscription tiers. Payment obligations are
@@ -140,13 +137,13 @@ const Terms = () => {
                                         carefully.
                                     </li>
                                 </ul>
-                            </AccordionContent>
-                        </AccordionItem>
+                            </div>
+                        </details>
 
                         {/* Privacy & Data */}
-                        <AccordionItem value="privacy">
-                            <AccordionTrigger>Privacy & Data</AccordionTrigger>
-                            <AccordionContent>
+                        <details className="group p-4 open:bg-muted/30">
+                            <summary className="cursor-pointer list-none font-medium">Privacy & Data</summary>
+                            <div className="mt-3">
                                 <p className="text-sm text-muted-foreground mb-2">
                                     By using our services, you consent to the
                                     collection and use of your data according to
@@ -170,13 +167,13 @@ const Terms = () => {
                                         enhance your experience.
                                     </li>
                                 </ul>
-                            </AccordionContent>
-                        </AccordionItem>
+                            </div>
+                        </details>
 
                         {/* Termination */}
-                        <AccordionItem value="termination">
-                            <AccordionTrigger>Termination</AccordionTrigger>
-                            <AccordionContent>
+                        <details className="group p-4 open:bg-muted/30">
+                            <summary className="cursor-pointer list-none font-medium">Termination</summary>
+                            <div className="mt-3">
                                 <p className="text-sm text-muted-foreground mb-2">
                                     We may suspend or terminate accounts for
                                     violations of these Terms or legal reasons.
@@ -188,15 +185,15 @@ const Terms = () => {
                                     will remove personal data within the limits
                                     required by law.
                                 </p>
-                            </AccordionContent>
-                        </AccordionItem>
+                            </div>
+                        </details>
 
                         {/* Liability */}
-                        <AccordionItem value="liability">
-                            <AccordionTrigger>
+                        <details className="group p-4 open:bg-muted/30">
+                            <summary className="cursor-pointer list-none font-medium">
                                 Limitation of Liability
-                            </AccordionTrigger>
-                            <AccordionContent>
+                            </summary>
+                            <div className="mt-3">
                                 <p className="text-sm text-muted-foreground mb-2">
                                     To the maximum extent permitted by law, we
                                     are not liable for:
@@ -219,30 +216,30 @@ const Terms = () => {
                                         consequential damages.
                                     </li>
                                 </ul>
-                            </AccordionContent>
-                        </AccordionItem>
+                            </div>
+                        </details>
 
                         {/* Changes */}
-                        <AccordionItem value="changes">
-                            <AccordionTrigger>
+                        <details className="group p-4 open:bg-muted/30">
+                            <summary className="cursor-pointer list-none font-medium">
                                 Changes to Terms
-                            </AccordionTrigger>
-                            <AccordionContent>
+                            </summary>
+                            <div className="mt-3">
                                 <p className="text-sm text-muted-foreground">
                                     We may update these Terms at any time. Users
                                     will be notified of material changes.
                                     Continued use of our services constitutes
                                     acceptance of the updated Terms.
                                 </p>
-                            </AccordionContent>
-                        </AccordionItem>
+                            </div>
+                        </details>
 
                         {/* Contact */}
-                        <AccordionItem value="contact">
-                            <AccordionTrigger>
+                        <details className="group p-4 open:bg-muted/30">
+                            <summary className="cursor-pointer list-none font-medium">
                                 Contact Information
-                            </AccordionTrigger>
-                            <AccordionContent>
+                            </summary>
+                            <div className="mt-3">
                                 <p className="text-sm text-muted-foreground mb-2">
                                     For questions about these Terms or our
                                     services, please contact us:
@@ -266,11 +263,11 @@ const Terms = () => {
                                 <p className="text-xs text-muted-foreground mt-2">
                                     We aim to respond within 2 business days.
                                 </p>
-                            </AccordionContent>
-                        </AccordionItem>
-                    </Accordion>
+                            </div>
+                        </details>
+                    </div>
                 </div>
-            </ScrollArea>
+            </section>
             {/* Footer Note */}
             <p className="text-xs text-center text-muted-foreground mt-4">
                 © {new Date().getFullYear()} CheFu Academy. All rights reserved.

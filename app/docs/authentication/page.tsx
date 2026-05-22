@@ -1,10 +1,16 @@
-'use client';
-
 import Header from '@/components/Shared/Header';
 import { Separator } from '@/components/ui/separator';
 import { SDK_URL } from '@/constants/Data';
-import React from 'react';
+import type { Metadata } from 'next';
 import CodeHighlighter from '../_components/CodeHighlighter';
+
+export function generateMetadata(): Metadata {
+    return {
+        title: 'Authentication | CheFu Academy Docs',
+        description:
+            'Understand CheFu Academy SDK API key authentication and direct API authorization.',
+    };
+}
 
 const Authentication = () => {
     return (
