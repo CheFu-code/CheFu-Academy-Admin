@@ -3,6 +3,7 @@ import { getFriendlyAuthMessage } from '@/helpers/authErrors';
 import { completeMfaWithTotp } from '@/helpers/authMfaTotp';
 import { fetchEmailFromFacebookGraph } from '@/helpers/getUserEmail';
 import { useEmailCapture } from '@/hooks/useEmailCapture';
+import { syncSessionCookie } from '@/lib/clientSession';
 import { auth, db } from '@/lib/firebase';
 import { FirebaseError } from 'firebase/app';
 import {
@@ -134,6 +135,7 @@ export const UseAuth = () => {
 
             const savedData = await saveUser(user, fullname, email);
             if (!savedData) throw new Error('Failed to save user data.');
+            await syncSessionCookie();
         } catch (error: unknown) {
             if (error instanceof Error) {
                 console.error('Google login failed:', error);
@@ -166,6 +168,7 @@ export const UseAuth = () => {
                         const savedData = await saveUser(user, fullname, email);
                         if (!savedData)
                             throw new Error('Failed to save user data.');
+                        await syncSessionCookie();
                         toast.success('Login successful with MFA!');
                     } catch (mfaError) {
                         // Re-trigger the full MFA flow with a new promise
@@ -185,6 +188,7 @@ export const UseAuth = () => {
                             );
                             if (!savedData)
                                 throw new Error('Failed to save user data.');
+                            await syncSessionCookie();
                             toast.success('Login successful with MFA!');
                         } catch (retryErr) {
                             console.error('MFA retry also failed:', retryErr);
@@ -213,6 +217,7 @@ export const UseAuth = () => {
         startEmailTransition(async () => {
             try {
                 await signInWithEmailAndPassword(auth, email, password);
+                await syncSessionCookie();
                 toast.success('Login successful!');
             } catch (error) {
                 const message = getFriendlyAuthMessage(error);
@@ -259,6 +264,7 @@ export const UseAuth = () => {
             // 5) Persist to your backend
             const savedData = await saveUser(user, fullname, email);
             if (!savedData) throw new Error('Failed to save user data.');
+            await syncSessionCookie();
 
             console.log('Facebook user:', user);
         } catch (error) {

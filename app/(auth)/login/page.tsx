@@ -4,6 +4,7 @@ import { UseAuth } from '@/services/authService';
 import LoginForm from './_components/LoginForm';
 import { useState } from 'react';
 import { signInWithFirebasePasskey, toPasskeyMessage } from '@/lib/passkeys';
+import { syncSessionCookie } from '@/lib/clientSession';
 import { toast } from 'sonner';
 import {
     Dialog,
@@ -43,6 +44,7 @@ export default function LoginPage() {
         setPasskeyPending(true);
         try {
             await signInWithFirebasePasskey(value);
+            await syncSessionCookie();
             toast.success('Signed in with passkey');
         } catch (e: unknown) {
             if (isNoPasskeysEnrolledError(e)) {

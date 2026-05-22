@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { syncSessionCookie } from '@/lib/clientSession';
 
 export default function AuthLayout({
     children,
@@ -16,7 +17,13 @@ export default function AuthLayout({
 
     useEffect(() => {
         if (!loading && user) {
-            router.replace('/');
+            syncSessionCookie()
+                .catch(error => {
+                    console.error('Failed to refresh auth session:', error);
+                })
+                .finally(() => {
+                    router.replace('/');
+                });
         }
     }, [loading, user, router]);
     return (
