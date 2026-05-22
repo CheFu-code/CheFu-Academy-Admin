@@ -12,7 +12,7 @@ import {
     updateDoc,
 } from 'firebase/firestore';
 import { useParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 // ✅ Import the components
@@ -28,10 +28,25 @@ const VideoDetailsPage = () => {
     const [loading, setLoading] = useState(false);
     const [enrolled, setEnrolled] = useState(false);
 
+    const videoId = typeof params?.id === 'string' ? params.id : '';
+
+    const fetchVideoDetails = useCallback(async () => {
+        try {
+            setLoading(true);
+            const allVideos = await fetchUploadedVideos();
+            const selected = allVideos.find((v) => v.id === videoId) || null;
+            setVideo(selected);
+        } catch (err) {
+            console.error('Failed to fetch video:', err);
+        } finally {
+            setLoading(false);
+        }
+    }, [videoId]);
+
     useEffect(() => {
-        if (!params?.id) return;
+        if (!videoId) return;
         fetchVideoDetails();
-    }, [params?.id]);
+    }, [fetchVideoDetails, videoId]);
 
     useEffect(() => {
         if (!user?.email || !video?.id) return;
@@ -49,19 +64,6 @@ const VideoDetailsPage = () => {
 
         checkEnrollment();
     }, [user?.email, video?.id]);
-
-    const fetchVideoDetails = async () => {
-        try {
-            setLoading(true);
-            const allVideos = await fetchUploadedVideos();
-            const selected = allVideos.find((v) => v.id === params?.id) || null;
-            setVideo(selected);
-        } catch (err) {
-            console.error('Failed to fetch video:', err);
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const handleEnroll = async () => {
         if (!user) {

@@ -1,6 +1,6 @@
 import dedent from 'dedent';
 
-export default {
+const promptTemplates = {
     IDEA: dedent`:As you are coaching teacher
     - User want to learn about the topic
     - Generate 5-7 Course title for study (Short)
@@ -118,3 +118,5 @@ export default {
 ]
     `,
 };
+
+export default promptTemplates;

@@ -24,7 +24,6 @@ export function NavMain({
         icon?: Icon;
     }[];
 }) {
-    const [loading, setLoading] = useState(true);
     const [analytics, setAnalytics] = useState<Analytics2>({
         unreadTicket: null,
     });
@@ -41,8 +40,6 @@ export function NavMain({
                 });
             } catch (err) {
                 console.error('oops fetch error:', err);
-            } finally {
-                setLoading(false);
             }
         };
 

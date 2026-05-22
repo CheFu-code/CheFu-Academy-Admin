@@ -1,9 +1,6 @@
 import { auth } from './firebase';
 
-const API = (
-    process.env.NEXT_PUBLIC_PASSWORD_CHANGED_API_URL ||
-    '/api/send-password-changed-email'
-).replace(/\/+$/, '');
+const API = '/api/send-password-changed-email';
 
 export async function sendPasswordChangedAlert() {
     const currentUser = auth.currentUser;

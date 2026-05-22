@@ -1,7 +1,7 @@
 // functions/eslint.config.mjs
 import tsParser from '@typescript-eslint/parser';
 
-export default [
+const eslintConfig = [
     {
         files: ['src/**/*.{ts,js}'],
         languageOptions: {
@@ -15,3 +15,5 @@ export default [
         ignores: ['lib/**', 'generated/**', 'node_modules/**'],
     },
 ];
+
+export default eslintConfig;

@@ -1,20 +1,4 @@
 import { Content } from "@/types/ai";
-import { GoogleGenAI } from "@google/genai";
-
-const config = {
-    responseMimeType: "application/json",
-};
-const model = "gemini-2.5-flash";
-
-function getAIClient() {
-    const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-
-    if (!apiKey) {
-        throw new Error("NEXT_PUBLIC_GEMINI_API_KEY is not configured");
-    }
-
-    return new GoogleGenAI({ apiKey });
-}
 
 export const GenerateTopicsAIModel = [
     {
@@ -60,64 +44,27 @@ export const GenerateTopicsAIModel = [
 ];
 
 export async function generateTopics(contents: Content[]): Promise<string> {
-    try {
-        const ai = getAIClient();
-        if (!ai || !ai.models || !ai.models.generateContent) {
-            throw new Error(
-                "GoogleGenAI SDK is not initialized or generateContent is missing"
-            );
-        }
-        const response = await ai.models.generateContent({
-            model,
-            config,
-            contents,
-        });
-        if (
-            !response ||
-            !response.candidates ||
-            !response.candidates[0] ||
-            !response.candidates[0].content
-        ) {
-            throw new Error("No candidates/content in Gemini response");
-        }
-        const text = response.candidates?.[0]?.content?.parts?.[0]?.text || "";
-        return extractJsonFromText(text);
-    } catch (error) {
-        console.error("[AIModel ERROR] Error generating topics:", error);
-        throw error;
-    }
-}
-
-function extractJsonFromText(text: string): string {
-    if (!text) return "";
-    return text.replace(/^```json[\r\n]+|```$/gi, "").trim();
+    return generateAIContent(contents);
 }
 
 export async function generateCourse(contents: Content[]): Promise<string> {
-    try {
-        const ai = getAIClient();
-        if (!ai || !ai.models || !ai.models.generateContent) {
-            throw new Error(
-                "GoogleGenAI SDK is not initialized or generateContent is missing"
-            );
-        }
-        const response = await ai.models.generateContent({
-            model,
-            config,
-            contents,
-        });
-        if (
-            !response ||
-            !response.candidates ||
-            !response.candidates[0] ||
-            !response.candidates[0].content
-        ) {
-            throw new Error("No candidates/content in Gemini response");
-        }
-        const text = response.candidates?.[0]?.content?.parts?.[0]?.text || "";
-        return extractJsonFromText(text);
-    } catch (error) {
-        console.error("[AIModel ERROR] Error generating courses:", error);
-        throw error;
+    return generateAIContent(contents);
+}
+
+async function generateAIContent(contents: Content[]): Promise<string> {
+    const response = await fetch('/api/ai/generate', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ contents }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw new Error(data.error || 'Failed to generate AI content');
     }
+
+    return data.result || '';
 }

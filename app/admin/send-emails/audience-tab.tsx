@@ -4,7 +4,6 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TabsContent } from "@/components/ui/tabs";
 import type {
-    AudienceUser,
     CampaignType,
     EmailPreferenceKey,
     PreferenceAudience,

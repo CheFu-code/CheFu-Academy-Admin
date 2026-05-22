@@ -31,8 +31,8 @@ import {
     VideoCategoryValues,
     VisibilityOptions,
 } from '@/constants/Options';
-import { uploadFile, uploadVideo } from '@/services/videoService';
-import { UploaderState, Video } from '@/types/video';
+import { uploadVideo } from '@/services/videoService';
+import { Video } from '@/types/video';
 import { Timestamp } from 'firebase/firestore';
 import { Loader, PlusIcon, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -43,28 +43,8 @@ import { toast } from 'sonner';
 const UploadVideoPage = ({}) => {
     const router = useRouter();
     const [newTopic, setNewTopic] = useState('');
-    const [videoUri, setVideoUri] = useState('');
-    const [thumbnailUri, setThumbnailUri] = useState('');
-    const [title, setTitle] = useState('');
-    const [description, setDescription] = useState('');
-    const [category, setCategory] = useState('');
-    const [visibility, setVisibility] = useState<'public' | 'private'>(
-        'public',
-    );
-    const [level, setLevel] = useState<'advance' | 'beginner'>('beginner');
     const [loading, setLoading] = useState(false);
     const [duration, setDuration] = useState(0);
-    const [views, setViews] = useState(0);
-    const [topics, setTopics] = useState<string[]>([]);
-    const [fileState, setFileState] = useState<UploaderState>({
-        id: null,
-        file: null,
-        uploading: false,
-        progress: 0,
-        isDeleting: false,
-        error: false,
-        fileType: 'image',
-    });
 
     const addTopic = (field: ControllerRenderProps<Video, 'topics'>) => {
         const topic = newTopic.trim();
@@ -115,34 +95,13 @@ const UploadVideoPage = ({}) => {
         }
 
         try {
-            let videoURL = values.videoURL;
-            let thumbnailURL = values.thumbnailURL;
-
-            if (fileState.fileType === 'image' && fileState.file) {
-                const uploadedThumbnailURL = await uploadFile(
-                    fileState.file,
-                    `thumbnails/${Date.now()}-${fileState.file.name}`,
-                );
-                thumbnailURL = uploadedThumbnailURL;
-                form.setValue('thumbnailURL', uploadedThumbnailURL);
-            }
-
-            if (fileState.fileType === 'video' && fileState.file) {
-                const uploadedVideoURL = await uploadFile(
-                    fileState.file,
-                    `videos/${Date.now()}-${fileState.file.name}`,
-                );
-                videoURL = uploadedVideoURL;
-                form.setValue('videoURL', uploadedVideoURL);
-            }
-
             await uploadVideo(
                 values.title,
                 values.instructorCompany,
                 values.instructorName,
                 values.description,
-                videoURL,
-                thumbnailURL,
+                values.videoURL,
+                values.thumbnailURL,
                 values.category,
                 values.visibility,
                 values.level as 'beginner' | 'advance',
@@ -267,10 +226,8 @@ const UploadVideoPage = ({}) => {
                                                 type="image"
                                                 onFileSelect={(
                                                     fileUrl: string,
-                                                    _file: File,
                                                 ) => {
                                                     field.onChange(fileUrl);
-                                                    setThumbnailUri(fileUrl);
                                                 }}
                                             />
                                         </FormControl>
@@ -295,7 +252,6 @@ const UploadVideoPage = ({}) => {
                                                     fileDuration?: number,
                                                 ) => {
                                                     field.onChange(fileUrl);
-                                                    setVideoUri(fileUrl);
                                                     if (fileDuration)
                                                         setDuration(
                                                             fileDuration,

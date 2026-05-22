@@ -39,7 +39,7 @@ const SearchCourseContent = () => {
         };
 
         fetchFilteredCourses();
-    }, [query]);
+    }, [fetchSearchedCourses, query]);
     return (
         <div className="min-h-screen bg-background">
             <div className="flex justify-between items-center">

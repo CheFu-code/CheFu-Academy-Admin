@@ -90,7 +90,7 @@ export const CoursesQuery = () => {
     }, [user?.email, courseRef]);
 
 
-    const fetchSearchedCourses = async (): Promise<Course[]> => {
+    const fetchSearchedCourses = useCallback(async (): Promise<Course[]> => {
         const q = query(
             collection(db, 'course'),
             orderBy('createdOn', 'desc'),
@@ -101,7 +101,7 @@ export const CoursesQuery = () => {
             ...(doc.data() as Omit<Course, 'id'>),
             id: doc.id,
         }));
-    };
+    }, []);
 
     const fetchMoreCourses = useCallback(async () => {
 

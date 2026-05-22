@@ -5,9 +5,7 @@ export const runtime = 'nodejs';
 const trimTrailingSlash = (value: string) => value.replace(/\/+$/, '');
 
 const resolvePasswordChangedEmailUrl = () => {
-    const explicitUrl =
-        process.env.PASSWORD_CHANGED_API_URL ||
-        process.env.NEXT_PUBLIC_PASSWORD_CHANGED_API_URL;
+    const explicitUrl = process.env.PASSWORD_CHANGED_API_URL;
     if (explicitUrl) {
         return trimTrailingSlash(explicitUrl);
     }

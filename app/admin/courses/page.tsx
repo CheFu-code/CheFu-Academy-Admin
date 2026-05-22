@@ -1,7 +1,7 @@
 import { buttonVariants } from "@/components/ui/button";
 import Link from "next/link";
 
-export default function Layout({ children }: { children: React.ReactNode }) {
+export default function AdminCoursesPage() {
     return (
         <>
             <div className="flex items-center justify-between">

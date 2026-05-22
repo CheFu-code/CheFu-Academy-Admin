@@ -31,12 +31,6 @@ export const useGenerateTopic = (
 
         let topicIdea = [];
         try {
-            const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-            if (!apiKey) {
-                alert('AI key is missing');
-                setGeneratingTopic(false);
-                return;
-            }
             const promptText = userInput + Prompt.IDEA;
             const contents = [
                 {

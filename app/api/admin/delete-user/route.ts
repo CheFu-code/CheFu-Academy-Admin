@@ -1,25 +1,8 @@
 //app/api/admin/delete-user/route.ts
 
 import admin from 'firebase-admin';
+import { getFirebaseAdminApp } from '@/lib/firebase-admin';
 import { NextResponse } from 'next/server';
-
-function getFirebaseAdminApp() {
-    if (admin.apps.length) {
-        return admin.app();
-    }
-
-    const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT;
-
-    if (!serviceAccountJson) {
-        throw new Error('FIREBASE_SERVICE_ACCOUNT is not configured');
-    }
-
-    const serviceAccount = JSON.parse(serviceAccountJson);
-
-    return admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
-    });
-}
 
 export async function POST(req: Request) {
     try {

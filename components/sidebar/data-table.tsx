@@ -355,7 +355,9 @@ function DraggableRow({ row }: { row: Row<z.infer<typeof schema>> }) {
 type TableRow = z.infer<typeof schema>;
 
 export function DataTable({ user: initialData }: { user: TableRow }) {
-    const [data, setData] = React.useState<TableRow[]>([]);
+    const [data, setData] = React.useState<TableRow[]>(
+        initialData ? [initialData] : []
+    );
     const [rowSelection, setRowSelection] = React.useState({});
     const [columnVisibility, setColumnVisibility] =
         React.useState<VisibilityState>({});

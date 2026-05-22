@@ -1,25 +1,15 @@
 import { User } from '@/types/user';
 import { Loader } from 'lucide-react';
-import Header from '../Message/Header';
 import NoChatSelectedUI from '../Message/NoChatSelectedUI';
 import NoConversationUI from '../Message/NoConversationUI';
 
 const MessagesUI = ({
     chatsLoading,
     chats,
-    messageInput,
-    messagesLoading,
-    messages,
-    handleSend,
-    user,
 }: {
     chatsLoading: boolean;
     chats: never[];
-    messageInput: string;
-    messagesLoading: boolean;
-    messages: never[];
-    handleSend: (e: React.FormEvent<HTMLFormElement>) => void;
-    user: User | null;
+    user?: User | null;
 }) => {
     return (
         <div className="h-screen bg-background flex">

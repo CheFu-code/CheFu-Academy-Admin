@@ -1,29 +1,18 @@
 'use client';
 
 import { useAuthUser } from '@/hooks/useAuthUser';
-import React, { useRef, useState } from 'react';
+import React from 'react';
 import MessagesUI from '../_components/UI/MessagesUI';
 
 const MessagePage = () => {
     const { user } = useAuthUser();
-    const [chats, setChats] = React.useState([]);
-    const [messageInput, setMessageInput] = useState('');
-    const [chatsLoading, setChatsLoading] = React.useState(false);
-    const [messagesLoading, setMessagesLoading] = React.useState(false);
-    const messagesEndRef = useRef(null);
+    const [chats] = React.useState([]);
+    const [chatsLoading] = React.useState(false);
 
-    const handleSend = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        if (!messageInput.trim()) return;
-    };
     return (
         <MessagesUI
             chatsLoading={chatsLoading}
             chats={chats}
-            messageInput={messageInput}
-            messagesLoading={messagesLoading}
-            messages={[]}
-            handleSend={handleSend}
             user={user}
         />
     );

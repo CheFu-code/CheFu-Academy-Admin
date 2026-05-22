@@ -1,4 +1,4 @@
-import { BACKEND_URL, DEFAULT_PREFERENCES } from '@/constants/Data';
+import { DEFAULT_PREFERENCES } from '@/constants/Data';
 import { getFriendlyAuthMessage } from '@/helpers/authErrors';
 import { completeMfaWithTotp } from '@/helpers/authMfaTotp';
 import { fetchEmailFromFacebookGraph } from '@/helpers/getUserEmail';
@@ -79,7 +79,7 @@ export const saveUser = async (user: User, fullname: string, email: string) => {
             };
 
             const cleanData = Object.fromEntries(
-                Object.entries(data).filter(([_, v]) => v !== undefined),
+                Object.entries(data).filter(([, value]) => value !== undefined),
             );
 
             await setDoc(userDocRef, cleanData);

@@ -68,10 +68,27 @@ const CreateCourseUI = ({
 
                 {topics.length > 0 && (
                     <>
-                        <p className="mt-10 font-semibold">
-                            Select all topics which you want to add in this
-                            course:
-                        </p>
+                        <div className="flex items-center justify-between mt-10">
+                            <p className="font-semibold">
+                                Select all topics which you want to add in this
+                                course:
+                            </p>
+                            <Button
+                                className="cursor-pointer"
+                                variant="outline"
+                                onClick={() => {
+                                    if (selectedTopics.length === topics.length) {
+                                        setSelectedTopics([]);
+                                    } else {
+                                        setSelectedTopics(topics);
+                                    }
+                                }}
+                                size="sm">
+                                {selectedTopics.length === topics.length
+                                    ? 'Deselect all'
+                                    : 'Select all'}
+                            </Button>
+                        </div>
 
                         <div className="mt-5 flex flex-row flex-wrap gap-2">
                             {topics.map((topic, index) => {

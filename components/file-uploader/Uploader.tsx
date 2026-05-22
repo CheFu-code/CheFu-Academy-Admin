@@ -1,6 +1,7 @@
 "use client";
 
 import { UploaderState } from "@/types/video";
+import Image from "next/image";
 import { useCallback, useState } from "react";
 import { FileRejection, useDropzone } from "react-dropzone";
 import { toast } from "sonner";
@@ -99,10 +100,13 @@ const Uploader = ({ type, onFileSelect }: UploaderProps) => {
             <CardContent className="flex items-center justify-center h-full w-full p-4">
                 {fileState.objectUrl ? (
                     type === "image" ? (
-                        <img
+                        <Image
                             src={fileState.objectUrl}
                             alt="preview"
-                            className="max-h-full"
+                            width={512}
+                            height={256}
+                            unoptimized
+                            className="max-h-full w-auto object-contain"
                         />
                     ) : (
                         <video
