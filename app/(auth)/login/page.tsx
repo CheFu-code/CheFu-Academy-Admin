@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { signInWithFirebasePasskey, toPasskeyMessage } from '@/lib/passkeys';
 import { syncSessionCookie } from '@/lib/clientSession';
 import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 import {
     Dialog,
     DialogContent,
@@ -18,6 +19,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
 export default function LoginPage() {
+    const router = useRouter();
+    const redirectAfterSignIn = () => router.replace('/');
     const { loading } = useAuthUser();
     const {
         handleGoogle,
@@ -28,7 +31,7 @@ export default function LoginPage() {
         password,
         setPassword,
         emailPending,
-    } = UseAuth();
+    } = UseAuth(redirectAfterSignIn);
     const [passkeyPending, setPasskeyPending] = useState(false);
     const [openPasskeyDialog, setOpenPasskeyDialog] = useState(false);
     const [passkeyIdentifier, setPasskeyIdentifier] = useState('');
@@ -46,6 +49,7 @@ export default function LoginPage() {
             await signInWithFirebasePasskey(value);
             await syncSessionCookie();
             toast.success('Signed in with passkey');
+            redirectAfterSignIn();
         } catch (e: unknown) {
             if (isNoPasskeysEnrolledError(e)) {
                 toast.error(

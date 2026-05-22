@@ -1,31 +1,11 @@
-'use client';
-
-import { useAuthUser } from '@/hooks/useAuthUser';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-import { syncSessionCookie } from '@/lib/clientSession';
 
 export default function AuthLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
-    const router = useRouter();
-    const { user, loading } = useAuthUser();
-
-    useEffect(() => {
-        if (!loading && user) {
-            syncSessionCookie()
-                .catch(error => {
-                    console.error('Failed to refresh auth session:', error);
-                })
-                .finally(() => {
-                    router.replace('/');
-                });
-        }
-    }, [loading, user, router]);
     return (
         <div className="relative flex min-h-svh flex-col items-center justify-center">
             <div className="flex w-full max-w-sm flex-col gap-6">

@@ -48,7 +48,12 @@ export default function LoginForm({
                 </CardDescription>
             </CardHeader>
 
-            <form onSubmit={handleEmailLogin}>
+            <form
+                onSubmit={(event) => {
+                    event.preventDefault();
+                    void handleEmailLogin();
+                }}
+            >
                 <CardContent className="flex flex-col gap-4">
                     <div className="flex flex-row justify-center gap-4">
                         <Button
@@ -123,7 +128,6 @@ export default function LoginForm({
                         </div>
                         <Button
                             disabled={!email || !password || anyPending}
-                            onClick={handleEmailLogin}
                             className="cursor-pointer"
                             type="submit"
                         >

@@ -94,7 +94,7 @@ export const saveUser = async (user: User, fullname: string, email: string) => {
     }
 };
 
-export const UseAuth = () => {
+export const UseAuth = (onSignedIn?: () => void) => {
     const { getEmailViaDialog, DialogPortal } = useEmailCapture();
     const [googlePending, setGooglePending] = useState(false);
     const [mfaSubmitting, setMfaSubmitting] = useState(false);
@@ -136,6 +136,7 @@ export const UseAuth = () => {
             const savedData = await saveUser(user, fullname, email);
             if (!savedData) throw new Error('Failed to save user data.');
             await syncSessionCookie();
+            onSignedIn?.();
         } catch (error: unknown) {
             if (error instanceof Error) {
                 console.error('Google login failed:', error);
@@ -170,6 +171,7 @@ export const UseAuth = () => {
                             throw new Error('Failed to save user data.');
                         await syncSessionCookie();
                         toast.success('Login successful with MFA!');
+                        onSignedIn?.();
                     } catch (mfaError) {
                         // Re-trigger the full MFA flow with a new promise
                         try {
@@ -190,6 +192,7 @@ export const UseAuth = () => {
                                 throw new Error('Failed to save user data.');
                             await syncSessionCookie();
                             toast.success('Login successful with MFA!');
+                            onSignedIn?.();
                         } catch (retryErr) {
                             console.error('MFA retry also failed:', retryErr);
                             toast.error(
@@ -219,6 +222,7 @@ export const UseAuth = () => {
                 await signInWithEmailAndPassword(auth, email, password);
                 await syncSessionCookie();
                 toast.success('Login successful!');
+                onSignedIn?.();
             } catch (error) {
                 const message = getFriendlyAuthMessage(error);
                 toast.error(message);
@@ -265,6 +269,7 @@ export const UseAuth = () => {
             const savedData = await saveUser(user, fullname, email);
             if (!savedData) throw new Error('Failed to save user data.');
             await syncSessionCookie();
+            onSignedIn?.();
 
             console.log('Facebook user:', user);
         } catch (error) {
