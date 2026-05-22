@@ -1,6 +1,7 @@
 "use client";
 
 import { AppSidebar } from "@/components/app-sidebar";
+import AppRuntimeProviders from "@/components/AppRuntimeProviders";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { useAuthUser } from "@/hooks/useAuthUser";
@@ -23,6 +24,7 @@ export default function Page({ children }: { children: React.ReactNode }) {
 
     return (
         <div className="[--header-height:calc(--spacing(14))]">
+            <AppRuntimeProviders />
             <SidebarProvider className="flex flex-col">
                 <SiteHeader />
                 <div className="flex flex-1">

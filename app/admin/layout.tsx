@@ -1,6 +1,7 @@
 "use client";
 
 import { AppSidebar } from "@/components/sidebar/app-sidebar";
+import AppRuntimeProviders from "@/components/AppRuntimeProviders";
 import { SiteHeader } from "@/components/sidebar/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { useAuthUser } from "@/hooks/useAuthUser";
@@ -37,6 +38,7 @@ export default function AdminLayout({
                 } as React.CSSProperties
             }
         >
+            <AppRuntimeProviders />
             <AppSidebar variant="inset" />
             <SidebarInset>
                 <SiteHeader />

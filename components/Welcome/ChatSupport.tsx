@@ -1,24 +1,8 @@
-'use client';
-
 import { Send, User } from 'lucide-react';
 import Image from 'next/image';
-import React, { useState } from 'react';
 import { Input } from '../ui/input';
-import { toast } from 'sonner';
-import { useRouter } from 'next/navigation';
 
 const ChatSupport = () => {
-    const router = useRouter();
-    const [input, setInput] = useState('');
-
-    const handleTestSend = () => {
-        if (!input.trim()) {
-            toast.warning("You can't send empty message");
-            return;
-        }
-        toast.success('Connecting you with support...');
-        router.push(`/support/chat?message=${input.trim()}`);
-    };
     return (
         <section className="py-24 border-t border-white/5 bg-background">
             <div className="max-w-6xl flex flex-col md:flex-row gap-16">
@@ -144,23 +128,23 @@ const ChatSupport = () => {
 
                         <div className="p-2 bg-[#0a0a0e] border-t border-white/5 shrink-0">
                             <div className="relative">
-                                <div className=" w-full flex items-center justify-between">
+                                <form
+                                    action="/support/chat"
+                                    method="get"
+                                    className=" w-full flex items-center justify-between"
+                                >
                                     <Input
+                                        name="message"
                                         style={{ color: 'white' }}
-                                        value={input}
-                                        onChange={(e) =>
-                                            setInput(e.target.value)
-                                        }
                                         placeholder="Type a message..."
+                                        required
                                     />
                                     <button
-                                        disabled={!input.trim()}
-                                        onClick={handleTestSend}
                                         className="h-8 w-8 ml-5 rounded-lg bg-zinc-800 flex items-center justify-center text-zinc-500 cursor-pointer"
                                     >
                                         <Send className="w-4 h-4" />
                                     </button>
-                                </div>
+                                </form>
                             </div>
                         </div>
                     </div>

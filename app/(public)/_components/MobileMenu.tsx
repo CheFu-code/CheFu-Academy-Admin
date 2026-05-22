@@ -1,3 +1,5 @@
+'use client';
+
 import {
     Sheet,
     SheetContent,
@@ -6,20 +8,13 @@ import {
 } from '@/components/ui/sheet';
 import { ThemeToggle } from '@/components/ui/themeToggle';
 import { navigationItems } from '@/constants/Data';
-import { Loader, Menu } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import Link from 'next/link';
 import React from 'react';
-import UserDropdown from './UserDropdown';
 import { buttonVariants } from '@/components/ui/button';
-import { User } from '@/types/user';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 
-interface MobileMenuProps {
-    user: User | null;
-    loading: boolean;
-}
-
-const MobileMenu = ({ user, loading }: MobileMenuProps) => {
+const MobileMenu = () => {
     return (
         <div className="ml-auto md:hidden">
             <Sheet>
@@ -45,32 +40,17 @@ const MobileMenu = ({ user, loading }: MobileMenuProps) => {
                             </Link>
                         ))}
 
-                        {user?.roles.includes('admin') && (
-                            <Link
-                                href={'/admin/dashboard'}
-                                className="text-sm font-semibold transition-colors hover:text-primary"
-                            >
-                               Admin Dashboard
-                            </Link>
-                        )}
-
                         <div className="pt-4 border-t flex items-center justify-between">
                             <ThemeToggle />
 
-                            {loading ? (
-                                <Loader className="size-4 animate-spin" />
-                            ) : user ? (
-                                <UserDropdown user={user} />
-                            ) : (
-                                <Link
-                                    href="/login"
-                                    className={buttonVariants({
-                                        size: 'sm',
-                                    })}
-                                >
-                                    Login
-                                </Link>
-                            )}
+                            <Link
+                                href="/login"
+                                className={buttonVariants({
+                                    size: 'sm',
+                                })}
+                            >
+                                Login
+                            </Link>
                         </div>
                     </div>
                 </SheetContent>

@@ -1,5 +1,3 @@
-import CodeHighlighter from '@/app/docs/_components/CodeHighlighter';
-
 const Integration = () => {
     return (
         <section
@@ -18,10 +16,9 @@ const Integration = () => {
                         prevention.
                     </p>
 
-                    <CodeHighlighter
-                        code={`npm install chefu-academy-sdk`}
-                        showLineNumbers={false}
-                    />
+                    <pre className="mt-4 overflow-x-auto rounded-lg bg-[#1e1e1e] p-4 text-sm text-zinc-100">
+                        <code>npm install chefu-academy-sdk</code>
+                    </pre>
                     <div className="flex flex-col gap-4">
                         <div className="flex items-center gap-4 text-sm  font-light">
                             <div className="w-6 h-6 rounded-full  border border-zinc-600 flex items-center justify-center text-[10px]">
@@ -64,16 +61,16 @@ const Integration = () => {
                             </span>
                         </div>
 
-                        <CodeHighlighter
-                            code={`import CheFuAcademy from 'chefu-academy-sdk';
+                        <pre className="overflow-x-auto rounded-lg bg-[#1e1e1e] p-4 text-sm text-zinc-100">
+                            <code>{`import CheFuAcademy from 'chefu-academy-sdk';
 
 const sdk = new CheFuAcademy({
     apiKey: process.env.CHEFU_ACADEMY_API_KEY,
 });
 
 const courses = await sdk.courses.getAll();
-console.log(courses);`}
-                        />
+console.log(courses);`}</code>
+                        </pre>
                     </div>
                 </div>
             </div>

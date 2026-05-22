@@ -6,7 +6,7 @@ import {
     CardHeader,
     CardTitle,
 } from '../ui/card';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 type CourseCardProps = {
     id: string;
@@ -23,14 +23,10 @@ const CourseCard = ({
     description,
     chaptersCount,
 }: CourseCardProps) => {
-    const router = useRouter();
-    const handleClick = () => {
-        router.replace(`/courses/course-view/${id}`);
-    };
     return (
-        <div
-            onClick={handleClick}
-            className="max-w-full hover:shadow-lg hover:bg-gray-100/10 transition-shadow duration-200 rounded-xl cursor-pointer border border-muted-foreground"
+        <Link
+            href={`/courses/course-view/${id}`}
+            className="block max-w-full hover:shadow-lg hover:bg-gray-100/10 transition-shadow duration-200 rounded-xl border border-muted-foreground"
         >
             {/* Banner */}
             <div className="relative w-full h-32 sm:h-40 overflow-hidden rounded-t-xl">
@@ -71,7 +67,7 @@ const CourseCard = ({
                         : `${chaptersCount} Chapters`}
                 </p>
             </CardContent>
-        </div>
+        </Link>
     );
 };
 

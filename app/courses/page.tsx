@@ -1,63 +1,46 @@
-'use client';
+import Header from '@/components/Shared/Header';
+import { buttonVariants } from '@/components/ui/button';
+import { fetchCoursesServer } from '@/services/serverCourseService';
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import CourseGrid from './_components/CourseGrid';
+import CourseSearchBox from './_components/CourseSearchBox';
+import { PlusSquare } from 'lucide-react';
 
-import AllCoursesUI from '@/components/Courses/UI/AllCoursesUI';
-import { useCourseNavigation } from '@/hooks/useCourseNavigation';
-import { useSafeNavigation } from '@/hooks/useSearchNavigation';
-import { CoursesQuery } from '@/lib/firestore/courseQueries';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+export const dynamic = 'force-dynamic';
 
-export default function CoursesPage() {
-    const router = useRouter();
-    const {
-        user,
-        fetchCourses,
-        fetchMoreCourses,
-        courses,
-        fetchingCourses,
-        hasMore,
-        loadingMore,
-    } = CoursesQuery();
-    const [search, setSearch] = useState('');
-    const { goToSearchRes } = useSafeNavigation(search);
-    const { goToCourseView } = useCourseNavigation();
+export function generateMetadata(): Metadata {
+    return {
+        title: 'Courses | CheFu Academy',
+        description:
+            'Explore CheFu Academy courses and start learning something new today.',
+    };
+}
 
-
-    // Initial fetch
-    useEffect(() => {
-        if (!user?.email || courses.length) return;
-        fetchCourses();
-    }, [user?.email, fetchCourses, courses]);
-
-    // Infinite scroll
-    useEffect(() => {
-        const handleScroll = () => {
-            console.log('scrolling, hasMore:', hasMore);
-            if (loadingMore || !hasMore) return;
-
-            const scrollTop = window.scrollY;
-            const windowHeight = window.innerHeight;
-            const fullHeight = document.body.scrollHeight;
-
-            if (scrollTop + windowHeight >= fullHeight - 100) {
-                fetchMoreCourses();
-            }
-        };
-
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, [fetchMoreCourses, hasMore, loadingMore]);
+export default async function CoursesPage() {
+    const courses = await fetchCoursesServer();
 
     return (
-        <AllCoursesUI
-            fetchingCourses={fetchingCourses}
-            courses={courses}
-            loadingMore={loadingMore}
-            search={search}
-            setSearch={setSearch}
-            goToSearchRes={goToSearchRes}
-            router={router}
-            goToCourseView={goToCourseView}
-        />
+        <div className="min-h-screen px-4">
+            <div className="flex justify-between items-center">
+                <Header
+                    header="Courses"
+                    description="Learn something new today."
+                />
+                <Link
+                    href="/courses/create-course"
+                    className={buttonVariants({
+                        variant: 'ghost',
+                        className: 'p-2',
+                    })}
+                    aria-label="Create course"
+                >
+                    <PlusSquare className="size-5" />
+                </Link>
+            </div>
+
+            <CourseSearchBox />
+            <CourseGrid courses={courses} />
+        </div>
     );
 }
