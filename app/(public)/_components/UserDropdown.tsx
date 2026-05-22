@@ -1,4 +1,4 @@
-'use client'
+'use client';
 import {
     BookOpen,
     ChevronDownIcon,
@@ -22,7 +22,7 @@ import { UserDropdownProps } from '@/types/user';
 import Link from 'next/link';
 
 export default function UserDropdown({ user }: UserDropdownProps) {
-    const { handleLogout } = useSignOut()
+    const { handleLogout } = useSignOut();
 
     return (
         <DropdownMenu>

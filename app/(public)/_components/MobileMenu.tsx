@@ -11,8 +11,8 @@ import { navigationItems } from '@/constants/Data';
 import { Menu } from 'lucide-react';
 import Link from 'next/link';
 import React from 'react';
-import { buttonVariants } from '@/components/ui/button';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
+import AuthNavAction from './AuthNavAction';
 
 const MobileMenu = () => {
     return (
@@ -42,15 +42,7 @@ const MobileMenu = () => {
 
                         <div className="pt-4 border-t flex items-center justify-between">
                             <ThemeToggle />
-
-                            <Link
-                                href="/login"
-                                className={buttonVariants({
-                                    size: 'sm',
-                                })}
-                            >
-                                Login
-                            </Link>
+                            <AuthNavAction />
                         </div>
                     </div>
                 </SheetContent>

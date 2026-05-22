@@ -2,7 +2,7 @@ import { ThemeToggle } from '@/components/ui/themeToggle';
 import { navigationItems } from '@/constants/Data';
 import Link from 'next/link';
 import React from 'react';
-import { buttonVariants } from '@/components/ui/button';
+import AuthNavAction from './AuthNavAction';
 
 const DesktopMenu = () => {
     return (
@@ -22,12 +22,7 @@ const DesktopMenu = () => {
 
             <div className="flex items-center space-x-4 justify-end">
                 <ThemeToggle />
-                <Link
-                    href="/login"
-                    className={buttonVariants({ size: 'sm' })}
-                >
-                    Login
-                </Link>
+                <AuthNavAction />
             </div>
         </nav>
     );
