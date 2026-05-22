@@ -1,10 +1,7 @@
 import { auth } from './firebase';
 import { getApiUrl } from './api-url';
 
-const API = getApiUrl(
-    '/email/password-changed',
-    '/api/send-password-changed-email',
-);
+const API = getApiUrl('/email/password-changed');
 
 export async function sendPasswordChangedAlert() {
     const currentUser = auth.currentUser;

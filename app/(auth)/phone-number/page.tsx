@@ -29,17 +29,14 @@ const PhoneLogin = () => {
 
         setLoading(true);
         try {
-            const res = await fetch(
-                getApiUrl('/auth/send-otp', '/api/admin/send-otp'),
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    credentials: 'include',
-                    body: JSON.stringify({ phone: phoneNumber }),
+            const res = await fetch(getApiUrl('/auth/send-otp'), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
                 },
-            );
+                credentials: 'include',
+                body: JSON.stringify({ phone: phoneNumber }),
+            });
 
             const data = await res.json();
 
