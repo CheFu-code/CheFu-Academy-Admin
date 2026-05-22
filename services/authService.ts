@@ -55,7 +55,6 @@ export const saveUser = async (user: User, fullname: string, email: string) => {
                 updatedAt: now,
             };
             await setDoc(userDocRef, updatedData, { merge: true });
-            toast.success('Welcome back!');
             return updatedData;
         } else {
             const data = {
@@ -84,7 +83,6 @@ export const saveUser = async (user: User, fullname: string, email: string) => {
             );
 
             await setDoc(userDocRef, cleanData);
-            toast.success('Welcome! Your account has been created.');
             return cleanData;
         }
     } catch (e) {
@@ -136,6 +134,7 @@ export const UseAuth = (onSignedIn?: () => void) => {
             const savedData = await saveUser(user, fullname, email);
             if (!savedData) throw new Error('Failed to save user data.');
             await syncSessionCookie();
+            toast.success('Login successful!');
             onSignedIn?.();
         } catch (error: unknown) {
             if (error instanceof Error) {
@@ -269,6 +268,7 @@ export const UseAuth = (onSignedIn?: () => void) => {
             const savedData = await saveUser(user, fullname, email);
             if (!savedData) throw new Error('Failed to save user data.');
             await syncSessionCookie();
+            toast.success('Login successful!');
             onSignedIn?.();
 
             console.log('Facebook user:', user);
