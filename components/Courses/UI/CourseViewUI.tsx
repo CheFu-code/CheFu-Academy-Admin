@@ -1,6 +1,7 @@
 import { downloadCoursePDF_Office } from '@/helpers/downloadCourse';
 import { Course } from '@/types/course';
 import { formatParagraph } from '@/utils/formatParagraph';
+import CourseReviewPanel from '../CourseReviewPanel';
 import {
     ArrowRight,
     BookOpen,
@@ -171,6 +172,8 @@ const CourseViewUI = ({
                     </div>
                 </section>
             )}
+
+            <CourseReviewPanel course={course} completed={completed} />
 
             <section className="grid gap-4 lg:grid-cols-[1fr_320px]">
                 <Card>

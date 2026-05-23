@@ -39,6 +39,9 @@ export const useGetMyCourse = () => {
                     lastStudiedContentIndex: data.lastStudiedContentIndex,
                     lastStudiedChapterName: data.lastStudiedChapterName || '',
                     lastStudiedTopic: data.lastStudiedTopic || '',
+                    averageRating: data.averageRating || 0,
+                    reviewCount: data.reviewCount || 0,
+                    completedChapterEvents: data.completedChapterEvents || [],
                 };
             });
 

@@ -53,6 +53,10 @@ export interface Course {
     lastStudiedTopic?: string;
     averageRating?: number;
     reviewCount?: number;
+    completedChapterEvents?: {
+        chapterIndex: number;
+        completedAt: string;
+    }[];
 }
 
 export interface CourseProgressProps {

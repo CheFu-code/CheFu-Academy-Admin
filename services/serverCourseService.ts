@@ -29,6 +29,11 @@ function toCourse(id: string, data: FirebaseFirestore.DocumentData): Course {
             : undefined,
         lastStudiedChapterName: data.lastStudiedChapterName,
         lastStudiedTopic: data.lastStudiedTopic,
+        averageRating: Number(data.averageRating) || 0,
+        reviewCount: Number(data.reviewCount) || 0,
+        completedChapterEvents: Array.isArray(data.completedChapterEvents)
+            ? data.completedChapterEvents
+            : [],
     };
 }
 
@@ -100,6 +105,8 @@ function courseQualityScore(course: Course) {
     if (course.flashcards.length) score += 2;
     if (course.qa.length) score += 2;
     if (course.description && course.description.length > 80) score += 1;
+    if (course.averageRating) score += course.averageRating * 1.5;
+    if (course.reviewCount) score += Math.min(course.reviewCount, 20) * 0.1;
     return score;
 }
 
@@ -192,4 +199,43 @@ export async function fetchMyCoursesServer(email?: string): Promise<Course[]> {
         .get();
 
     return snapshot.docs.map(doc => toCourse(doc.id, doc.data()));
+}
+
+export async function fetchRecommendedCoursesForUserServer(
+    email?: string,
+    limitCount = 6,
+): Promise<{ focusCategory: string; courses: Course[] }> {
+    const [myCourses, allCourses] = await Promise.all([
+        fetchMyCoursesServer(email),
+        fetchCoursesServer(120),
+    ]);
+    const focusCategory = getFocusCategory(myCourses);
+    const ownedIds = new Set(myCourses.map(course => course.originalCourseId || course.id));
+
+    const recommendations = allCourses
+        .filter(course => !ownedIds.has(course.id))
+        .map(course => ({
+            course,
+            score:
+                (course.category === focusCategory ? 12 : 0) +
+                courseQualityScore(course) +
+                (course.averageRating || 0) * 2 +
+                Math.min(course.reviewCount || 0, 25) * 0.2,
+        }))
+        .sort((a, b) => b.score - a.score)
+        .slice(0, limitCount)
+        .map(item => item.course);
+
+    return { focusCategory, courses: recommendations };
+}
+
+function getFocusCategory(courses: Course[]) {
+    const counts = new Map<string, number>();
+
+    courses.forEach(course => {
+        if (!course.category) return;
+        counts.set(course.category, (counts.get(course.category) || 0) + 1);
+    });
+
+    return [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || '';
 }

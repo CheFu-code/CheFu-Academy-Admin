@@ -1,6 +1,7 @@
 'use client';
 
 import Header from '@/components/Shared/Header';
+import CourseCard from '@/components/Shared/CourseCard';
 import { Button } from '@/components/ui/button';
 import {
     Select,
@@ -11,9 +12,18 @@ import {
 } from '@/components/ui/select';
 import { Course } from '@/types/course';
 import HomeCourseCard from '../HomeCourseCard';
-import { ArrowDownAZ, Clock3, PlusSquare, SlidersHorizontal } from 'lucide-react';
+import { db } from '@/lib/firebase';
+import {
+    ArrowDownAZ,
+    Clock3,
+    PlayCircle,
+    PlusSquare,
+    SlidersHorizontal,
+    Sparkles,
+} from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { collection, getDocs, limit, orderBy, query } from 'firebase/firestore';
+import { useEffect, useMemo, useState } from 'react';
 
 type SortOption =
     | 'last-opened'
@@ -68,6 +78,7 @@ const MyCourseUI = ({ courses }: { courses: Course[] }) => {
     const router = useRouter();
     const [sortBy, setSortBy] = useState<SortOption>('last-opened');
     const [categoryFilter, setCategoryFilter] = useState('all');
+    const [recommendedCourses, setRecommendedCourses] = useState<Course[]>([]);
 
     const categories = useMemo(
         () =>
@@ -111,6 +122,54 @@ const MyCourseUI = ({ courses }: { courses: Course[] }) => {
             return (a.courseTitle || '').localeCompare(b.courseTitle || '');
         });
     }, [categoryFilter, courses, sortBy]);
+
+    const continueCourse = useMemo(
+        () =>
+            [...courses]
+                .filter(course => course.lastStudiedAt)
+                .sort((a, b) => toMillis(b.lastStudiedAt) - toMillis(a.lastStudiedAt))[0],
+        [courses],
+    );
+
+    const focusCategory = categories[0] || '';
+
+    useEffect(() => {
+        let cancelled = false;
+
+        const fetchRecommendations = async () => {
+            if (!focusCategory) return;
+
+            const snapshot = await getDocs(
+                query(collection(db, 'course'), orderBy('createdOn', 'desc'), limit(80)),
+            );
+            const ownedIds = new Set(
+                courses.map(course => course.originalCourseId || course.id),
+            );
+            const nextCourses = snapshot.docs
+                .map(doc => ({ id: doc.id, ...(doc.data() as Omit<Course, 'id'>) }))
+                .filter(
+                    course =>
+                        !course.enrolled &&
+                        !course.originalCourseId &&
+                        !ownedIds.has(course.id) &&
+                        course.category === focusCategory,
+                )
+                .sort(
+                    (a, b) =>
+                        (b.averageRating || 0) - (a.averageRating || 0) ||
+                        (b.reviewCount || 0) - (a.reviewCount || 0),
+                )
+                .slice(0, 3);
+
+            if (!cancelled) setRecommendedCourses(nextCourses as Course[]);
+        };
+
+        void fetchRecommendations();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [courses, focusCategory]);
 
     return (
         <>
@@ -185,6 +244,65 @@ const MyCourseUI = ({ courses }: { courses: Course[] }) => {
                     {sortOptions.find((option) => option.value === sortBy)?.label}
                 </span>
             </div>
+
+            {continueCourse && (
+                <section className="mt-5 rounded-xl border bg-card p-5 shadow-sm">
+                    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                        <div>
+                            <p className="text-sm font-medium text-primary">
+                                Continue lesson
+                            </p>
+                            <h2 className="mt-1 text-2xl font-bold tracking-tight">
+                                {continueCourse.courseTitle}
+                            </h2>
+                            <p className="mt-2 text-sm text-muted-foreground">
+                                {continueCourse.lastStudiedChapterName || 'Resume your course'}
+                                {continueCourse.lastStudiedTopic
+                                    ? ` - ${continueCourse.lastStudiedTopic}`
+                                    : ''}
+                            </p>
+                        </div>
+                        <Button
+                            onClick={() =>
+                                router.push(
+                                    `/courses/my-courses/course-view/${continueCourse.id}/course-learning?chapter=${continueCourse.lastStudiedChapterIndex || 0}&lesson=${continueCourse.lastStudiedContentIndex || 0}`,
+                                )
+                            }
+                        >
+                            <PlayCircle className="size-4" />
+                            Continue
+                        </Button>
+                    </div>
+                </section>
+            )}
+
+            {recommendedCourses.length > 0 && (
+                <section className="mt-5 space-y-3">
+                    <div>
+                        <p className="flex items-center gap-2 text-sm font-medium text-primary">
+                            <Sparkles className="size-4" />
+                            Because you studied {focusCategory}
+                        </p>
+                        <h2 className="text-xl font-bold tracking-tight">
+                            Recommended next
+                        </h2>
+                    </div>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        {recommendedCourses.map(course => (
+                            <CourseCard
+                                key={course.id}
+                                id={course.id}
+                                bannerImage={course.banner_image}
+                                title={course.courseTitle}
+                                description={course.description}
+                                chaptersCount={course.chapters?.length || 0}
+                                category={course.category}
+                                qualityLabel={`${(course.averageRating || 0).toFixed(1)} stars`}
+                            />
+                        ))}
+                    </div>
+                </section>
+            )}
 
             <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {visibleCourses.map((course) => {

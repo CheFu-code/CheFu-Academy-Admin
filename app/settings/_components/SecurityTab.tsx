@@ -7,6 +7,7 @@ import {
 } from '@/helpers/mfaBackupCodes';
 import { auth, db } from '@/lib/firebase';
 import { sendPasswordChangedAlert } from '@/lib/passwordChangedEmail';
+import { logSecurityEvent } from '@/lib/securityEvents';
 import {
     isPasskeyReady,
     registerPasskey,
@@ -182,6 +183,7 @@ const SecurityTab = () => {
 
             try {
                 await sendPasswordChangedAlert();
+                await logSecurityEvent('password_changed').catch(() => undefined);
                 toast.success('Your password has been updated.');
                 setOpenChange(false);
                 setCurrentPassword('');
@@ -226,6 +228,7 @@ const SecurityTab = () => {
                 return false;
             }
 
+            await logSecurityEvent('passkey_enrolled').catch(() => undefined);
             toast.success('Passkey enrolled successfully.');
             return true;
         } catch (error: unknown) {
@@ -397,6 +400,7 @@ const SecurityTab = () => {
             setTotpSecret(null);
             setQrDataUrl(null);
             setSecretText(null);
+            await logSecurityEvent('mfa_enabled').catch(() => undefined);
             toast.success('2FA enabled. Save your backup codes now.');
         } catch (error) {
             console.error('Failed to enable 2FA:', error);
@@ -439,6 +443,7 @@ const SecurityTab = () => {
             await user.reload();
             setBackupCodes([]);
             setTotpEnabled(false);
+            await logSecurityEvent('mfa_disabled').catch(() => undefined);
             toast.success('2FA disabled.');
         } catch (error) {
             console.error('Failed to disable 2FA:', error);

@@ -27,6 +27,7 @@ import {
     LockKeyhole,
     ShieldCheck,
 } from 'lucide-react';
+import SecurityEventLog from '../SecurityEventLog';
 
 const SecurityTabUI = ({
     openDelete,
@@ -543,6 +544,8 @@ const SecurityTabUI = ({
                     </div>
                 </CardContent>
             </Card>
+
+            <SecurityEventLog />
         </TabsContent>
     );
 };

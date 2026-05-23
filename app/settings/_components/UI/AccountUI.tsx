@@ -1,4 +1,5 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import EmailVerificationBanner from '@/components/Auth/EmailVerificationBanner';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -32,6 +33,8 @@ const AccountUI = ({
 
     return (
         <div className="container mx-auto max-w-5xl space-y-5 p-4 sm:p-6">
+            <EmailVerificationBanner />
+
             <div className="rounded-2xl border border-border/60 bg-muted/20 p-4 shadow-sm sm:p-6">
                 <div className="flex items-start gap-3 sm:gap-4">
                     <div className="shrink-0">

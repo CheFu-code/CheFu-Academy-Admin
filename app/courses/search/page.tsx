@@ -55,6 +55,8 @@ function courseQualityScore(course: Course) {
     if (course.flashcards?.length) score += 2;
     if (course.qa?.length) score += 2;
     if (course.description && course.description.length > 80) score += 1;
+    if (course.averageRating) score += course.averageRating * 1.5;
+    if (course.reviewCount) score += Math.min(course.reviewCount, 20) * 0.1;
     return score;
 }
 

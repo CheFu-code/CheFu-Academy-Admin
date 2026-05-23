@@ -1,10 +1,11 @@
+import EmailVerificationBanner from '@/components/Auth/EmailVerificationBanner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getServerSessionMeta } from '@/lib/server-session';
 import {
-    countCoursesServer,
     fetchCoursesServer,
     fetchMyCoursesServer,
+    fetchRecommendedCoursesForUserServer,
     fetchSmartResumeCourseServer,
 } from '@/services/serverCourseService';
 import { fetchPublicVideosServer } from '@/services/serverVideoService';
@@ -12,12 +13,13 @@ import type { Course } from '@/types/course';
 import {
     BookOpen,
     Brain,
-    CirclePlay,
     Clock3,
     GraduationCap,
     Layers3,
     Plus,
     Sparkles,
+    Flame,
+    Star,
     Target,
 } from 'lucide-react';
 import type { Metadata } from 'next';
@@ -32,19 +34,22 @@ export const metadata: Metadata = {
 };
 
 export default async function DashboardPage() {
-    const [session, courses, totalCourses, videos] = await Promise.all([
+    const [session, courses, videos] = await Promise.all([
         getServerSessionMeta(),
         fetchCoursesServer(6),
-        countCoursesServer(),
         fetchPublicVideosServer(),
     ]);
-    const [smartResumeCourse, myCourses] = await Promise.all([
+    const [smartResumeCourse, myCourses, recommended] = await Promise.all([
         fetchSmartResumeCourseServer(session?.email),
         fetchMyCoursesServer(session?.email),
+        fetchRecommendedCoursesForUserServer(session?.email, 3),
     ]);
     const completedCourses = myCourses.filter(course => isCourseComplete(course));
     const activeCourses = myCourses.length - completedCourses.length;
     const focusCategory = getFocusCategory(myCourses);
+    const streak = getLearningStreak(myCourses);
+    const weeklyCompleted = getWeeklyCompletedChapters(myCourses);
+    const weeklyGoal = 5;
     const featuredCourses = getDashboardRecommendations(
         courses,
         focusCategory,
@@ -57,6 +62,8 @@ export default async function DashboardPage() {
 
     return (
         <main className="flex flex-col gap-6">
+            <EmailVerificationBanner />
+
             <section className="grid gap-4 lg:grid-cols-[1fr_320px]">
                 <div className="rounded-lg border bg-card p-6">
                     <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
@@ -151,14 +158,51 @@ export default async function DashboardPage() {
                 />
                 <StatCard
                     icon={Brain}
-                    label="Practice modes"
-                    value={3}
+                    label="Weekly chapters"
+                    value={weeklyCompleted}
                 />
                 <StatCard
-                    icon={CirclePlay}
-                    label="Available courses"
-                    value={totalCourses}
+                    icon={Flame}
+                    label="Learning streak"
+                    value={streak}
                 />
+            </section>
+
+            <section className="grid gap-4 md:grid-cols-[1fr_280px]">
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <Target className="size-5 text-primary" />
+                            Weekly Goal
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                            <div>
+                                <p className="text-3xl font-bold">
+                                    {weeklyCompleted}/{weeklyGoal}
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                    chapters completed this week
+                                </p>
+                            </div>
+                            <Button variant="secondary" asChild>
+                                <Link href="/courses/my-courses">Keep going</Link>
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <Star className="size-5 text-yellow-500" />
+                            Quality signal
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-sm text-muted-foreground">
+                        Course ratings now help CheFu rank better learning paths.
+                    </CardContent>
+                </Card>
             </section>
 
             <section className="grid gap-4 md:grid-cols-3">
@@ -256,6 +300,26 @@ export default async function DashboardPage() {
                 </Card>
             </section>
 
+            {recommended.courses.length > 0 && (
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between gap-4">
+                        <CardTitle>
+                            Because you studied {recommended.focusCategory || 'these topics'}
+                        </CardTitle>
+                        <Button variant="ghost" size="sm" asChild>
+                            <Link href="/courses/search">Explore more</Link>
+                        </Button>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="grid gap-3 md:grid-cols-3">
+                            {recommended.courses.map(course => (
+                                <CourseMiniLink key={course.id} course={course} />
+                            ))}
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
+
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between gap-4">
                     <CardTitle>Recommended Videos</CardTitle>
@@ -338,6 +402,63 @@ function getDashboardRecommendations(courses: Course[], focusCategory: string) {
     });
 }
 
+function toMillis(value: unknown) {
+    if (!value) return 0;
+    if (value instanceof Date) return value.getTime();
+    if (typeof value === 'string') {
+        const parsed = Date.parse(value);
+        return Number.isNaN(parsed) ? 0 : parsed;
+    }
+    if (
+        typeof value === 'object' &&
+        'toMillis' in value &&
+        typeof value.toMillis === 'function'
+    ) {
+        return value.toMillis();
+    }
+    if (
+        typeof value === 'object' &&
+        'seconds' in value &&
+        typeof value.seconds === 'number'
+    ) {
+        return value.seconds * 1000;
+    }
+    return 0;
+}
+
+function getLearningStreak(courses: Course[]) {
+    const dayKeys = new Set(
+        courses
+            .map(course => toMillis(course.lastStudiedAt))
+            .filter(Boolean)
+            .map(ms => new Date(ms).toISOString().slice(0, 10)),
+    );
+    let streak = 0;
+    const cursor = new Date();
+
+    while (dayKeys.has(cursor.toISOString().slice(0, 10))) {
+        streak += 1;
+        cursor.setDate(cursor.getDate() - 1);
+    }
+
+    return streak;
+}
+
+function getWeeklyCompletedChapters(courses: Course[]) {
+    const weekStart = new Date();
+    weekStart.setDate(weekStart.getDate() - 6);
+    weekStart.setHours(0, 0, 0, 0);
+
+    return courses.reduce((total, course) => {
+        const events = course.completedChapterEvents || [];
+        return (
+            total +
+            events.filter(event => Date.parse(event.completedAt) >= weekStart.getTime())
+                .length
+        );
+    }, 0);
+}
+
 function StatCard({
     icon: Icon,
     label,
@@ -384,6 +505,33 @@ function QuickLink({
             <div>
                 <p className="text-sm font-medium">{title}</p>
                 <p className="text-xs text-muted-foreground">{description}</p>
+            </div>
+        </Link>
+    );
+}
+
+function CourseMiniLink({ course }: { course: Course }) {
+    return (
+        <Link
+            href={`/courses/course-view/${course.id}`}
+            className="overflow-hidden rounded-lg border bg-background transition-colors hover:bg-muted/60"
+        >
+            <div className="relative aspect-video">
+                <Image
+                    src={course.banner_image}
+                    alt={course.courseTitle}
+                    fill
+                    className="object-cover"
+                />
+            </div>
+            <div className="p-3">
+                <h2 className="line-clamp-1 text-sm font-semibold">
+                    {course.courseTitle}
+                </h2>
+                <p className="mt-1 text-xs text-muted-foreground">
+                    {(course.averageRating || 0).toFixed(1)} stars
+                    {course.reviewCount ? ` from ${course.reviewCount}` : ''}
+                </p>
             </div>
         </Link>
     );
