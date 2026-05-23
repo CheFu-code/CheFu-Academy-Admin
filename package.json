@@ -122,7 +122,7 @@
     "build": {
         "appId": "com.chefu.academy",
         "productName": "CheFu Academy",
-        "copyright": "Copyright © 2026 CheFu Inc",
+        "copyright": "Copyright (c) 2026 CheFu Inc",
         "asar": true,
         "npmRebuild": false,
         "nodeGypRebuild": false,
@@ -137,6 +137,22 @@
         "extraMetadata": {
             "main": "electron/main.cjs"
         },
+        "protocols": [
+            {
+                "name": "CheFu Academy",
+                "schemes": [
+                    "chefu-academy"
+                ]
+            }
+        ],
+        "publish": [
+            {
+                "provider": "github",
+                "owner": "CheFu-code",
+                "repo": "CheFu-Academy-Admin",
+                "releaseType": "release"
+            }
+        ],
         "win": {
             "icon": "public/icon.png",
             "target": [

@@ -4,18 +4,20 @@ type DesktopNotificationPayload = {
     title?: string;
     body?: string;
     silent?: boolean;
+    route?: string;
 };
 
 export async function notifyDesktop({
     title = 'CheFu Academy',
     body = '',
     silent = false,
+    route,
 }: DesktopNotificationPayload) {
     if (typeof window === 'undefined') return false;
 
     if (window.chefuDesktop?.isElectron) {
         try {
-            return await window.chefuDesktop.notify({ title, body, silent });
+            return await window.chefuDesktop.notify({ title, body, silent, route });
         } catch (error) {
             console.error('Failed to show Electron notification:', error);
             return false;

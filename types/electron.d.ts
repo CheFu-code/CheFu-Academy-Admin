@@ -31,6 +31,7 @@ declare global {
                 title?: string;
                 body?: string;
                 silent?: boolean;
+                route?: string;
             }) => Promise<boolean>;
             saveFile: (
                 payload: NativeSaveFilePayload,
@@ -40,6 +41,29 @@ declare global {
             listCachedCourses: () => Promise<Record<string, unknown>>;
             setAutoLaunch: (enabled: boolean) => Promise<boolean>;
             getAutoLaunch: () => Promise<boolean>;
+            getAppInfo: () => Promise<{
+                isPackaged: boolean;
+                name: string;
+                platform: string;
+                userDataPath: string;
+                version: string;
+            }>;
+            checkForUpdates: () => Promise<{
+                currentVersion: string;
+                downloadUrl?: string;
+                error?: string;
+                hasUpdate: boolean;
+                latestVersion?: string;
+                releaseUrl?: string;
+            }>;
+            openExternal: (url: string) => Promise<boolean>;
+            copyText: (text: string) => Promise<boolean>;
+            onMenuAction: (
+                listener: (payload: {
+                    type: string;
+                    payload?: Record<string, unknown>;
+                }) => void,
+            ) => () => void;
             scheduleReminder: (minutes: number) => Promise<boolean>;
             setProgress: (payload: {
                 value?: number;

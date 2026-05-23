@@ -160,23 +160,6 @@ export default function DownloadsPage() {
                     ))}
                 </div>
             </section>
-
-            <section className="mx-auto max-w-6xl px-4 pb-16 sm:px-6">
-                <Card>
-                    <CardContent className="grid gap-4 p-5 md:grid-cols-[1fr_auto] md:items-center">
-                        <div>
-                            <h2 className="text-xl font-semibold">Developer preview</h2>
-                            <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                                Desktop packaging is configured. Use this command while developing
-                                native features before making another installer.
-                            </p>
-                        </div>
-                        <div className="rounded-lg border bg-muted px-4 py-3 font-mono text-sm">
-                            npm run desktop:dev
-                        </div>
-                    </CardContent>
-                </Card>
-            </section>
         </main>
     );
 }

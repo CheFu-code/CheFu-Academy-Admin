@@ -125,6 +125,14 @@ const ProfileTabUI = ({
     });
     const [desktopAvailable, setDesktopAvailable] = useState(false);
     const [autoLaunch, setAutoLaunch] = useState(false);
+    const [desktopInfo, setDesktopInfo] = useState<{
+        isPackaged: boolean;
+        name: string;
+        platform: string;
+        userDataPath: string;
+        version: string;
+    } | null>(null);
+    const [checkingUpdates, setCheckingUpdates] = useState(false);
     const [reminderMinutes, setReminderMinutes] = useState('1440');
 
     useEffect(() => {
@@ -135,6 +143,7 @@ const ProfileTabUI = ({
         if (!window.chefuDesktop?.isElectron) return;
         setDesktopAvailable(true);
         void window.chefuDesktop.getAutoLaunch().then(setAutoLaunch);
+        void window.chefuDesktop.getAppInfo().then(setDesktopInfo);
     }, []);
 
     useEffect(() => {
@@ -236,6 +245,34 @@ const ProfileTabUI = ({
         } else {
             toast.error('Enter a valid reminder interval.');
         }
+    };
+
+    const checkDesktopUpdates = async () => {
+        if (!window.chefuDesktop?.isElectron) return;
+        setCheckingUpdates(true);
+
+        try {
+            const result = await window.chefuDesktop.checkForUpdates();
+
+            if (result.error) {
+                toast.error(result.error);
+                return;
+            }
+
+            toast.success(
+                result.hasUpdate
+                    ? `CheFu Academy ${result.latestVersion} is available.`
+                    : 'CheFu Academy is up to date.',
+            );
+        } finally {
+            setCheckingUpdates(false);
+        }
+    };
+
+    const copyDesktopDataPath = async () => {
+        if (!window.chefuDesktop?.isElectron || !desktopInfo?.userDataPath) return;
+        await window.chefuDesktop.copyText(desktopInfo.userDataPath);
+        toast.success('Desktop data folder path copied.');
     };
 
     return (
@@ -627,6 +664,11 @@ const ProfileTabUI = ({
                                     <h3 className="text-sm font-semibold text-muted-foreground">
                                         Desktop App
                                     </h3>
+                                    {desktopInfo?.version && (
+                                        <Badge variant="secondary">
+                                            v{desktopInfo.version}
+                                        </Badge>
+                                    )}
                                 </div>
 
                                 <div className="flex items-center justify-between gap-4 rounded-lg border bg-background p-3">
@@ -666,6 +708,48 @@ const ProfileTabUI = ({
                                         Schedule Reminder
                                     </Button>
                                 </div>
+
+                                <div className="grid gap-3 rounded-lg border bg-background p-3 md:grid-cols-[1fr_auto]">
+                                    <div>
+                                        <p className="text-sm font-medium">
+                                            Native app updates
+                                        </p>
+                                        <p className="text-xs text-muted-foreground">
+                                            Checks GitHub Releases for the latest Windows desktop build.
+                                        </p>
+                                    </div>
+                                    <Button
+                                        className="self-center"
+                                        onClick={checkDesktopUpdates}
+                                        variant="outline"
+                                        disabled={checkingUpdates}
+                                    >
+                                        {checkingUpdates
+                                            ? 'Checking...'
+                                            : 'Check Updates'}
+                                    </Button>
+                                </div>
+
+                                {desktopInfo && (
+                                    <div className="grid gap-3 rounded-lg border bg-background p-3 md:grid-cols-[1fr_auto]">
+                                        <div>
+                                            <p className="text-sm font-medium">
+                                                Desktop data folder
+                                            </p>
+                                            <p className="break-all text-xs text-muted-foreground">
+                                                {desktopInfo.userDataPath}
+                                            </p>
+                                        </div>
+                                        <Button
+                                            className="self-center"
+                                            onClick={copyDesktopDataPath}
+                                            variant="outline"
+                                        >
+                                            <Copy className="mr-2 h-4 w-4" />
+                                            Copy Path
+                                        </Button>
+                                    </div>
+                                )}
                             </div>
 
                             <Separator />
