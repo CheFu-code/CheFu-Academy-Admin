@@ -16,6 +16,7 @@ import {
     SheetTrigger,
 } from '@/components/ui/sheet';
 import { Textarea } from '@/components/ui/textarea';
+import { formatParagraph } from '@/utils/formatParagraph';
 
 type TutorResponse = {
     answer?: string;
@@ -170,88 +171,94 @@ ${finalQuestion}`,
                         {content.topic || chapterTitle}
                     </CardDescription>
 
-                <div className="flex flex-wrap gap-2">
-                    {quickQuestions.map((item) => (
-                        <Button
-                            key={item}
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            disabled={loading}
-                            onClick={() => void askTutor(item)}
-                        >
-                            {item}
-                        </Button>
-                    ))}
-                </div>
-
-                <form onSubmit={handleSubmit} className="space-y-3">
-                    <Textarea
-                        value={question}
-                        onChange={(event) => setQuestion(event.target.value)}
-                        disabled={loading}
-                        placeholder="Ask what you did not understand..."
-                        className="min-h-24 resize-none bg-background"
-                    />
-                    <Button type="submit" disabled={loading} className="w-full">
-                        {loading ? (
-                            <>
-                                <Loader className="size-4 animate-spin" />
-                                Thinking...
-                            </>
-                        ) : (
-                            <>
-                                <Send className="size-4" />
-                                Ask AI Tutor
-                            </>
-                        )}
-                    </Button>
-                </form>
-
-                {answer?.answer && (
-                    <div className="space-y-4 rounded-lg border bg-background/85 p-4">
-                        <div className="flex items-center gap-2 font-medium">
-                            <BookOpenCheck className="size-4 text-cyan-500" />
-                            Tutor answer
-                        </div>
-                        <div className="space-y-3 text-sm leading-6 text-muted-foreground">
-                            {answer.answer.split(/\n{2,}/).map((paragraph) => (
-                                <p key={paragraph}>{paragraph}</p>
-                            ))}
-                        </div>
-
-                        {Boolean(answer.keyPoints?.length) && (
-                            <div>
-                                <p className="text-sm font-medium">Key points</p>
-                                <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-muted-foreground">
-                                    {answer.keyPoints?.map((point) => (
-                                        <li key={point}>{point}</li>
-                                    ))}
-                                </ul>
-                            </div>
-                        )}
-
-                        {Boolean(answer.followUps?.length) && (
-                            <div>
-                                <p className="text-sm font-medium">Try asking next</p>
-                                <div className="mt-2 flex flex-wrap gap-2">
-                                    {answer.followUps?.map((item) => (
-                                        <Button
-                                            key={item}
-                                            type="button"
-                                            variant="secondary"
-                                            size="sm"
-                                            disabled={loading}
-                                            onClick={() => void askTutor(item)}
-                                        >
-                                            {item}
-                                        </Button>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
+                    <div className="flex flex-wrap gap-2">
+                        {quickQuestions.map((item) => (
+                            <Button
+                                key={item}
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                disabled={loading}
+                                onClick={() => void askTutor(item)}
+                                className="h-auto max-w-full whitespace-normal text-left leading-5"
+                            >
+                                {item}
+                            </Button>
+                        ))}
                     </div>
-                )}
+
+                    <form onSubmit={handleSubmit} className="space-y-3">
+                        <Textarea
+                            value={question}
+                            onChange={(event) => setQuestion(event.target.value)}
+                            disabled={loading}
+                            placeholder="Ask what you did not understand..."
+                            className="min-h-24 resize-none bg-background"
+                        />
+                        <Button type="submit" disabled={loading} className="w-full">
+                            {loading ? (
+                                <>
+                                    <Loader className="size-4 animate-spin" />
+                                    Thinking...
+                                </>
+                            ) : (
+                                <>
+                                    <Send className="size-4" />
+                                    Ask AI Tutor
+                                </>
+                            )}
+                        </Button>
+                    </form>
+
+                    {answer?.answer && (
+                        <div className="space-y-4 overflow-hidden rounded-lg border bg-background/85 p-4">
+                            <div className="flex items-center gap-2 font-medium">
+                                <BookOpenCheck className="size-4 text-cyan-500" />
+                                Tutor answer
+                            </div>
+                            <div className="space-y-3 break-words text-sm leading-6 text-muted-foreground">
+                                {answer.answer.split(/\n{2,}/).map((paragraph) => (
+                                    <p key={paragraph}>{formatParagraph(paragraph)}</p>
+                                ))}
+                            </div>
+
+                            {Boolean(answer.keyPoints?.length) && (
+                                <div>
+                                    <p className="text-sm font-medium">Key points</p>
+                                    <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+                                        {answer.keyPoints?.map((point) => (
+                                            <li key={point} className="break-words">
+                                                {formatParagraph(point)}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+
+                            {Boolean(answer.followUps?.length) && (
+                                <div className="min-w-0">
+                                    <p className="text-sm font-medium">Try asking next</p>
+                                    <div className="mt-2 grid min-w-0 gap-2">
+                                        {answer.followUps?.map((item) => (
+                                            <Button
+                                                key={item}
+                                                type="button"
+                                                variant="secondary"
+                                                size="sm"
+                                                disabled={loading}
+                                                onClick={() => void askTutor(item)}
+                                                className="h-auto w-full min-w-0 justify-start whitespace-normal break-words text-left leading-5"
+                                            >
+                                                <span className="min-w-0 break-words">
+                                                    {formatParagraph(item)}
+                                                </span>
+                                            </Button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             </SheetContent>
         </Sheet>
