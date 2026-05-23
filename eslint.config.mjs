@@ -18,6 +18,7 @@ const eslintConfig = [
       "out/**",
       "build/**",
       "backend/**",
+      "electron/**",
       "next-env.d.ts",
     ],
   },
