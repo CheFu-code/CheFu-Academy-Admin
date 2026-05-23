@@ -20,7 +20,7 @@ import { Input } from '@/components/ui/input';
 
 export default function LoginPage() {
     const router = useRouter();
-    const redirectAfterSignIn = () => router.replace('/');
+    const redirectAfterSignIn = () => router.replace('/dashboard');
     const { loading } = useAuthUser();
     const {
         handleGoogle,

@@ -1,6 +1,6 @@
 'use client';
 
-import { BookOpen, LifeBuoy, Send, Settings2, Video } from 'lucide-react';
+import { BookOpen, LayoutDashboard, LifeBuoy, Send, Settings2, Video } from 'lucide-react';
 import * as React from 'react';
 
 import { NavMain } from '@/components/nav-main';
@@ -21,6 +21,11 @@ import Link from 'next/link';
 
 const data = {
     navMain: [
+        {
+            title: 'Dashboard',
+            url: '/dashboard',
+            icon: LayoutDashboard,
+        },
         {
             title: 'Courses',
             url: '#',
@@ -105,7 +110,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link href="/">
+                            <Link href="/dashboard">
                                 <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
                                     <Image
                                         alt="Logo"

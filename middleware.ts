@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const AUTH_ROUTES = ['/login', '/phone-number'];
 const PROTECTED_PREFIXES = [
+    '/dashboard',
     '/admin',
     '/courses',
     '/settings',
@@ -150,6 +151,7 @@ export const config = {
     matcher: [
         '/login',
         '/phone-number',
+        '/dashboard/:path*',
         '/admin/:path*',
         '/courses/:path*',
         '/settings/:path*',

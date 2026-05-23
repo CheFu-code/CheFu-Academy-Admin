@@ -8,7 +8,7 @@ export default async function AuthNavAction() {
     if (session) {
         return (
             <Link
-                href="/courses"
+                href="/dashboard"
                 className={buttonVariants({ size: 'sm', variant: 'outline' })}
             >
                 Dashboard
