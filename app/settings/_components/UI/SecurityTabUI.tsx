@@ -62,6 +62,10 @@ const SecurityTabUI = ({
     connectedProviders,
     createdAt,
     lastSignInAt,
+    totpEnabled,
+    mfaKnown,
+    loadingMfa,
+    handleToggleTotp,
 }: {
     openDelete: boolean;
     setOpenDelete: (value: boolean) => void;
@@ -96,6 +100,10 @@ const SecurityTabUI = ({
     connectedProviders: string[];
     createdAt: string;
     lastSignInAt: string;
+    totpEnabled: boolean;
+    mfaKnown: boolean;
+    loadingMfa: boolean;
+    handleToggleTotp: () => void;
 }) => {
     const passwordStrength = [
         newPassword.length >= 12,
@@ -404,6 +412,45 @@ const SecurityTabUI = ({
                             Log Out Other Devices via Password Change
                         </Button>
                     </div>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-base sm:text-lg">
+                        Two-Factor Authentication
+                    </CardTitle>
+                    <CardDescription className="text-xs sm:text-sm">
+                        Protect your account with an authenticator app and one-time recovery codes.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="space-y-2">
+                        <Badge variant={totpEnabled ? 'default' : 'secondary'}>
+                            {!mfaKnown
+                                ? 'Checking'
+                                : totpEnabled
+                                    ? 'Enabled'
+                                    : 'Not enabled'}
+                        </Badge>
+                        <p className="text-sm text-muted-foreground">
+                            {totpEnabled
+                                ? 'You will need your authenticator app or a saved backup code when signing in.'
+                                : 'Enable 2FA to receive recovery backup codes for this account.'}
+                        </p>
+                    </div>
+                    <Button
+                        type="button"
+                        variant={totpEnabled ? 'destructive' : 'default'}
+                        onClick={handleToggleTotp}
+                        disabled={loadingMfa || !mfaKnown}
+                    >
+                        {loadingMfa
+                            ? 'Working...'
+                            : totpEnabled
+                                ? 'Disable 2FA'
+                                : 'Enable 2FA'}
+                    </Button>
                 </CardContent>
             </Card>
 

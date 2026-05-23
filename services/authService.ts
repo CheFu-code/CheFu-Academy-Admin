@@ -1,6 +1,9 @@
 import { DEFAULT_PREFERENCES } from '@/constants/Data';
 import { getFriendlyAuthMessage } from '@/helpers/authErrors';
-import { completeMfaWithTotp } from '@/helpers/authMfaTotp';
+import {
+    completeMfaWithTotp,
+    MfaChallengeResponse,
+} from '@/helpers/authMfaTotp';
 import { fetchEmailFromFacebookGraph } from '@/helpers/getUserEmail';
 import { useEmailCapture } from '@/hooks/useEmailCapture';
 import { syncSessionCookie } from '@/lib/clientSession';
@@ -103,11 +106,11 @@ export const UseAuth = (onSignedIn?: () => void) => {
     const [emailPending, startEmailTransition] = useTransition();
     const [facebookPending, setFacebookPending] = useState(false);
 
-    const mfaResolveRef = useRef<((code: string) => void) | null>(null);
+    const mfaResolveRef = useRef<((challenge: MfaChallengeResponse) => void) | null>(null);
     const mfaRejectRef = useRef<((err?: unknown) => void) | null>(null);
 
     const getTotpCodeViaModal = () =>
-        new Promise<string>((resolve, reject) => {
+        new Promise<MfaChallengeResponse>((resolve, reject) => {
             setTwoFACode('');
             setShow2FAModal(true);
             mfaResolveRef.current = resolve;
@@ -160,6 +163,7 @@ export const UseAuth = (onSignedIn?: () => void) => {
                         const userCred = await completeMfaWithTotp(
                             mfaError,
                             getTotpCodeViaModal,
+                            email,
                         );
                         const user = userCred.user;
                         const fullname =
@@ -177,6 +181,7 @@ export const UseAuth = (onSignedIn?: () => void) => {
                             const retryCred = await completeMfaWithTotp(
                                 mfaError as MultiFactorError,
                                 getTotpCodeViaModal,
+                                email,
                             );
                             const retryUser = retryCred.user;
                             const fullname =
@@ -223,6 +228,33 @@ export const UseAuth = (onSignedIn?: () => void) => {
                 toast.success('Login successful!');
                 onSignedIn?.();
             } catch (error) {
+                if ((error as FirebaseError)?.code === 'auth/multi-factor-auth-required') {
+                    try {
+                        setMfaSubmitting(true);
+                        const userCred = await completeMfaWithTotp(
+                            error as MultiFactorError,
+                            getTotpCodeViaModal,
+                            email,
+                        );
+                        const user = userCred.user;
+                        const fullname = user.displayName?.trim() || '';
+                        const savedData = await saveUser(user, fullname, user.email || email);
+                        if (!savedData) throw new Error('Failed to save user data.');
+                        await syncSessionCookie();
+                        toast.success('Login successful with MFA!');
+                        onSignedIn?.();
+                    } catch (mfaError) {
+                        console.error('Email MFA failed:', mfaError);
+                        toast.error(
+                            mfaError instanceof Error
+                                ? mfaError.message
+                                : 'MFA verification failed.',
+                        );
+                    } finally {
+                        setMfaSubmitting(false);
+                    }
+                    return;
+                }
                 const message = getFriendlyAuthMessage(error);
                 toast.error(message);
             }

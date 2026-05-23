@@ -1,6 +1,11 @@
 'use client';
 
-import { auth } from '@/lib/firebase';
+import SetupModal from '@/app/admin/_components/UI/Settings/SetupModal';
+import {
+    generateMfaBackupCodes,
+    hashMfaBackupCodes,
+} from '@/helpers/mfaBackupCodes';
+import { auth, db } from '@/lib/firebase';
 import { sendPasswordChangedAlert } from '@/lib/passwordChangedEmail';
 import {
     isPasskeyReady,
@@ -13,8 +18,13 @@ import {
     GoogleAuthProvider,
     reauthenticateWithCredential,
     reauthenticateWithPopup,
+    multiFactor,
+    TotpMultiFactorGenerator,
+    TotpSecret,
     updatePassword,
 } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
+import QRCode from 'qrcode';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import SecurityTabUI from './UI/SecurityTabUI';
@@ -30,8 +40,17 @@ const SecurityTab = () => {
     const [loadingDelete, setLoadingDelete] = useState(false);
     const [loadingChange, setLoadingChange] = useState(false);
     const [loadingPasskey, setLoadingPasskey] = useState(false);
+    const [loadingMfa, setLoadingMfa] = useState(false);
     const [generatedPassword, setGeneratedPassword] = useState('');
     const [securityInfoVersion, setSecurityInfoVersion] = useState(0);
+    const [totpEnabled, setTotpEnabled] = useState(false);
+    const [mfaKnown, setMfaKnown] = useState(false);
+    const [show2FAModal, setShow2FAModal] = useState(false);
+    const [twoFACode, setTwoFACode] = useState('');
+    const [totpSecret, setTotpSecret] = useState<TotpSecret | null>(null);
+    const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
+    const [secretText, setSecretText] = useState<string | null>(null);
+    const [backupCodes, setBackupCodes] = useState<string[]>([]);
     const [passkeySupport, setPasskeySupport] = useState<
         'checking' | 'supported' | 'unsupported'
     >('checking');
@@ -53,6 +72,21 @@ const SecurityTab = () => {
             mounted = false;
         };
     }, []);
+
+    useEffect(() => {
+        const user = auth.currentUser;
+        if (!user) {
+            setMfaKnown(true);
+            setTotpEnabled(false);
+            return;
+        }
+
+        const enrolled = multiFactor(user).enrolledFactors.some(
+            factor => factor.factorId === TotpMultiFactorGenerator.FACTOR_ID,
+        );
+        setTotpEnabled(enrolled);
+        setMfaKnown(true);
+    }, [securityInfoVersion]);
 
     // Utility: check if user has password provider linked
     const userHasPasswordProvider = () => {
@@ -298,10 +332,136 @@ const SecurityTab = () => {
         }
     };
 
+    const startTotpSetup = async () => {
+        const user = auth.currentUser;
+        if (!user?.email) {
+            toast.error('No user is logged in.');
+            return;
+        }
+
+        setLoadingMfa(true);
+        try {
+            const session = await multiFactor(user).getSession();
+            const secret = await TotpMultiFactorGenerator.generateSecret(session);
+            const uri = secret.generateQrCodeUrl(user.email, 'CheFu Academy');
+            const qr = await QRCode.toDataURL(uri);
+
+            setTotpSecret(secret);
+            setQrDataUrl(qr);
+            setSecretText(secret.secretKey);
+            setTwoFACode('');
+            setBackupCodes([]);
+            setShow2FAModal(true);
+        } catch (error) {
+            console.error('Failed to start 2FA setup:', error);
+            toast.error('Could not start 2FA setup. Please sign in again.');
+        } finally {
+            setLoadingMfa(false);
+        }
+    };
+
+    const handleVerify2FA = async () => {
+        const user = auth.currentUser;
+        if (!user?.email || !totpSecret) {
+            toast.error('2FA setup is not ready.');
+            return;
+        }
+
+        setLoadingMfa(true);
+        try {
+            const assertion = TotpMultiFactorGenerator.assertionForEnrollment(
+                totpSecret,
+                twoFACode,
+            );
+            await multiFactor(user).enroll(assertion, 'CheFu TOTP');
+
+            const codes = generateMfaBackupCodes();
+            const hashedCodes = await hashMfaBackupCodes(codes, user.uid);
+
+            await setDoc(
+                doc(db, 'users', user.email),
+                {
+                    mfaBackupCodes: {
+                        generatedAt: new Date(),
+                        remaining: codes.length,
+                        codes: hashedCodes,
+                    },
+                },
+                { merge: true },
+            );
+
+            await user.reload();
+            setTotpEnabled(true);
+            setBackupCodes(codes);
+            setTwoFACode('');
+            setTotpSecret(null);
+            setQrDataUrl(null);
+            setSecretText(null);
+            toast.success('2FA enabled. Save your backup codes now.');
+        } catch (error) {
+            console.error('Failed to enable 2FA:', error);
+            toast.error('Could not enable 2FA. Check the code and try again.');
+        } finally {
+            setLoadingMfa(false);
+        }
+    };
+
+    const disableTotp = async () => {
+        const user = auth.currentUser;
+        if (!user?.email) {
+            toast.error('No user is logged in.');
+            return;
+        }
+
+        setLoadingMfa(true);
+        try {
+            const mfaUser = multiFactor(user);
+            const factor = mfaUser.enrolledFactors.find(
+                item => item.factorId === TotpMultiFactorGenerator.FACTOR_ID,
+            );
+
+            if (factor) {
+                await mfaUser.unenroll(factor.uid);
+            }
+
+            await setDoc(
+                doc(db, 'users', user.email),
+                {
+                    mfaBackupCodes: {
+                        disabledAt: new Date(),
+                        remaining: 0,
+                        codes: [],
+                    },
+                },
+                { merge: true },
+            );
+
+            await user.reload();
+            setBackupCodes([]);
+            setTotpEnabled(false);
+            toast.success('2FA disabled.');
+        } catch (error) {
+            console.error('Failed to disable 2FA:', error);
+            toast.error('Could not disable 2FA. Please sign in again.');
+        } finally {
+            setLoadingMfa(false);
+        }
+    };
+
+    const handleToggleTotp = async () => {
+        if (totpEnabled) {
+            await disableTotp();
+            return;
+        }
+
+        await startTotpSetup();
+    };
+
     const currentUser = auth.currentUser;
 
     return (
-        <SecurityTabUI
+        <>
+            <SecurityTabUI
             openDelete={openDelete}
             setOpenDelete={setOpenDelete}
             openChange={openChange}
@@ -337,7 +497,29 @@ const SecurityTab = () => {
             }
             createdAt={currentUser?.metadata.creationTime || 'N/A'}
             lastSignInAt={currentUser?.metadata.lastSignInTime || 'N/A'}
-        />
+            totpEnabled={totpEnabled}
+            mfaKnown={mfaKnown}
+            loadingMfa={loadingMfa}
+            handleToggleTotp={() => void handleToggleTotp()}
+            />
+            <SetupModal
+                show2FAModal={show2FAModal}
+                setShow2FAModal={setShow2FAModal}
+                twoFACode={twoFACode}
+                setTwoFACode={setTwoFACode}
+                handleVerify2FA={handleVerify2FA}
+                qrDataUrl={qrDataUrl}
+                secretText={secretText}
+                loading={loadingMfa}
+                backupCodes={backupCodes}
+                onBackupCodesSaved={() => {
+                    setBackupCodes([]);
+                    setShow2FAModal(false);
+                }}
+                title="Enable Two-Factor Authentication"
+                description="Scan this QR in Google Authenticator, 1Password, or Authy, then enter the current 6-digit code."
+            />
+        </>
     );
 };
 

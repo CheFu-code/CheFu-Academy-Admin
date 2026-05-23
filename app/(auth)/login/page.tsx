@@ -25,6 +25,13 @@ export default function LoginPage() {
     const {
         handleGoogle,
         googlePending,
+        mfaSubmitting,
+        show2FAModal,
+        setShow2FAModal,
+        mfaResolveRef,
+        mfaRejectRef,
+        twoFACode,
+        setTwoFACode,
         handleEmailLogin,
         email,
         setEmail,
@@ -35,6 +42,7 @@ export default function LoginPage() {
     const [passkeyPending, setPasskeyPending] = useState(false);
     const [openPasskeyDialog, setOpenPasskeyDialog] = useState(false);
     const [passkeyIdentifier, setPasskeyIdentifier] = useState('');
+    const [mfaMethod, setMfaMethod] = useState<'totp' | 'backup'>('totp');
 
     const isNoPasskeysEnrolledError = (error: unknown) => {
         const message = (error as Error)?.message || '';
@@ -132,6 +140,98 @@ export default function LoginPage() {
                             disabled={!passkeyIdentifier.trim() || passkeyPending}
                         >
                             Continue
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog
+                open={show2FAModal}
+                onOpenChange={(open) => {
+                    setShow2FAModal(open);
+                    if (!open) {
+                        mfaRejectRef.current?.(new Error('MFA verification cancelled.'));
+                    }
+                }}
+            >
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Two-factor verification</DialogTitle>
+                        <DialogDescription>
+                            Enter your authenticator code, or use one saved backup code.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="flex rounded-md border p-1">
+                        <Button
+                            type="button"
+                            variant={mfaMethod === 'totp' ? 'default' : 'ghost'}
+                            className="flex-1"
+                            onClick={() => {
+                                setMfaMethod('totp');
+                                setTwoFACode('');
+                            }}
+                        >
+                            Authenticator
+                        </Button>
+                        <Button
+                            type="button"
+                            variant={mfaMethod === 'backup' ? 'default' : 'ghost'}
+                            className="flex-1"
+                            onClick={() => {
+                                setMfaMethod('backup');
+                                setTwoFACode('');
+                            }}
+                        >
+                            Backup Code
+                        </Button>
+                    </div>
+                    <Input
+                        placeholder={mfaMethod === 'totp' ? '123456' : 'ABCD-EFGH'}
+                        value={twoFACode}
+                        maxLength={mfaMethod === 'totp' ? 6 : 12}
+                        onChange={(event) => {
+                            const value =
+                                mfaMethod === 'totp'
+                                    ? event.target.value.replace(/\D/g, '')
+                                    : event.target.value.toUpperCase();
+                            setTwoFACode(value);
+                        }}
+                        onKeyDown={(event) => {
+                            if (event.key === 'Enter' && twoFACode.trim()) {
+                                event.preventDefault();
+                                mfaResolveRef.current?.({
+                                    code: twoFACode,
+                                    method: mfaMethod,
+                                });
+                                setShow2FAModal(false);
+                            }
+                        }}
+                    />
+                    <DialogFooter>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => {
+                                mfaRejectRef.current?.(
+                                    new Error('MFA verification cancelled.'),
+                                );
+                                setShow2FAModal(false);
+                            }}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            type="button"
+                            disabled={!twoFACode.trim() || mfaSubmitting}
+                            onClick={() => {
+                                mfaResolveRef.current?.({
+                                    code: twoFACode,
+                                    method: mfaMethod,
+                                });
+                                setShow2FAModal(false);
+                            }}
+                        >
+                            {mfaSubmitting ? 'Verifying...' : 'Verify'}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
