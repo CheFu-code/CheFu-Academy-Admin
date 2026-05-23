@@ -267,6 +267,7 @@ const CourseLearning = () => {
 
     return (
         <CourseLearningUI
+            courseTitle={course.courseTitle}
             loading={loading}
             scrollRef={scrollRef}
             progressPercent={progressPercent}

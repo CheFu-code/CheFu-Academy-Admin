@@ -52,6 +52,10 @@ export async function generateCourse(contents: Content[]): Promise<string> {
     return generateAIContent(contents);
 }
 
+export async function generateChapterHelp(contents: Content[]): Promise<string> {
+    return generateAIContent(contents);
+}
+
 async function generateAIContent(contents: Content[]): Promise<string> {
     const response = await fetch(getApiUrl('/ai/generate'), {
         method: 'POST',

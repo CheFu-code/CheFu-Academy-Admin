@@ -12,8 +12,10 @@ import { Chapter, ChapterContentItem } from '@/types/course';
 import { formatParagraph } from '@/utils/formatParagraph';
 import { ArrowRight, Download } from 'lucide-react';
 import { RefObject } from 'react';
+import ChapterAiTutor from './ChapterAiTutor';
 
 const CourseLearningUI = ({
+    courseTitle,
     loading,
     scrollRef,
     progressPercent,
@@ -26,6 +28,7 @@ const CourseLearningUI = ({
     handleNext,
     handleDownloadChapter,
 }: {
+    courseTitle: string;
     loading: boolean;
     scrollRef: RefObject<HTMLDivElement | null>;
     progressPercent: number;
@@ -79,6 +82,14 @@ const CourseLearningUI = ({
                 {cleanCode && <CodeHighlighter code={cleanCode} />}
                 {content.example && <ExampleBlock text={content.example} />}
             </div>
+
+            <ChapterAiTutor
+                courseTitle={courseTitle}
+                chapterTitle={chapter.chapterName}
+                lessonIndex={contentIndex}
+                totalLessons={totalContents}
+                content={content}
+            />
 
             {/* Next / Finish button */}
             <div className="mt-auto">

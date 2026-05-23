@@ -87,7 +87,9 @@ const CreateCourseUI = ({
                                 onClick={generateTopic}
                                 className={cn(
                                     'w-full mt-8 cursor-pointer',
-                                    generatingTopic || generatingCourse ? 'cursor-not-allowed' : '',
+                                    generatingTopic || generatingCourse
+                                        ? 'cursor-not-allowed'
+                                        : '',
                                 )}
                             >
                                 {generatingTopic
@@ -169,61 +171,6 @@ const CreateCourseUI = ({
                         </div>
                     </>
                 )}
-
-                {generatingCourse && (
-                    <Card
-                        className="mt-8 overflow-hidden border-cyan-500/30 bg-cyan-500/5"
-                        role="status"
-                        aria-live="polite"
-                    >
-                        <div className="h-1 w-full overflow-hidden bg-cyan-500/15">
-                            <div className="h-full w-1/2 animate-[pulse_1.4s_ease-in-out_infinite] rounded-full bg-cyan-400" />
-                        </div>
-                        <CardHeader>
-                            <div className="flex items-start gap-3">
-                                <div className="mt-1 flex size-10 shrink-0 items-center justify-center rounded-full bg-cyan-500/15 text-cyan-500">
-                                    <Loader className="size-5 animate-spin" />
-                                </div>
-                                <div>
-                                    <CardTitle>Your course is being generated</CardTitle>
-                                    <CardDescription>
-                                        We are creating a full course from {selectedTopics.length}{' '}
-                                        selected {selectedTopics.length === 1 ? 'topic' : 'topics'}.
-                                        Keep this tab open and we will take you straight to the course.
-                                    </CardDescription>
-                                </div>
-                            </div>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="grid gap-3 sm:grid-cols-2">
-                                {generationSteps.map(({ title, description, Icon }, index) => (
-                                    <div
-                                        key={title}
-                                        className="flex min-h-24 gap-3 rounded-lg border bg-background/80 p-3"
-                                    >
-                                        <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-cyan-500">
-                                            {index === 0 ? (
-                                                <Loader className="size-4 animate-spin" />
-                                            ) : (
-                                                <Icon className="size-4" />
-                                            )}
-                                        </div>
-                                        <div>
-                                            <p className="font-medium leading-none">{title}</p>
-                                            <p className="mt-2 text-sm text-muted-foreground">
-                                                {description}
-                                            </p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                            <div className="flex items-center gap-2 rounded-lg border bg-background/80 px-3 py-2 text-sm text-muted-foreground">
-                                <CheckCircle2 className="size-4 shrink-0 text-cyan-500" />
-                                You can review your selected topics here while the AI works.
-                            </div>
-                        </CardContent>
-                    </Card>
-                )}
             </div>
 
             {/* Sticky Generate Course button at the bottom */}
@@ -246,6 +193,77 @@ const CreateCourseUI = ({
                     )}
                 </Button>
             </div>
+
+            {generatingCourse && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/70 p-4 backdrop-blur-md">
+                    <Card
+                        className="max-h-[calc(100vh-2rem)] w-full max-w-2xl overflow-y-auto border-cyan-500/30 bg-background shadow-2xl"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-live="polite"
+                        aria-labelledby="course-generation-title"
+                        aria-describedby="course-generation-description"
+                    >
+                        <div className="h-1 w-full overflow-hidden bg-cyan-500/15">
+                            <div className="h-full w-1/2 animate-[pulse_1.4s_ease-in-out_infinite] rounded-full bg-cyan-400" />
+                        </div>
+                        <CardHeader>
+                            <div className="flex items-start gap-3">
+                                <div className="mt-1 flex size-10 shrink-0 items-center justify-center rounded-full bg-cyan-500/15 text-cyan-500">
+                                    <Loader className="size-5 animate-spin" />
+                                </div>
+                                <div>
+                                    <CardTitle id="course-generation-title">
+                                        Your course is being generated
+                                    </CardTitle>
+                                    <CardDescription id="course-generation-description">
+                                        We are creating a full course from{' '}
+                                        {selectedTopics.length} selected{' '}
+                                        {selectedTopics.length === 1
+                                            ? 'topic'
+                                            : 'topics'}
+                                        . Keep this tab open and we will take you
+                                        straight to the course.
+                                    </CardDescription>
+                                </div>
+                            </div>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="grid gap-3 sm:grid-cols-2">
+                                {generationSteps.map(
+                                    ({ title, description, Icon }, index) => (
+                                        <div
+                                            key={title}
+                                            className="flex min-h-24 gap-3 rounded-lg border bg-muted/30 p-3"
+                                        >
+                                            <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-background text-cyan-500">
+                                                {index === 0 ? (
+                                                    <Loader className="size-4 animate-spin" />
+                                                ) : (
+                                                    <Icon className="size-4" />
+                                                )}
+                                            </div>
+                                            <div>
+                                                <p className="font-medium leading-none">
+                                                    {title}
+                                                </p>
+                                                <p className="mt-2 text-sm text-muted-foreground">
+                                                    {description}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    ),
+                                )}
+                            </div>
+                            <div className="flex items-center gap-2 rounded-lg border bg-muted/30 px-3 py-2 text-sm text-muted-foreground">
+                                <CheckCircle2 className="size-4 shrink-0 text-cyan-500" />
+                                We are saving everything automatically. This
+                                window will close when your course is ready.
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            )}
         </main>
     );
 };
