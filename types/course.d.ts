@@ -51,6 +51,8 @@ export interface Course {
     lastStudiedContentIndex?: number;
     lastStudiedChapterName?: string;
     lastStudiedTopic?: string;
+    averageRating?: number;
+    reviewCount?: number;
 }
 
 export interface CourseProgressProps {

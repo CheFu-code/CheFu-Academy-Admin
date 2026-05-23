@@ -8,6 +8,7 @@ import { fetchEmailFromFacebookGraph } from '@/helpers/getUserEmail';
 import { useEmailCapture } from '@/hooks/useEmailCapture';
 import { syncSessionCookie } from '@/lib/clientSession';
 import { auth, db } from '@/lib/firebase';
+import { logSecurityEvent } from '@/lib/securityEvents';
 import { FirebaseError } from 'firebase/app';
 import {
     FacebookAuthProvider,
@@ -153,6 +154,9 @@ export const UseAuth = (onSignedIn?: () => void) => {
             const savedData = await saveUser(user, fullname, email);
             if (!savedData) throw new Error('Failed to save user data.');
             await syncSessionCookie();
+            await logSecurityEvent('sign_in', { provider: 'google.com' }).catch(
+                () => undefined,
+            );
             toast.success('Login successful!');
             onSignedIn?.();
         } catch (error: unknown) {
@@ -193,6 +197,10 @@ export const UseAuth = (onSignedIn?: () => void) => {
                         if (!savedData)
                             throw new Error('Failed to save user data.');
                         await syncSessionCookie();
+                        await logSecurityEvent('sign_in', {
+                            provider: 'google.com',
+                            mfa: true,
+                        }).catch(() => undefined);
                         toast.success('Login successful with MFA!');
                         onSignedIn?.();
                     } catch (mfaError) {
@@ -215,6 +223,10 @@ export const UseAuth = (onSignedIn?: () => void) => {
                             if (!savedData)
                                 throw new Error('Failed to save user data.');
                             await syncSessionCookie();
+                            await logSecurityEvent('sign_in', {
+                                provider: 'google.com',
+                                mfa: true,
+                            }).catch(() => undefined);
                             toast.success('Login successful with MFA!');
                             onSignedIn?.();
                         } catch (retryErr) {
@@ -245,6 +257,9 @@ export const UseAuth = (onSignedIn?: () => void) => {
             try {
                 await signInWithEmailAndPassword(auth, email, password);
                 await syncSessionCookie();
+                await logSecurityEvent('sign_in', { provider: 'password' }).catch(
+                    () => undefined,
+                );
                 toast.success('Login successful!');
                 onSignedIn?.();
             } catch (error) {
@@ -261,6 +276,10 @@ export const UseAuth = (onSignedIn?: () => void) => {
                         const savedData = await saveUser(user, fullname, user.email || email);
                         if (!savedData) throw new Error('Failed to save user data.');
                         await syncSessionCookie();
+                        await logSecurityEvent('sign_in', {
+                            provider: 'password',
+                            mfa: true,
+                        }).catch(() => undefined);
                         toast.success('Login successful with MFA!');
                         onSignedIn?.();
                     } catch (mfaError) {
@@ -300,6 +319,11 @@ export const UseAuth = (onSignedIn?: () => void) => {
                     description:
                         'If this email is registered, you will receive reset instructions shortly.',
                 });
+                if (typeof window !== 'undefined') {
+                    window.location.assign(
+                        `/auth/reset-sent?email=${encodeURIComponent(resetEmail)}`,
+                    );
+                }
             } catch (error) {
                 const code = (error as FirebaseError)?.code;
 
@@ -331,6 +355,11 @@ export const UseAuth = (onSignedIn?: () => void) => {
                         description:
                             'If this email is registered, you will receive reset instructions shortly.',
                     });
+                    if (typeof window !== 'undefined') {
+                        window.location.assign(
+                            `/auth/reset-sent?email=${encodeURIComponent(resetEmail)}`,
+                        );
+                    }
                     return;
                 }
 
@@ -379,6 +408,9 @@ export const UseAuth = (onSignedIn?: () => void) => {
             const savedData = await saveUser(user, fullname, email);
             if (!savedData) throw new Error('Failed to save user data.');
             await syncSessionCookie();
+            await logSecurityEvent('sign_in', { provider: 'facebook.com' }).catch(
+                () => undefined,
+            );
             toast.success('Login successful!');
             onSignedIn?.();
 
