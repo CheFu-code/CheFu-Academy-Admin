@@ -11,6 +11,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useSidebar } from '@/components/ui/sidebar';
+import GlobalCourseSearch from './GlobalCourseSearch';
 import { ThemeToggle } from './ui/themeToggle';
 
 export function SiteHeader() {
@@ -28,8 +29,7 @@ export function SiteHeader() {
                     <SidebarIcon />
                 </Button>
                 <Separator orientation="vertical" className="mr-2 h-4" />
-                <div className="flex justify-between items-center flex-1">
-                    {/* <div className="flex justify-between w-full gap-2 items-center"> */}
+                <div className="flex min-w-0 flex-1 items-center justify-between gap-3">
                     <Breadcrumb className="hidden sm:block">
                         <BreadcrumbList>
                             <BreadcrumbItem>
@@ -42,9 +42,8 @@ export function SiteHeader() {
                             </BreadcrumbItem>
                         </BreadcrumbList>
                     </Breadcrumb>
-                    {/* <Input placeholder="Search courses..." /> */}
-                    {/* </div> */}
-                    <div className="flex justify-end items-end">
+                    <GlobalCourseSearch />
+                    <div className="flex shrink-0 items-center justify-end">
                         <ThemeToggle />
                     </div>
                 </div>

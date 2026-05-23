@@ -1,6 +1,14 @@
 'use client';
 
-import { BookOpen, LayoutDashboard, LifeBuoy, Send, Settings2, Video } from 'lucide-react';
+import {
+    BookOpen,
+    LayoutDashboard,
+    LifeBuoy,
+    Search,
+    Send,
+    Settings2,
+    Video,
+} from 'lucide-react';
 import * as React from 'react';
 
 import { NavMain } from '@/components/nav-main';
@@ -40,6 +48,11 @@ const data = {
                     url: '/courses/completed-lessons',
                 },
             ],
+        },
+        {
+            title: 'Search Courses',
+            url: '/courses/search',
+            icon: Search,
         },
 
         {
