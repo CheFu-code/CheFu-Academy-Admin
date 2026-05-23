@@ -89,6 +89,7 @@ const CourseLearningUI = ({
                 lessonIndex={contentIndex}
                 totalLessons={totalContents}
                 content={content}
+                lessonKey={`${chapter.chapterName}-${contentIndex}`}
             />
 
             {/* Next / Finish button */}

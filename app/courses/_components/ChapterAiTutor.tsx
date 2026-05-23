@@ -3,16 +3,18 @@
 import { generateChapterHelp } from '@/config/AIModel';
 import { ChapterContentItem } from '@/types/course';
 import { BookOpenCheck, Loader, Send, Sparkles } from 'lucide-react';
-import { FormEvent, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { CardDescription } from '@/components/ui/card';
 import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
+} from '@/components/ui/sheet';
 import { Textarea } from '@/components/ui/textarea';
 
 type TutorResponse = {
@@ -45,16 +47,26 @@ const ChapterAiTutor = ({
     lessonIndex,
     totalLessons,
     content,
+    lessonKey,
 }: {
     courseTitle: string;
     chapterTitle: string;
     lessonIndex: number;
     totalLessons: number;
     content: ChapterContentItem;
+    lessonKey: string;
 }) => {
+    const [open, setOpen] = useState(false);
     const [question, setQuestion] = useState('');
     const [answer, setAnswer] = useState<TutorResponse | null>(null);
     const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        setQuestion('');
+        setAnswer(null);
+        setLoading(false);
+        setOpen(false);
+    }, [lessonKey]);
 
     const lessonContext = useMemo(
         () =>
@@ -82,6 +94,7 @@ const ChapterAiTutor = ({
 
         setLoading(true);
         setAnswer(null);
+        setOpen(true);
 
         try {
             const response = await generateChapterHelp([
@@ -126,21 +139,37 @@ ${finalQuestion}`,
     };
 
     return (
-        <Card className="border-cyan-500/30 bg-cyan-500/5">
-            <CardHeader>
-                <div className="flex items-start gap-3">
-                    <div className="mt-1 flex size-10 shrink-0 items-center justify-center rounded-full bg-cyan-500/15 text-cyan-500">
-                        <Sparkles className="size-5" />
+        <Sheet open={open} onOpenChange={setOpen}>
+            <SheetTrigger asChild>
+                <Button
+                    type="button"
+                    className="fixed bottom-20 right-4 z-40 h-12 rounded-full px-4 shadow-xl sm:bottom-6 sm:right-6"
+                >
+                    <Sparkles className="size-4" />
+                    Ask AI
+                </Button>
+            </SheetTrigger>
+
+            <SheetContent className="w-[92vw] overflow-y-auto p-0 sm:max-w-md">
+                <SheetHeader className="border-b p-5">
+                    <div className="flex items-start gap-3 pr-8">
+                        <div className="mt-1 flex size-10 shrink-0 items-center justify-center rounded-full bg-cyan-500/15 text-cyan-500">
+                            <Sparkles className="size-5" />
+                        </div>
+                        <div>
+                            <SheetTitle>Ask AI about this lesson</SheetTitle>
+                            <SheetDescription>
+                                Get a simpler explanation for lesson {lessonIndex + 1}.
+                            </SheetDescription>
+                        </div>
                     </div>
-                    <div>
-                        <CardTitle>Ask AI about this lesson</CardTitle>
-                        <CardDescription>
-                            Stuck on something? Ask a question and get a simpler explanation for this chapter.
-                        </CardDescription>
-                    </div>
-                </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
+                </SheetHeader>
+
+                <div className="space-y-4 p-5">
+                    <CardDescription className="rounded-lg border bg-muted/30 p-3">
+                        {content.topic || chapterTitle}
+                    </CardDescription>
+
                 <div className="flex flex-wrap gap-2">
                     {quickQuestions.map((item) => (
                         <Button
@@ -223,8 +252,9 @@ ${finalQuestion}`,
                         )}
                     </div>
                 )}
-            </CardContent>
-        </Card>
+                </div>
+            </SheetContent>
+        </Sheet>
     );
 };
 
