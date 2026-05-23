@@ -8,17 +8,11 @@ import {
 } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { TabsContent } from '@/components/ui/tabs';
+import {
+    NotificationPreferenceKey,
+    NotificationPreferences,
+} from '@/lib/notificationPreferences';
 import { Bell, CheckCheck, Loader2, ShieldCheck } from 'lucide-react';
-
-type Prefs = {
-    activity: boolean;
-    general: boolean;
-    marketing: boolean;
-    security: boolean;
-    courseReminders: boolean;
-    aiCourseCompletion: boolean;
-    weeklyProgressSummary: boolean;
-};
 
 const NotificationsTabUI = ({
     prefs,
@@ -26,13 +20,13 @@ const NotificationsTabUI = ({
     handleBulkUpdate,
     changingPrefKey,
 }: {
-    prefs: Prefs;
-    handleToggle: (key: keyof Prefs, value: boolean) => void;
+    prefs: NotificationPreferences;
+    handleToggle: (key: NotificationPreferenceKey, value: boolean) => void;
     handleBulkUpdate: (type: 'all' | 'essential') => void;
-    changingPrefKey: keyof Prefs | 'bulk' | null;
+    changingPrefKey: NotificationPreferenceKey | 'bulk' | null;
 }) => {
     const notificationItems: Array<{
-        key: keyof Prefs;
+        key: NotificationPreferenceKey;
         title: string;
         description: string;
     }> = [

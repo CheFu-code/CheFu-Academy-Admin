@@ -16,19 +16,16 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuthUser } from '@/hooks/useAuthUser';
 import { db } from '@/lib/firebase';
+import {
+    NotificationPreferences,
+    normalizeNotificationPreferences,
+} from '@/lib/notificationPreferences';
 import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { Bell, Globe2, Sparkles, UserRound } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import countryList from 'react-select-country-list';
 import { toast } from 'sonner';
-
-type EmailPrefs = {
-    activity: boolean;
-    general: boolean;
-    marketing: boolean;
-    security: boolean;
-};
 
 const TOTAL_STEPS = 4;
 
@@ -45,12 +42,15 @@ export default function OnboardingGate() {
     const [bio, setBio] = useState('');
     const [language, setLanguage] = useState('en');
     const [countryCode, setCountryCode] = useState('');
-    const [emailPreferences, setEmailPreferences] = useState<EmailPrefs>({
-        activity: true,
-        general: true,
-        marketing: false,
-        security: true,
-    });
+    const [emailPreferences, setEmailPreferences] =
+        useState<NotificationPreferences>(
+            normalizeNotificationPreferences({
+                activity: true,
+                general: true,
+                marketing: false,
+                security: true,
+            }),
+        );
     const initializedUserRef = useRef<string | null>(null);
 
     useEffect(() => {
@@ -63,12 +63,14 @@ export default function OnboardingGate() {
         setLanguage(user.language || 'en');
         setCountryCode(user.countryCode || '');
         setEmailPreferences(
-            user.emailPreferences || {
+            normalizeNotificationPreferences(
+                user.emailPreferences || {
                 activity: true,
                 general: true,
                 marketing: false,
                 security: true,
-            },
+                },
+            ),
         );
     }, [user]);
 

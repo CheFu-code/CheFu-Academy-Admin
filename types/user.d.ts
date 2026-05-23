@@ -1,3 +1,4 @@
+import { NotificationPreferences } from "@/lib/notificationPreferences";
 import { Timestamp } from "firebase/firestore";
 
 export interface User {
@@ -37,15 +38,7 @@ export interface User {
     subscriptionStatus: string;
     uid: string;
     memberUntil?: Timestamp;
-    emailPreferences: {
-        activity: boolean;
-        general: boolean;
-        marketing: boolean;
-        security: boolean;
-        courseReminders?: boolean;
-        aiCourseCompletion?: boolean;
-        weeklyProgressSummary?: boolean;
-    };
+    emailPreferences: NotificationPreferences;
     deviceInfo: {
         deviceBrand: string;
         deviceModel: string;
