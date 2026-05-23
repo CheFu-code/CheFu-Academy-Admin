@@ -16,6 +16,9 @@ import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { auth, db } from '../firebase';
 
+const isCanonicalCourse = (course: Course) =>
+    !course.enrolled && !course.originalCourseId;
+
 export const CoursesQuery = () => {
     const courseRef = collection(db, 'course');
     const [user, setUser] = useState(auth.currentUser);
@@ -55,7 +58,11 @@ export const CoursesQuery = () => {
             // Map docs and filter out courses created by the user
             const allCourses = snapshot.docs
                 .map((doc) => ({ ...(doc.data() as Course), id: doc.id }))
-                .filter((course) => course.createdBy !== user.email);
+                .filter(
+                    (course) =>
+                        isCanonicalCourse(course) &&
+                        course.createdBy !== user.email,
+                );
 
             // Fetch user's enrolled courses
             const enrolledQ = query(
@@ -72,7 +79,7 @@ export const CoursesQuery = () => {
 
             // Filter out courses the user is already enrolled in
             const freshData = allCourses.filter(
-                (course) => !enrolledOriginalIds.includes(course.id)
+                (course) => !enrolledOriginalIds.includes(course.id),
             );
 
             setCourses(freshData);
@@ -97,10 +104,12 @@ export const CoursesQuery = () => {
         );
 
         const snap = await getDocs(q);
-        return snap.docs.map((doc) => ({
-            ...(doc.data() as Omit<Course, 'id'>),
-            id: doc.id,
-        }));
+        return snap.docs
+            .map((doc) => ({
+                ...(doc.data() as Omit<Course, 'id'>),
+                id: doc.id,
+            }))
+            .filter(isCanonicalCourse);
     }, []);
 
     const fetchMoreCourses = useCallback(async () => {
@@ -132,7 +141,11 @@ export const CoursesQuery = () => {
 
             const data = snapshot.docs
                 .map((doc) => ({ ...(doc.data() as Course), id: doc.id }))
-                .filter((course) => course.createdBy !== user.email);
+                .filter(
+                    (course) =>
+                        isCanonicalCourse(course) &&
+                        course.createdBy !== user.email,
+                );
 
 
             setCourses((prev) => {
@@ -168,6 +181,20 @@ export const CoursesQuery = () => {
             }
 
             const data = snap.data() as Omit<Course, 'id'>;
+
+            if (data.originalCourseId) {
+                const rootRef = doc(db, 'course', data.originalCourseId);
+                const rootSnap = await getDoc(rootRef);
+
+                if (!rootSnap.exists()) {
+                    console.warn('Original course not found');
+                    return null;
+                }
+
+                const rootData = rootSnap.data() as Omit<Course, 'id'>;
+                return { id: rootSnap.id, ...rootData };
+            }
+
             return { id: snap.id, ...data };
         } catch (error) {
             console.error('Error fetching course:', error);

@@ -168,8 +168,12 @@ export const UseAuth = (onSignedIn?: () => void) => {
                         const user = userCred.user;
                         const fullname =
                             user.displayName?.trim() || 'Google User';
-                        const email = user.email || '';
-                        const savedData = await saveUser(user, fullname, email);
+                        const mfaEmail = user.email || '';
+                        const savedData = await saveUser(
+                            user,
+                            fullname,
+                            mfaEmail,
+                        );
                         if (!savedData)
                             throw new Error('Failed to save user data.');
                         await syncSessionCookie();
@@ -186,11 +190,11 @@ export const UseAuth = (onSignedIn?: () => void) => {
                             const retryUser = retryCred.user;
                             const fullname =
                                 retryUser.displayName?.trim() || 'Google User';
-                            const email = retryUser.email || '';
+                            const retryEmail = retryUser.email || '';
                             const savedData = await saveUser(
                                 retryUser,
                                 fullname,
-                                email,
+                                retryEmail,
                             );
                             if (!savedData)
                                 throw new Error('Failed to save user data.');

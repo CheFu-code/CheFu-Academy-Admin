@@ -19,6 +19,7 @@ import { formatParagraph } from '@/utils/formatParagraph';
 import {
     collection,
     doc,
+    getDoc,
     getDocs,
     query,
     setDoc,
@@ -68,13 +69,32 @@ const CourseView = () => {
 
         const rootCourseId = course.originalCourseId ?? course.id;
 
-        if (course.createdBy === user.email) {
-            toast.error("You can't enroll in your own course.");
-            return;
-        }
-
         try {
             setEnrolling(true);
+            const rootCourseRef = doc(db, 'course', rootCourseId);
+            const rootCourseSnap = await getDoc(rootCourseRef);
+
+            if (!rootCourseSnap.exists()) {
+                toast.error('Original course was not found.');
+                return;
+            }
+
+            const rootCourse = {
+                ...(rootCourseSnap.data() as Omit<Course, 'id'>),
+                id: rootCourseSnap.id,
+            };
+
+            if (rootCourse.originalCourseId || rootCourse.enrolled) {
+                toast.error('This course copy cannot be enrolled directly.');
+                return;
+            }
+
+            if (rootCourse.createdBy === user.email) {
+                toast.error("You can't enroll in your own course.");
+                router.replace(`/courses/my-courses/course-view/${rootCourse.id}`);
+                return;
+            }
+
             const emailSafe = user.email.replace(/[@.]/g, '_');
 
             // check if a copy already exists for this user
@@ -97,12 +117,19 @@ const CourseView = () => {
             // create new copy
             const docId = emailSafe + '_' + Date.now().toString();
             const data = {
-                ...course,
+                ...rootCourse,
+                id: docId,
+                docId,
                 originalCourseId: rootCourseId,
                 createdBy: user.email,
                 createdOn: new Date(),
                 enrolled: true,
                 completedChapter: [],
+                lastStudiedAt: null,
+                lastStudiedChapterIndex: null,
+                lastStudiedContentIndex: null,
+                lastStudiedChapterName: '',
+                lastStudiedTopic: '',
             };
 
             await setDoc(doc(db, 'course', docId), data);

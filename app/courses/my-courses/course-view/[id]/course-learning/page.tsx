@@ -14,6 +14,7 @@ import { Course } from '@/types/course';
 import jsPDF from 'jspdf';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import Confetti from 'react-confetti';
 import { toast } from 'sonner';
 
 const CourseLearning = () => {
@@ -32,6 +33,11 @@ const CourseLearning = () => {
     const [loading, setLoading] = useState(false);
     const [loadingCourse, setLoadingCourse] = useState(true);
     const [accessDenied, setAccessDenied] = useState(false);
+    const [showConfetti, setShowConfetti] = useState(false);
+    const [confettiSize, setConfettiSize] = useState({
+        width: 0,
+        height: 0,
+    });
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -40,6 +46,20 @@ const CourseLearning = () => {
 
         return () => clearTimeout(timer);
     }, [scroll]);
+
+    useEffect(() => {
+        const updateSize = () => {
+            setConfettiSize({
+                width: window.innerWidth,
+                height: window.innerHeight,
+            });
+        };
+
+        updateSize();
+        window.addEventListener('resize', updateSize);
+
+        return () => window.removeEventListener('resize', updateSize);
+    }, []);
 
     useEffect(() => {
         const fetchCourse = async () => {
@@ -232,15 +252,29 @@ const CourseLearning = () => {
                 );
             }
 
+            const nextCompletedChapters = Array.from(
+                new Set([
+                    ...(course.completedChapter || []),
+                    chapterIndex.toString(),
+                ]),
+            );
+            const completedCourse =
+                nextCompletedChapters.length >= course.chapters.length;
+
             setCourse({
                 ...course,
-                completedChapter: Array.from(
-                    new Set([
-                        ...(course.completedChapter || []),
-                        chapterIndex.toString(),
-                    ]),
-                ),
+                completedChapter: nextCompletedChapters,
             });
+
+            if (completedCourse) {
+                setShowConfetti(true);
+                toast.success('Course completed. Great work!');
+                setTimeout(() => {
+                    router.replace(`/courses/my-courses/course-view/${course.id}`);
+                }, 2400);
+                return;
+            }
+
             toast.success('Chapter completed...');
             router.replace(`/courses/my-courses/course-view/${course.id}`);
         } catch (err) {
@@ -424,20 +458,32 @@ const CourseLearning = () => {
     };
 
     return (
-        <CourseLearningUI
-            courseTitle={course.courseTitle}
-            loading={loading}
-            scrollRef={scrollRef}
-            progressPercent={progressPercent}
-            totalContents={totalContents}
-            contentIndex={contentIndex}
-            chapter={chapter}
-            content={content}
-            cleanCode={cleanCode}
-            handleFinish={handleFinish}
-            handleNext={handleNext}
-            handleDownloadChapter={handleDownloadChapter}
-        />
+        <>
+            {showConfetti && (
+                <Confetti
+                    width={confettiSize.width}
+                    height={confettiSize.height}
+                    numberOfPieces={420}
+                    recycle={false}
+                    gravity={0.18}
+                    className="pointer-events-none fixed inset-0 z-50"
+                />
+            )}
+            <CourseLearningUI
+                courseTitle={course.courseTitle}
+                loading={loading}
+                scrollRef={scrollRef}
+                progressPercent={progressPercent}
+                totalContents={totalContents}
+                contentIndex={contentIndex}
+                chapter={chapter}
+                content={content}
+                cleanCode={cleanCode}
+                handleFinish={handleFinish}
+                handleNext={handleNext}
+                handleDownloadChapter={handleDownloadChapter}
+            />
+        </>
     );
 };
 

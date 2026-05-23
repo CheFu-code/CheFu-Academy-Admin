@@ -32,14 +32,21 @@ function toCourse(id: string, data: FirebaseFirestore.DocumentData): Course {
     };
 }
 
+function isCanonicalCourse(course: Course) {
+    return !course.enrolled && !course.originalCourseId;
+}
+
 export async function fetchCoursesServer(limitCount = 24): Promise<Course[]> {
     const snapshot = await getFirebaseAdminDb()
         .collection('course')
         .orderBy('createdOn', 'desc')
-        .limit(limitCount)
+        .limit(limitCount * 3)
         .get();
 
-    return snapshot.docs.map(doc => toCourse(doc.id, doc.data()));
+    return snapshot.docs
+        .map(doc => toCourse(doc.id, doc.data()))
+        .filter(isCanonicalCourse)
+        .slice(0, limitCount);
 }
 
 export async function countCoursesServer(): Promise<number> {
@@ -55,9 +62,7 @@ export async function searchCoursesServer(queryText: string): Promise<Course[]> 
     const normalized = queryText.trim().toLowerCase();
     const courses = await fetchCoursesServer(100);
 
-    if (!normalized) {
-        return courses;
-    }
+    if (!normalized) return courses;
 
     return courses.filter(
         course =>
