@@ -1,6 +1,14 @@
 import { cn } from '@/lib/utils';
 import { AddCourseProp } from '@/types/course';
-import { Loader, Sparkle } from 'lucide-react';
+import {
+    BookOpenCheck,
+    BrainCircuit,
+    CheckCircle2,
+    Layers3,
+    Loader,
+    Save,
+    Sparkle,
+} from 'lucide-react';
 import Header from '../Shared/Header';
 import { Button } from '../ui/button';
 import {
@@ -11,6 +19,29 @@ import {
     CardTitle,
 } from '../ui/card';
 import { Input } from '../ui/input';
+
+const generationSteps = [
+    {
+        title: 'Planning the course path',
+        description: 'Turning your selected topics into a clear learning route.',
+        Icon: BrainCircuit,
+    },
+    {
+        title: 'Building chapters',
+        description: 'Creating lessons, explanations, examples, and structure.',
+        Icon: Layers3,
+    },
+    {
+        title: 'Preparing practice material',
+        description: 'Adding quizzes, flashcards, and Q&A for active recall.',
+        Icon: BookOpenCheck,
+    },
+    {
+        title: 'Saving your course',
+        description: 'Packaging everything so you can open it as soon as it is ready.',
+        Icon: Save,
+    },
+];
 
 const CreateCourseUI = ({
     topics,
@@ -48,14 +79,15 @@ const CreateCourseUI = ({
                             value={userInput}
                             onChange={(e) => setUserInput(e.target.value)}
                             placeholder="Learn how to bake bread..."
+                            disabled={generatingCourse}
                         />
                         {userInput?.trim() && (
                             <Button
-                                disabled={generatingTopic}
+                                disabled={generatingTopic || generatingCourse}
                                 onClick={generateTopic}
                                 className={cn(
                                     'w-full mt-8 cursor-pointer',
-                                    generatingTopic ? 'cursor-not-allowed' : '',
+                                    generatingTopic || generatingCourse ? 'cursor-not-allowed' : '',
                                 )}
                             >
                                 {generatingTopic
@@ -77,13 +109,15 @@ const CreateCourseUI = ({
                                 className="cursor-pointer"
                                 variant="outline"
                                 onClick={() => {
+                                    if (generatingCourse) return;
                                     if (selectedTopics.length === topics.length) {
                                         setSelectedTopics([]);
                                     } else {
                                         setSelectedTopics(topics);
                                     }
                                 }}
-                                size="sm">
+                                size="sm"
+                                disabled={generatingCourse}>
                                 {selectedTopics.length === topics.length
                                     ? 'Deselect all'
                                     : 'Select all'}
@@ -97,6 +131,7 @@ const CreateCourseUI = ({
 
                                 return (
                                     <button
+                                        disabled={generatingCourse}
                                         key={index}
                                         onClick={() => {
                                             if (isSelected) {
@@ -121,7 +156,7 @@ const CreateCourseUI = ({
                                             }
                                         }}
                                         className={cn(
-                                            'border border-cyan-500 rounded-lg p-1.5 cursor-pointer',
+                                            'border border-cyan-500 rounded-lg p-1.5 cursor-pointer disabled:cursor-not-allowed disabled:opacity-70',
                                             isSelected
                                                 ? 'bg-blue-950 text-white'
                                                 : '',
@@ -133,6 +168,61 @@ const CreateCourseUI = ({
                             })}
                         </div>
                     </>
+                )}
+
+                {generatingCourse && (
+                    <Card
+                        className="mt-8 overflow-hidden border-cyan-500/30 bg-cyan-500/5"
+                        role="status"
+                        aria-live="polite"
+                    >
+                        <div className="h-1 w-full overflow-hidden bg-cyan-500/15">
+                            <div className="h-full w-1/2 animate-[pulse_1.4s_ease-in-out_infinite] rounded-full bg-cyan-400" />
+                        </div>
+                        <CardHeader>
+                            <div className="flex items-start gap-3">
+                                <div className="mt-1 flex size-10 shrink-0 items-center justify-center rounded-full bg-cyan-500/15 text-cyan-500">
+                                    <Loader className="size-5 animate-spin" />
+                                </div>
+                                <div>
+                                    <CardTitle>Your course is being generated</CardTitle>
+                                    <CardDescription>
+                                        We are creating a full course from {selectedTopics.length}{' '}
+                                        selected {selectedTopics.length === 1 ? 'topic' : 'topics'}.
+                                        Keep this tab open and we will take you straight to the course.
+                                    </CardDescription>
+                                </div>
+                            </div>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="grid gap-3 sm:grid-cols-2">
+                                {generationSteps.map(({ title, description, Icon }, index) => (
+                                    <div
+                                        key={title}
+                                        className="flex min-h-24 gap-3 rounded-lg border bg-background/80 p-3"
+                                    >
+                                        <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-cyan-500">
+                                            {index === 0 ? (
+                                                <Loader className="size-4 animate-spin" />
+                                            ) : (
+                                                <Icon className="size-4" />
+                                            )}
+                                        </div>
+                                        <div>
+                                            <p className="font-medium leading-none">{title}</p>
+                                            <p className="mt-2 text-sm text-muted-foreground">
+                                                {description}
+                                            </p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="flex items-center gap-2 rounded-lg border bg-background/80 px-3 py-2 text-sm text-muted-foreground">
+                                <CheckCircle2 className="size-4 shrink-0 text-cyan-500" />
+                                You can review your selected topics here while the AI works.
+                            </div>
+                        </CardContent>
+                    </Card>
                 )}
             </div>
 

@@ -30,7 +30,7 @@ const data = {
             title: 'Courses',
             url: '#',
             icon: BookOpen,
-            isActive: true,
+            // isActive: true,
             items: [
                 { title: 'Practice', url: '/courses/practice' },
                 { title: 'All Courses', url: '/courses' },

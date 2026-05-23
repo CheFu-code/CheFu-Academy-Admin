@@ -9,7 +9,6 @@ import { db } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
-
 export const useGenerateTopic = (
     userInput: string,
     setUserInput: React.Dispatch<React.SetStateAction<string>>,
@@ -21,7 +20,7 @@ export const useGenerateTopic = (
     const [generatingCourse, setGeneratingCourse] = useState(false);
 
     const generateTopic = async () => {
-        if (generatingTopic) return; // Prevent double submission
+        if (generatingTopic) return;
         if (!userInput.trim()) {
             toast.error('Please enter a course idea first.');
             return;
@@ -43,32 +42,27 @@ export const useGenerateTopic = (
                 aiResponse && typeof aiResponse === 'string'
                     ? aiResponse.replace(/^```json[\r\n]+|```$/gi, '').trim()
                     : aiResponse;
-            if (!cleanedResponse || cleanedResponse.trim() === '') {
-                alert('The AI didn’t return any results.');
-                topicIdea = [];
-                setGeneratingTopic(false);
-                return;
-            } else {
-                function safeJsonParse(json: string) {
-                    try {
-                        return JSON.parse(json);
-                    } catch {
-                        return null;
-                    }
-                }
 
+            if (!cleanedResponse || cleanedResponse.trim() === '') {
+                toast.error("The AI didn't return any topic ideas.");
+                topicIdea = [];
+                return;
+            }
+
+            function safeJsonParse(json: string) {
                 try {
-                    topicIdea = safeJsonParse(cleanedResponse) || [];
-                } catch (e) {
-                    topicIdea = [];
-                    console.log('Error parsing JSON:', e);
+                    return JSON.parse(json);
+                } catch {
+                    return null;
                 }
             }
+
+            topicIdea = safeJsonParse(cleanedResponse) || [];
             setUserInput('');
             console.log('Generated Topics:', topicIdea);
         } catch (error) {
             console.error('Error generating topic:', error);
-            alert(`Failed to generate topic. Please try again., \n ${error}`);
+            toast.error(`Failed to generate topic. Please try again. ${error}`);
             topicIdea = [];
         } finally {
             setTopics(Array.isArray(topicIdea) ? topicIdea : []);
@@ -79,23 +73,11 @@ export const useGenerateTopic = (
     const onGenerateCourse = async (selectedTopics: string[]) => {
         if (generatingCourse) return;
         if (!selectedTopics.length) {
-            alert('Please select at least one topic.');
+            toast.error('Please select at least one topic.');
             return;
         }
+
         setGeneratingCourse(true);
-        const initialToastId = toast.success('Generating course, please wait...', {
-            duration: Infinity,
-        });
-
-        const followUpTimeout = setTimeout(() => {
-            toast('Hang on, your course is almost ready!', {
-                duration: 3000,
-            });
-        }, 20000); // 20 seconds delay
-
-        const lastToastTimeout = setTimeout(() => {
-            toast('Still working… thanks for your patience!', { duration: 3000 });
-        }, 40000);
 
         const promptText = selectedTopics.join(', ') + Prompt.COURSE;
         const contents = [
@@ -104,36 +86,33 @@ export const useGenerateTopic = (
                 parts: [{ text: promptText }],
             },
         ];
+
         try {
             const aiResp = await generateCourse(contents);
 
-            clearTimeout(followUpTimeout);
-            clearTimeout(lastToastTimeout);
-            toast.dismiss(initialToastId);
-
             if (!aiResp || aiResp.trim() === '') {
-                alert('The AI didn’t return any results.');
-                setGeneratingCourse(false);
+                toast.error("The AI didn't return any course content.");
                 return;
             }
+
             let coursesObj;
             try {
                 coursesObj = JSON.parse(aiResp);
             } catch (e) {
                 console.log('Error parsing JSON:', e);
+                toast.error('The course response was not valid. Please try again.');
                 return;
             }
+
             const coursesArray = Array.isArray(coursesObj)
                 ? coursesObj
                 : coursesObj.courses;
 
             if (!Array.isArray(coursesArray) || coursesArray.length === 0) {
-                alert('The AI didn’t return any results.');
-                setGeneratingCourse(false);
+                toast.error("The AI didn't return any course content.");
                 return;
             }
 
-            // Await all course writes before continuing
             const emailSafe = user?.email.replace(/[@.]/g, '_');
             const docId = emailSafe + '_' + Date.now().toString();
             await Promise.all(
@@ -151,14 +130,11 @@ export const useGenerateTopic = (
             toast.success('Course created successfully!');
         } catch (e: unknown) {
             console.log('failed course', (e as Error).message);
-            alert(
-                `Failed to generate course. Please try again., \n ${(e as Error).message}`,
+            toast.error(
+                `Failed to generate course. Please try again. ${(e as Error).message}`,
             );
         } finally {
             setGeneratingCourse(false);
-            clearTimeout(followUpTimeout);
-            clearTimeout(lastToastTimeout);
-            toast.dismiss(initialToastId);
         }
     };
 
