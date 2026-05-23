@@ -3,7 +3,7 @@ User-agent: *
 Allow: /
 
 # Host
-Host: https://chefuinc.com
+Host: https://academy.chefuinc.com
 
 # Sitemaps
-Sitemap: https://chefuinc.com/sitemap.xml
+Sitemap: https://academy.chefuinc.com/sitemap.xml
