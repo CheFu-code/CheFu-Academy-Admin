@@ -18,7 +18,15 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { TabsContent } from '@/components/ui/tabs';
-import { ClipboardCheck, KeyRound, ShieldCheck } from 'lucide-react';
+import {
+    AlertTriangle,
+    CheckCircle2,
+    ClipboardCheck,
+    Fingerprint,
+    KeyRound,
+    LockKeyhole,
+    ShieldCheck,
+} from 'lucide-react';
 
 const SecurityTabUI = ({
     openDelete,
@@ -79,19 +87,74 @@ const SecurityTabUI = ({
     handleUseGeneratedPassword: () => void;
     handleCopySecuritySnapshot: () => void;
 }) => {
+    const passwordStrength = [
+        newPassword.length >= 12,
+        /[A-Z]/.test(newPassword),
+        /[a-z]/.test(newPassword),
+        /\d/.test(newPassword),
+        /[^A-Za-z0-9]/.test(newPassword),
+    ].filter(Boolean).length;
 
     return (
         <TabsContent value="security" className="mt-4 space-y-4 px-2 sm:mt-6 sm:px-4">
-            {/* Security Settings */}
+            <div className="grid gap-3 md:grid-cols-3">
+                <Card className="border-border/60 bg-muted/20">
+                    <CardContent className="p-4">
+                        <div className="flex items-center gap-2 text-sm font-medium">
+                            <LockKeyhole className="h-4 w-4 text-cyan-500" />
+                            Sign-in method
+                        </div>
+                        <Badge className="mt-3" variant={hasPasswordProvider ? 'default' : 'secondary'}>
+                            {hasPasswordProvider ? 'Password enabled' : 'Google sign-in'}
+                        </Badge>
+                    </CardContent>
+                </Card>
+                <Card className="border-border/60 bg-muted/20">
+                    <CardContent className="p-4">
+                        <div className="flex items-center gap-2 text-sm font-medium">
+                            <Fingerprint className="h-4 w-4 text-cyan-500" />
+                            Passkeys
+                        </div>
+                        <Badge
+                            className="mt-3"
+                            variant={
+                                passkeySupport === 'supported'
+                                    ? 'default'
+                                    : passkeySupport === 'unsupported'
+                                        ? 'destructive'
+                                        : 'secondary'
+                            }
+                        >
+                            {passkeySupport === 'checking'
+                                ? 'Checking'
+                                : passkeySupport === 'supported'
+                                    ? 'Ready'
+                                    : 'Unavailable'}
+                        </Badge>
+                    </CardContent>
+                </Card>
+                <Card className="border-border/60 bg-muted/20">
+                    <CardContent className="p-4">
+                        <div className="flex items-center gap-2 text-sm font-medium">
+                            <ShieldCheck className="h-4 w-4 text-cyan-500" />
+                            Sensitive actions
+                        </div>
+                        <p className="mt-3 text-sm text-muted-foreground">
+                            Re-authentication required.
+                        </p>
+                    </CardContent>
+                </Card>
+            </div>
+
             <Card>
                 <CardHeader>
                     <CardTitle className="text-base sm:text-lg">Security Settings</CardTitle>
                     <CardDescription className="text-xs sm:text-sm">
-                        Protect your account
+                        Manage sign-in options and sensitive account actions.
                     </CardDescription>
                 </CardHeader>
 
-                <CardContent className="flex flex-col sm:flex-row gap-2 sm:gap-4">
+                <CardContent className="grid gap-3 md:grid-cols-3">
                     <Button
                         type="button"
                         variant="outline"
@@ -102,7 +165,7 @@ const SecurityTabUI = ({
                             }
                             handleEnrollPasskey();
                         }}
-                        disabled={loadingPasskey}
+                        disabled={loadingPasskey || passkeySupport === 'unsupported'}
                     >
                         <KeyRound className="mr-2 h-4 w-4" />
                         {loadingPasskey
@@ -165,7 +228,10 @@ const SecurityTabUI = ({
                     {/* Change Password Modal */}
                     <Dialog open={openChange} onOpenChange={setOpenChange}>
                         <DialogTrigger asChild>
-                            <Button variant="outline">Change Password</Button>
+                            <Button variant="outline">
+                                <LockKeyhole className="mr-2 h-4 w-4" />
+                                Change Password
+                            </Button>
                         </DialogTrigger>
                         <DialogContent>
                             <DialogHeader>
@@ -192,6 +258,21 @@ const SecurityTabUI = ({
                                         value={newPassword}
                                         onChange={(e) => setNewPassword(e.target.value)}
                                     />
+                                    {newPassword && (
+                                        <div className="space-y-2">
+                                            <div className="h-2 overflow-hidden rounded-full bg-muted">
+                                                <div
+                                                    className="h-full rounded-full bg-cyan-500 transition-all"
+                                                    style={{
+                                                        width: `${(passwordStrength / 5) * 100}%`,
+                                                    }}
+                                                />
+                                            </div>
+                                            <p className="text-xs text-muted-foreground">
+                                                Password strength: {passwordStrength}/5
+                                            </p>
+                                        </div>
+                                    )}
                                     <DialogFooter>
                                         <Button
                                             onClick={handleChangePassword}
@@ -222,6 +303,7 @@ const SecurityTabUI = ({
                     <Dialog open={openDelete} onOpenChange={setOpenDelete}>
                         <DialogTrigger asChild>
                             <Button disabled={loadingDelete} variant="destructive">
+                                <AlertTriangle className="mr-2 h-4 w-4" />
                                 Delete Account
                             </Button>
                         </DialogTrigger>
@@ -270,7 +352,7 @@ const SecurityTabUI = ({
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border bg-muted/20 p-3">
                         <div className="flex items-center gap-2">
                             <ShieldCheck className="h-4 w-4" />
                             <span className="text-sm font-medium">Passkey compatibility</span>
@@ -292,8 +374,11 @@ const SecurityTabUI = ({
                         </Badge>
                     </div>
 
-                    <div className="space-y-2 rounded-lg border p-3">
+                    <div className="space-y-2 rounded-lg border bg-muted/20 p-3">
                         <p className="text-sm font-medium">Strong password generator</p>
+                        <p className="text-xs text-muted-foreground">
+                            Generate a local password suggestion. It is not saved until you use it.
+                        </p>
                         <div className="flex flex-col gap-2 sm:flex-row">
                             <Input
                                 readOnly
@@ -325,7 +410,7 @@ const SecurityTabUI = ({
                         </div>
                     </div>
 
-                    <div className="rounded-lg border p-3">
+                    <div className="rounded-lg border bg-muted/20 p-3">
                         <p className="mb-2 text-sm font-medium">Security snapshot</p>
                         <p className="mb-3 text-xs text-muted-foreground">
                             Copy account security metadata for support or personal audit.
@@ -338,6 +423,13 @@ const SecurityTabUI = ({
                             <ClipboardCheck className="mr-2 h-4 w-4" />
                             Copy Security Snapshot
                         </Button>
+                    </div>
+
+                    <div className="flex items-start gap-2 rounded-lg border border-green-500/30 bg-green-500/10 p-3 text-sm">
+                        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-green-600" />
+                        <p className="text-muted-foreground">
+                            Password changes, passkey enrollment, and account deletion all require a fresh identity check.
+                        </p>
                     </div>
                 </CardContent>
             </Card>

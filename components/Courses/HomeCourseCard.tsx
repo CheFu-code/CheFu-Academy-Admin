@@ -1,14 +1,10 @@
 import { imageAssets } from '@/constants/Options';
+import { ArrowRight, BookOpenCheck } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 import { Badge } from '../ui/badge';
-import {
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '../ui/card';
+import { CardDescription, CardTitle } from '../ui/card';
 import { Progress } from '../ui/progress';
 
 const HomeCourseCard = ({
@@ -29,69 +25,81 @@ const HomeCourseCard = ({
     progress: number;
 }) => {
     const router = useRouter();
-    const goToSearch = (category: string) => {
-        router.push(`/courses/search?query=${encodeURIComponent(category)}`);
+    const imageSrc = imageAssets[banner_image] || banner_image;
+
+    const goToSearch = (courseCategory: string) => {
+        router.push(`/courses/search?query=${encodeURIComponent(courseCategory)}`);
     };
+
     return (
         <div
             key={id}
             onClick={() => router.push(`/courses/my-courses/course-view/${id}`)}
-            className={` cursor-pointer hover:bg-gray-800/40 rounded-2xl border transition ${
+            className={`group cursor-pointer overflow-hidden rounded-xl border bg-card shadow-sm transition duration-200 hover:-translate-y-1 hover:border-cyan-500/40 hover:shadow-xl ${
                 completedChapters === totalChapters
-                    ? 'border-green-500'
-                    : 'border-muted-foreground'
+                    ? 'border-green-500/70'
+                    : 'border-border/70'
             }`}
         >
             {banner_image && (
-                <div className="relative w-full h-24 sm:h-32 md:h-36 overflow-hidden rounded-t-md">
+                <div className="relative h-36 w-full overflow-hidden sm:h-40">
                     <Image
                         fill
                         priority
-                        src={imageAssets[banner_image]}
+                        src={imageSrc}
                         alt={courseTitle}
-                        className="w-full h-full object-cover"
+                        className="object-cover transition duration-500 group-hover:scale-105"
                     />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
                     {category && (
                         <Badge
-                            onClick={(e) => {
-                                e.stopPropagation(); // ✅ stop parent click
+                            onClick={(event) => {
+                                event.stopPropagation();
                                 goToSearch(category);
                             }}
                             variant="secondary"
-                            className="absolute hover:bg-green-700 cursor-pointer ml-2 mt-2  top-1 left-1 text-[10px] sm:text-xs px-1 py-0.5 shadow-md bg-green-600"
+                            className="absolute left-3 top-3 cursor-pointer bg-background/90 text-foreground shadow-md backdrop-blur hover:bg-cyan-600 hover:text-white"
                         >
-                            <span className="text-white">{category}</span>
+                            {category}
                         </Badge>
                     )}
+                    <div className="absolute bottom-3 left-3 right-3">
+                        <CardTitle className="line-clamp-2 text-lg font-semibold text-white">
+                            {courseTitle}
+                        </CardTitle>
+                    </div>
                 </div>
             )}
 
-            <CardHeader className="space-y-1 px-3 pt-2">
-                <CardTitle className="text-sm sm:text-base truncate">
-                    {courseTitle}
-                </CardTitle>
-                <CardDescription className="text-xs text-muted-foreground">
-                    {totalChapters} chapter
-                    {totalChapters !== 1 ? 's' : ''}
+            <div className="space-y-4 p-4">
+                <CardDescription className="flex items-center gap-2 text-sm">
+                    <BookOpenCheck className="h-4 w-4 text-cyan-500" />
+                    {totalChapters} chapter{totalChapters !== 1 ? 's' : ''}
                 </CardDescription>
-            </CardHeader>
 
-            <CardContent className="space-y-2 px-3 pb-3 pt-1 flex flex-col flex-1 justify-end">
-                <Progress
-                    value={progress}
-                    className="h-1.5 sm:h-2 rounded-full"
-                />
-                <div className="flex-row flex justify-between items-center">
-                    <p className="text-xs text-muted-foreground">
-                        {completedChapters}/{totalChapters} completed
-                    </p>
-                    {completedChapters === totalChapters && (
-                        <Badge className=" bg-green-600 text-white">
-                            Completed
-                        </Badge>
-                    )}
+                <div className="space-y-2">
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <span>
+                            {completedChapters}/{totalChapters} completed
+                        </span>
+                        <span>{Math.round(progress)}%</span>
+                    </div>
+                    <Progress value={progress} className="h-1.5 rounded-full sm:h-2" />
                 </div>
-            </CardContent>
+
+                <div className="flex items-center justify-between">
+                    {completedChapters === totalChapters ? (
+                        <Badge className="bg-green-600 text-white">Completed</Badge>
+                    ) : (
+                        <span className="text-xs font-medium text-muted-foreground">
+                            Continue
+                        </span>
+                    )}
+                    <span className="flex size-9 items-center justify-center rounded-full bg-cyan-500 text-white transition group-hover:translate-x-1">
+                        <ArrowRight className="h-4 w-4" />
+                    </span>
+                </div>
+            </div>
         </div>
     );
 };

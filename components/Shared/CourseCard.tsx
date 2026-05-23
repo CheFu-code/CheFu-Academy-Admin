@@ -1,12 +1,9 @@
 import Image from 'next/image';
 import React from 'react';
-import {
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '../ui/card';
+import { Badge } from '../ui/badge';
+import { CardDescription, CardTitle } from '../ui/card';
 import Link from 'next/link';
+import { ArrowRight, BookOpen, Sparkles } from 'lucide-react';
 
 type CourseCardProps = {
     id: string;
@@ -26,47 +23,48 @@ const CourseCard = ({
     return (
         <Link
             href={`/courses/course-view/${id}`}
-            className="block max-w-full hover:shadow-lg hover:bg-gray-100/10 transition-shadow duration-200 rounded-xl border border-muted-foreground"
+            className="group block h-full overflow-hidden rounded-xl border border-border/70 bg-card shadow-sm transition duration-200 hover:-translate-y-1 hover:border-cyan-500/40 hover:shadow-xl"
         >
-            {/* Banner */}
-            <div className="relative w-full h-32 sm:h-40 overflow-hidden rounded-t-xl">
+            <div className="relative h-36 w-full overflow-hidden sm:h-44">
                 <Image
-                    alt="Banner"
+                    alt={title}
                     src={bannerImage}
                     priority
                     fill
-                    className="object-cover"
+                    className="object-cover transition duration-500 group-hover:scale-105"
                 />
-            </div>
-
-            <CardHeader>
-                <CardTitle className="text-base sm:text-lg md:text-xl lg:text-xl mt-4 font-semibold truncate">
-                    {title}
-                </CardTitle>
-
-                {/* Description hover */}
-                <div className="relative group">
-                    <CardDescription className="text-sm sm:text-base  line-clamp-2 transition-all duration-300">
-                        {description || 'No description available.'}
-                    </CardDescription>
-
-                    {description && (
-                        <div className="absolute left-0 top-full mt-2 bg-gray-300/95 dark:bg-gray-800/95 p-2 rounded-md shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-all duration-300 z-50">
-                            <p className="whitespace-pre-wrap text-sm">
-                                {description}
-                            </p>
-                        </div>
-                    )}
-                </div>
-            </CardHeader>
-
-            <CardContent>
-                <p className="text-sm sm:text-base font-semibold mt-2 mb-2">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
+                <Badge className="absolute left-3 top-3 bg-background/90 text-foreground backdrop-blur">
+                    <BookOpen className="mr-1 h-3.5 w-3.5" />
                     {chaptersCount === 1
                         ? '1 Chapter'
                         : `${chaptersCount} Chapters`}
-                </p>
-            </CardContent>
+                </Badge>
+                <div className="absolute bottom-3 left-3 right-3">
+                    <div className="flex items-center gap-2 text-xs font-medium text-cyan-100">
+                        <Sparkles className="h-3.5 w-3.5" />
+                        AI learning path
+                    </div>
+                    <CardTitle className="mt-1 line-clamp-2 text-lg font-semibold text-white">
+                        {title}
+                    </CardTitle>
+                </div>
+            </div>
+
+            <div className="flex min-h-36 flex-col justify-between p-4">
+                <CardDescription className="line-clamp-3 text-sm leading-6">
+                    {description || 'No description available.'}
+                </CardDescription>
+
+                <div className="mt-5 flex items-center justify-between">
+                    <span className="text-xs font-medium text-muted-foreground">
+                        Start learning
+                    </span>
+                    <span className="flex size-9 items-center justify-center rounded-full bg-cyan-500 text-white transition group-hover:translate-x-1">
+                        <ArrowRight className="h-4 w-4" />
+                    </span>
+                </div>
+            </div>
         </Link>
     );
 };

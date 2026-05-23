@@ -21,7 +21,6 @@ import { toast } from 'sonner';
 
 const Feedback = () => {
     const router = useRouter();
-    const currentYear = new Date().getFullYear();
     const { user } = useAuthUser();
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');

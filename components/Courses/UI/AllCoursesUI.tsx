@@ -1,17 +1,11 @@
 'use client';
 
 import Header from '@/components/Shared/Header';
+import CourseCard from '@/components/Shared/CourseCard';
 import GridCourseCardSkeleton from '@/components/skeletons/GridCourseCardSkeleton';
-import {
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Course } from '@/types/course';
 import { PlusSquare, Search } from 'lucide-react';
-import Image from 'next/image';
 import { Dispatch, SetStateAction } from 'react';
 import EmptyCourse from './EmptyCourse';
 
@@ -23,7 +17,6 @@ const AllCoursesUI = ({
     setSearch,
     goToSearchRes,
     router,
-    goToCourseView,
 }: {
     fetchingCourses: boolean;
     courses: Course[];
@@ -76,48 +69,14 @@ const AllCoursesUI = ({
             ) : courses.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
                     {courses.map((c) => (
-                        <div
+                        <CourseCard
                             key={c.id}
-                            onClick={() => goToCourseView(c.id)}
-                            className="hover:shadow-lg hover:bg-gray-100/10 transition-shadow duration-200 rounded-xl cursor-pointer border border-muted-foreground"
-                        >
-                            <div className="relative w-full h-40 overflow-hidden rounded-t-xl">
-                                <Image
-                                    alt="Banner"
-                                    src={c.banner_image}
-                                    priority
-                                    fill
-                                    className="object-cover"
-                                    sizes="w-full h-40"
-                                />
-                            </div>
-
-                            <CardHeader>
-                                <CardTitle className="text-lg mt-4 font-semibold truncate">
-                                    {c.courseTitle}
-                                </CardTitle>
-                                <div className="relative group">
-                                    <CardDescription className="line-clamp-2 transition-all duration-300">
-                                        {c.description ||
-                                            'No description available.'}
-                                    </CardDescription>
-
-                                    <div className="absolute left-0 top-0 w-full mt-4 bg-gray-300/95 dark:bg-gray-800/95 p-2 rounded-md shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-all duration-300 z-50">
-                                        <p className="whitespace-pre-wrap">
-                                            {c.description ||
-                                                'No description available.'}
-                                        </p>
-                                    </div>
-                                </div>
-                            </CardHeader>
-                            <CardContent>
-                                <p className="font-semibold mb-2 mt-2">
-                                    {c.chapters.length > 1
-                                        ? `${c.chapters.length} Chapters`
-                                        : `${c.chapters.length} Chapter`}
-                                </p>
-                            </CardContent>
-                        </div>
+                            id={c.id}
+                            bannerImage={c.banner_image}
+                            title={c.courseTitle}
+                            description={c.description}
+                            chaptersCount={c.chapters?.length || 0}
+                        />
                     ))}
                 </div>
             ) : (

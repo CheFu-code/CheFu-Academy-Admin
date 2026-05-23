@@ -21,11 +21,13 @@ import { TabsContent } from '@/components/ui/tabs';
 import { User } from '@/types/user';
 import {
     CalendarDays,
+    CheckCircle2,
     Clock3,
     Copy,
     Globe2,
     Mail,
     MapIcon,
+    ShieldAlert,
     ShieldCheck,
     Smartphone
 } from 'lucide-react';
@@ -106,6 +108,46 @@ const ProfileTabUI = ({
                 </CardHeader>
 
                 <CardContent className="space-y-6">
+                    <div className="grid gap-3 sm:grid-cols-3">
+                        <div className="rounded-xl border bg-muted/20 p-4">
+                            <div className="flex items-center gap-2 text-sm font-medium">
+                                <ShieldCheck className="h-4 w-4 text-cyan-500" />
+                                Verification
+                            </div>
+                            <div className="mt-3">
+                                {user.isVerified ? (
+                                    <Badge className="bg-green-600 text-white">
+                                        <CheckCircle2 className="mr-1 h-3.5 w-3.5" />
+                                        Verified
+                                    </Badge>
+                                ) : (
+                                    <Badge variant="destructive">
+                                        <ShieldAlert className="mr-1 h-3.5 w-3.5" />
+                                        Not verified
+                                    </Badge>
+                                )}
+                            </div>
+                        </div>
+                        <div className="rounded-xl border bg-muted/20 p-4">
+                            <div className="flex items-center gap-2 text-sm font-medium">
+                                <CalendarDays className="h-4 w-4 text-cyan-500" />
+                                Member since
+                            </div>
+                            <p className="mt-3 text-sm text-muted-foreground">
+                                {createdDate}
+                            </p>
+                        </div>
+                        <div className="rounded-xl border bg-muted/20 p-4">
+                            <div className="flex items-center gap-2 text-sm font-medium">
+                                <Globe2 className="h-4 w-4 text-cyan-500" />
+                                Subscription
+                            </div>
+                            <p className="mt-3 text-sm text-muted-foreground">
+                                {subscription}
+                            </p>
+                        </div>
+                    </div>
+
                     <div className="grid gap-3 rounded-xl border bg-muted/20 p-4">
                         <h3 className="text-sm font-semibold text-muted-foreground">
                             Basic Info
@@ -150,8 +192,7 @@ const ProfileTabUI = ({
                                     onClick={() => updateField('bio', bio)}
                                     disabled={
                                         bio.trim() === (user.bio || '') ||
-                                        saving === 'bio' ||
-                                        !bio.trim()
+                                        saving === 'bio'
                                     }
                                 >
                                     {saving === 'bio' ? 'Saving...' : 'Save'}
