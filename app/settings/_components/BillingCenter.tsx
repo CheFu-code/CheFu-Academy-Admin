@@ -19,7 +19,8 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { getApiUrl } from '@/lib/api-url';
-import { BillingStatusResponse } from '@/types/billing';
+import { loadClerkBilling } from '@/lib/clerk-billing';
+import { BillingCheckoutResponse, BillingStatusResponse } from '@/types/billing';
 import { CalendarClock, CreditCard, ExternalLink, ReceiptText, ShieldCheck } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -91,11 +92,58 @@ const BillingCenter = () => {
         };
     }, []);
 
-    const openBillingAction = async (type: 'checkout' | 'portal') => {
-        setAction(type);
+    const openCheckout = async () => {
+        setAction('checkout');
 
         try {
-            const response = await fetch(getApiUrl(`/billing/${type}`), {
+            const response = await fetch(getApiUrl('/billing/checkout'), {
+                credentials: 'include',
+                method: 'POST',
+            });
+            const payload = (await response.json()) as
+                | BillingCheckoutResponse
+                | { message?: string };
+
+            if (!response.ok || !('planId' in payload)) {
+                const message = 'message' in payload ? payload.message : null;
+                throw new Error(message || 'Clerk checkout is not configured yet.');
+            }
+
+            const clerk = await loadClerkBilling();
+
+            if (!clerk.user) {
+                clerk.openSignIn({
+                    afterSignInUrl: window.location.href,
+                    afterSignUpUrl: window.location.href,
+                });
+                toast.info('Finish Clerk billing sign-in, then choose Upgrade Plan again.');
+                return;
+            }
+
+            if (!clerk.billing?.startCheckout) {
+                throw new Error('Clerk Billing is not enabled for this Clerk application.');
+            }
+
+            await clerk.billing.startCheckout({
+                planId: payload.planId,
+                planPeriod: payload.planPeriod,
+            });
+        } catch (error) {
+            toast.error(
+                error instanceof Error
+                    ? error.message
+                    : 'Unable to open Clerk checkout right now.',
+            );
+        } finally {
+            setAction(null);
+        }
+    };
+
+    const openPortal = async () => {
+        setAction('portal');
+
+        try {
+            const response = await fetch(getApiUrl('/billing/portal'), {
                 credentials: 'include',
                 method: 'POST',
             });
@@ -164,14 +212,14 @@ const BillingCenter = () => {
                                 </div>
                                 <div className="flex flex-wrap gap-2">
                                     <Button
-                                        onClick={() => openBillingAction('checkout')}
+                                        onClick={openCheckout}
                                         disabled={action !== null}
                                     >
                                         <CreditCard className="mr-2 size-4" />
                                         {isMember ? 'Change Plan' : 'Upgrade Plan'}
                                     </Button>
                                     <Button
-                                        onClick={() => openBillingAction('portal')}
+                                        onClick={openPortal}
                                         disabled={action !== null}
                                         variant="outline"
                                     >

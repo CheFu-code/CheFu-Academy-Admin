@@ -29,3 +29,10 @@ export type BillingStatusResponse = {
     };
     history: BillingHistoryItem[];
 };
+
+export type BillingCheckoutResponse = {
+    clientReferenceId: string;
+    email: string;
+    planId: string;
+    planPeriod: 'month' | 'annual';
+};
