@@ -1,11 +1,10 @@
 'use client';
 
-import Header from '@/components/Shared/Header';
 import CourseCard from '@/components/Shared/CourseCard';
+import Header from '@/components/Shared/Header';
 import GridCourseCardSkeleton from '@/components/skeletons/GridCourseCardSkeleton';
-import { Input } from '@/components/ui/input';
 import { Course } from '@/types/course';
-import { PlusSquare, Search } from 'lucide-react';
+import { PlusSquare } from 'lucide-react';
 import { Dispatch, SetStateAction } from 'react';
 import EmptyCourse from './EmptyCourse';
 
@@ -13,9 +12,6 @@ const AllCoursesUI = ({
     fetchingCourses,
     courses,
     loadingMore,
-    search,
-    setSearch,
-    goToSearchRes,
     router,
 }: {
     fetchingCourses: boolean;
@@ -43,25 +39,6 @@ const AllCoursesUI = ({
                         <PlusSquare className="size-5" />
                     </button>
                 </div>
-            </div>
-            <div className="relative mt-1">
-                <Input
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Search courses by name, category..."
-                    aria-label="Search courses"
-                />
-
-                {search && (
-                    <button
-                        type="button"
-                        onClick={() => goToSearchRes()}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition"
-                        aria-label="Go to search"
-                    >
-                        <Search className="h-4 w-4 cursor-pointer" />
-                    </button>
-                )}
             </div>
 
             {fetchingCourses ? (

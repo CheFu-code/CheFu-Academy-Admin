@@ -35,7 +35,7 @@ export function SiteHeader() {
                             <BreadcrumbItem>
                                 <BreadcrumbLink
                                     className="font-bold truncate"
-                                    href="/courses"
+                                    href="/"
                                 >
                                     CheFu Academy
                                 </BreadcrumbLink>
