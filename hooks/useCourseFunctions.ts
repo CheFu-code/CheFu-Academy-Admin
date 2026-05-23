@@ -2,6 +2,7 @@ import { Course } from '@/types/course';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { isCourseOwnerEmail } from '@/lib/courseOwnership';
 import { useAuthUser } from './useAuthUser';
 
 export const useCourseFunctions = (course?: Course) => {
@@ -15,7 +16,11 @@ export const useCourseFunctions = (course?: Course) => {
     const handleChapterClick = async (idx: number) => {
         const isCompleted = completedChaptersState.includes(idx.toString());
 
-        if (!user?.member && isCompleted) {
+        if (
+            isCourseOwnerEmail(course?.createdBy, user?.email) &&
+            !user?.member &&
+            isCompleted
+        ) {
             toast.warning(
                 'Chapter completed, subscribe to revisit this chapter.',
             );

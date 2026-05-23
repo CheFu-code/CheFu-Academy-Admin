@@ -17,7 +17,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useAuthUser } from '@/hooks/useAuthUser';
 import { db } from '@/lib/firebase';
 import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
-import { Sparkles } from 'lucide-react';
+import { Bell, Globe2, Sparkles, UserRound } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import countryList from 'react-select-country-list';
@@ -132,7 +132,8 @@ export default function OnboardingGate() {
     };
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[100] overflow-y-auto bg-black/50 p-4 backdrop-blur-sm">
+            <div className="flex min-h-full items-center justify-center py-6">
             <Card className="w-full max-w-2xl border-border/60 shadow-2xl">
                 <CardHeader className="space-y-4">
                     <div className="flex items-center justify-between gap-2">
@@ -161,9 +162,18 @@ export default function OnboardingGate() {
                                 workspace.
                             </p>
                             <ul className="space-y-1">
-                                <li>- Complete your profile details</li>
-                                <li>- Set your country and language</li>
-                                <li>- Configure notification preferences</li>
+                                <li className="flex gap-2 rounded-lg border bg-muted/20 p-3">
+                                    <UserRound className="mt-0.5 size-4 text-primary" />
+                                    <span>Profile details help personalize your workspace and certificates.</span>
+                                </li>
+                                <li className="flex gap-2 rounded-lg border bg-muted/20 p-3">
+                                    <Globe2 className="mt-0.5 size-4 text-primary" />
+                                    <span>Country and language tune recommendations and support context.</span>
+                                </li>
+                                <li className="flex gap-2 rounded-lg border bg-muted/20 p-3">
+                                    <Bell className="mt-0.5 size-4 text-primary" />
+                                    <span>Notification choices keep account and learning updates useful.</span>
+                                </li>
                             </ul>
                         </div>
                     )}
@@ -200,7 +210,11 @@ export default function OnboardingGate() {
                                     <SelectTrigger>
                                         <SelectValue placeholder="Select your country" />
                                     </SelectTrigger>
-                                    <SelectContent className="max-h-72">
+                                    <SelectContent
+                                        position="popper"
+                                        sideOffset={8}
+                                        className="z-[210] max-h-[45vh]"
+                                    >
                                         {countries.map(c => (
                                             <SelectItem key={c.value} value={c.value}>
                                                 {c.label}
@@ -216,7 +230,7 @@ export default function OnboardingGate() {
                                     <SelectTrigger>
                                         <SelectValue />
                                     </SelectTrigger>
-                                    <SelectContent>
+                                    <SelectContent className="z-[210]">
                                         <SelectItem value="en">English</SelectItem>
                                         <SelectItem value="fr">French</SelectItem>
                                         <SelectItem value="es">Spanish</SelectItem>
@@ -279,6 +293,7 @@ export default function OnboardingGate() {
                     </div>
                 </CardContent>
             </Card>
+            </div>
         </div>
     );
 }

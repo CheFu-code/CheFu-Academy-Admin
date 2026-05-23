@@ -8,6 +8,7 @@ import { getBlurredLogoDataUrl } from '@/helpers/downloadChapter';
 import { useAuthUser } from '@/hooks/useAuthUser';
 import { useScrollIntoView } from '@/hooks/useScrollIntoView';
 import { getApiUrl } from '@/lib/api-url';
+import { isCourseOwnerEmail } from '@/lib/courseOwnership';
 import { arrayBufferToBase64, saveNativeFile } from '@/lib/desktop-files';
 import getUserToken from '@/lib/getToken';
 import { Course } from '@/types/course';
@@ -113,22 +114,24 @@ const CourseLearning = () => {
     const isBlockedCompletedChapter = Boolean(
         course &&
             user &&
-            course.createdBy === user.email &&
+            isCourseOwnerEmail(course.createdBy, user.email) &&
             !user.member &&
             isCompletedChapter,
     );
 
     useEffect(() => {
-        if (accessDenied || authLoading || !user || loading) return;
-        if (course?.createdBy !== user.email) {
+        if (accessDenied || authLoading || loadingCourse || !course || !user || loading) {
+            return;
+        }
+        if (!isCourseOwnerEmail(course.createdBy, user.email)) {
             toast.error('You are not authorized to view this course!');
             router.replace('/courses');
         }
-    }, [accessDenied, authLoading, course, user, router, loading]);
+    }, [accessDenied, authLoading, course, loadingCourse, user, router, loading]);
 
     useEffect(() => {
         if (authLoading || loadingCourse || !course || !user) return;
-        if (course.createdBy !== user.email) return;
+        if (!isCourseOwnerEmail(course.createdBy, user.email)) return;
         if (!isBlockedCompletedChapter) return;
 
         toast.warning('Chapter completed, subscribe to revisit this chapter.');
@@ -143,7 +146,9 @@ const CourseLearning = () => {
     ]);
 
     useEffect(() => {
-        if (!course || !user || course.createdBy !== user.email) return;
+        if (!course || !user || !isCourseOwnerEmail(course.createdBy, user.email)) {
+            return;
+        }
         if (isBlockedCompletedChapter) return;
 
         const chapter = course.chapters[chapterIndex];

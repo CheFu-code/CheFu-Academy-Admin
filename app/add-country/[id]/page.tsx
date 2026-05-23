@@ -98,12 +98,12 @@ export default function AddCountryCode({ params }: AddCountryCodePageProps) {
     const isSubmitting = form.formState.isSubmitting;
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-muted/30 px-4">
-            <Card className="w-full max-w-md">
+        <main className="min-h-screen overflow-y-auto bg-muted/30 px-4 py-8 sm:py-12">
+            <Card className="mx-auto w-full max-w-lg">
                 <CardHeader>
                     <CardTitle>Add your country</CardTitle>
                     <CardDescription>
-                        Select your country to personalize your experience.
+                        Select your country to personalize course suggestions, language defaults, and regional support.
                     </CardDescription>
                 </CardHeader>
 
@@ -113,7 +113,6 @@ export default function AddCountryCode({ params }: AddCountryCodePageProps) {
                             onSubmit={form.handleSubmit(onSubmit)}
                             className="space-y-6"
                         >
-                            {/* Country Field */}
                             <FormField
                                 control={form.control}
                                 name="countryCode"
@@ -125,10 +124,14 @@ export default function AddCountryCode({ params }: AddCountryCodePageProps) {
                                                 onValueChange={field.onChange}
                                                 value={field.value}
                                             >
-                                                <SelectTrigger className="mt-2 cursor-pointer hover:bg-primary/70">
+                                                <SelectTrigger className="mt-2 cursor-pointer bg-background">
                                                     <SelectValue placeholder="Select your country" />
                                                 </SelectTrigger>
-                                                <SelectContent className="max-h-72">
+                                                <SelectContent
+                                                    position="popper"
+                                                    sideOffset={8}
+                                                    className="z-[200] max-h-[45vh]"
+                                                >
                                                     {countries.map((c) => (
                                                         <SelectItem
                                                             key={c.value}
@@ -145,14 +148,15 @@ export default function AddCountryCode({ params }: AddCountryCodePageProps) {
                                 )}
                             />
 
-                            {/* Submit */}
-                            <Button
-                                type="submit"
-                                className="w-full cursor-pointer"
-                                disabled={isSubmitting || loading}
-                            >
-                                {isSubmitting ? 'Saving...' : 'Save & Continue'}
-                            </Button>
+                            <div className="sticky bottom-0 -mx-6 border-t bg-card px-6 py-4">
+                                <Button
+                                    type="submit"
+                                    className="w-full cursor-pointer"
+                                    disabled={isSubmitting || loading}
+                                >
+                                    {isSubmitting ? 'Saving...' : 'Save & Continue'}
+                                </Button>
+                            </div>
 
                             {!user?.email && !loading && (
                                 <p className="text-sm text-muted-foreground">
@@ -163,6 +167,6 @@ export default function AddCountryCode({ params }: AddCountryCodePageProps) {
                     </Form>
                 </CardContent>
             </Card>
-        </div>
+        </main>
     );
 }

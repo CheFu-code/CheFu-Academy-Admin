@@ -8,6 +8,7 @@ import NoCourse from '@/components/Courses/noCourse';
 import CourseViewUI from '@/components/Courses/UI/CourseViewUI';
 import CourseCardSkeleton from '@/components/skeletons/CourseCardSkeleton';
 import { useCourseFunctions } from '@/hooks/useCourseFunctions';
+import { isCourseOwnerEmail } from '@/lib/courseOwnership';
 import { db } from '@/lib/firebase';
 import { Course } from '@/types/course';
 import { toast } from 'sonner';
@@ -73,7 +74,7 @@ const CourseView = ({ course: initialCourse }: { course?: Course }) => {
 
     useEffect(() => {
         if (!user || loading) return;
-        if (course && course.createdBy !== user.email) {
+        if (course && !isCourseOwnerEmail(course.createdBy, user.email)) {
             toast.error('You are not authorized to view this course!');
             router.replace('/courses');
         }

@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/tooltip';
 import { downloadCoursePDF_Office } from '@/helpers/downloadCourse';
 import { useAuthUser } from '@/hooks/useAuthUser';
+import { isCourseOwnerEmail } from '@/lib/courseOwnership';
 import { db } from '@/lib/firebase';
 import { CoursesQuery } from '@/lib/firestore/courseQueries';
 import { Course } from '@/types/course';
@@ -89,7 +90,7 @@ const CourseView = () => {
                 return;
             }
 
-            if (rootCourse.createdBy === user.email) {
+            if (isCourseOwnerEmail(rootCourse.createdBy, user.email)) {
                 toast.error("You can't enroll in your own course.");
                 router.replace(`/courses/my-courses/course-view/${rootCourse.id}`);
                 return;
@@ -145,7 +146,7 @@ const CourseView = () => {
 
     const handleClick = () => {
         if (!course) return;
-        if (course?.createdBy === user?.email) {
+        if (isCourseOwnerEmail(course?.createdBy, user?.email)) {
             router.push(`/courses/my-courses/course-view/${course?.id}`);
             return;
         } else {
@@ -171,7 +172,7 @@ const CourseView = () => {
         (count, chapter) => count + (chapter.content?.length || 0),
         0,
     );
-    const isOwner = course.createdBy === user?.email;
+    const isOwner = isCourseOwnerEmail(course.createdBy, user?.email);
     const rootCourseId = course.originalCourseId ?? course.id;
     const previewChapters = course.chapters.slice(0, 6);
 

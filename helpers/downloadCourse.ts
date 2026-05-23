@@ -1,6 +1,21 @@
 import type { Course } from '@/types/course';
+import { getApiUrl } from '@/lib/api-url';
+import getUserToken from '@/lib/getToken';
+import {
+    Document,
+    HeadingLevel,
+    Packer,
+    Paragraph,
+    Table,
+    TableCell,
+    TableRow,
+    TextRun,
+    WidthType,
+} from 'docx';
+import ExcelJS from 'exceljs';
 import { jsPDF } from 'jspdf';
 import autoTable, { RowInput } from 'jspdf-autotable';
+import pptxgen from 'pptxgenjs';
 import QRCode from 'qrcode';
 
 type RGB = [number, number, number];
@@ -21,7 +36,359 @@ const COLORS = {
 
 const APP_URL = 'https://academy.chefuinc.com';
 
+const saveBlob = (blob: Blob, fileName: string) => {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+};
+
+const safeFileName = (value: string) =>
+    value.replace(/[\\/:*?"<>|]+/g, '_').replace(/\s+/g, ' ').trim() || 'course';
+
+const cleanText = (value?: string) =>
+    String(value || '')
+        .replace(/\r\n/g, '\n')
+        .replace(/\n{3,}/g, '\n\n')
+        .trim();
+
+const cleanCode = (value?: string) =>
+    cleanText(value)
+        .replace(/^```[\w-]*\n/, '')
+        .replace(/```$/, '')
+        .trim();
+
 export const downloadCoursePDF_Office = async (course: Course) => {
+    if (!course?.id) return downloadCoursePDF_Legacy(course);
+
+    try {
+        const token = await getUserToken();
+        if (!token) return downloadCoursePDF_Legacy(course);
+
+        const response = await fetch(getApiUrl(`/courses/${course.id}/export/pdf`), {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error(`PDF export failed with status ${response.status}`);
+        }
+
+        const blob = await response.blob();
+        saveBlob(blob, `${safeFileName(course.courseTitle || 'course')}.pdf`);
+    } catch (error) {
+        console.error('Server PDF export failed. Falling back to client PDF:', error);
+        await downloadCoursePDF_Legacy(course);
+    }
+};
+
+export const downloadCourseDOCX = async (course: Course) => {
+    const doc = new Document({
+        creator: 'CheFu Academy',
+        title: course.courseTitle,
+        description: course.description,
+        sections: [
+            {
+                children: [
+                    new Paragraph({
+                        text: course.courseTitle || 'Untitled Course',
+                        heading: HeadingLevel.TITLE,
+                    }),
+                    new Paragraph({
+                        children: [
+                            new TextRun({
+                                text: course.category || 'General',
+                                bold: true,
+                                color: '0284C7',
+                            }),
+                        ],
+                    }),
+                    new Paragraph(cleanText(course.description) || 'Structured course notes.'),
+                    new Paragraph({
+                        text: 'Course Roadmap',
+                        heading: HeadingLevel.HEADING_1,
+                    }),
+                    new Table({
+                        width: { size: 100, type: WidthType.PERCENTAGE },
+                        rows: [
+                            new TableRow({
+                                children: ['#', 'Chapter', 'Lessons'].map(
+                                    text =>
+                                        new TableCell({
+                                            children: [
+                                                new Paragraph({
+                                                    children: [
+                                                        new TextRun({ text, bold: true }),
+                                                    ],
+                                                }),
+                                            ],
+                                        }),
+                                ),
+                            }),
+                            ...course.chapters.map(
+                                (chapter, index) =>
+                                    new TableRow({
+                                        children: [
+                                            String(index + 1),
+                                            chapter.chapterName,
+                                            String(chapter.content?.length || 0),
+                                        ].map(
+                                            text =>
+                                                new TableCell({
+                                                    children: [new Paragraph(text)],
+                                                }),
+                                        ),
+                                    }),
+                            ),
+                        ],
+                    }),
+                    ...course.chapters.flatMap((chapter, chapterIndex) => [
+                        new Paragraph({
+                            text: `${chapterIndex + 1}. ${chapter.chapterName}`,
+                            heading: HeadingLevel.HEADING_1,
+                        }),
+                        ...chapter.content.flatMap((item, itemIndex) => [
+                            new Paragraph({
+                                text: `Lesson ${chapterIndex + 1}.${itemIndex + 1}${item.topic ? ` - ${item.topic}` : ''}`,
+                                heading: HeadingLevel.HEADING_2,
+                            }),
+                            new Paragraph(cleanText(item.explain)),
+                            ...(item.example
+                                ? [
+                                      new Paragraph({
+                                          text: 'Example',
+                                          heading: HeadingLevel.HEADING_3,
+                                      }),
+                                      new Paragraph(cleanText(item.example)),
+                                  ]
+                                : []),
+                            ...(item.code
+                                ? [
+                                      new Paragraph({
+                                          text: 'Code',
+                                          heading: HeadingLevel.HEADING_3,
+                                      }),
+                                      new Paragraph({
+                                          children: [
+                                              new TextRun({
+                                                  text: cleanCode(item.code),
+                                                  font: 'Consolas',
+                                              }),
+                                          ],
+                                      }),
+                                  ]
+                                : []),
+                        ]),
+                    ]),
+                ],
+            },
+        ],
+    });
+
+    const blob = await Packer.toBlob(doc);
+    saveBlob(blob, `${safeFileName(course.courseTitle || 'course')}.docx`);
+};
+
+export const downloadCoursePPTX = async (course: Course) => {
+    const pptx = new pptxgen();
+    pptx.author = 'CheFu Academy';
+    pptx.company = 'CheFu Inc';
+    pptx.subject = course.category || 'Course';
+    pptx.title = course.courseTitle || 'Course';
+    pptx.layout = 'LAYOUT_WIDE';
+    pptx.theme = {
+        headFontFace: 'Aptos Display',
+        bodyFontFace: 'Aptos',
+    };
+
+    const addTitle = (slide: pptxgen.Slide, title: string, subtitle?: string) => {
+        slide.background = { color: '0F172A' };
+        slide.addText(title, {
+            x: 0.7,
+            y: 1.2,
+            w: 11.8,
+            h: 0.9,
+            fontFace: 'Aptos Display',
+            fontSize: 32,
+            bold: true,
+            color: 'FFFFFF',
+            fit: 'shrink',
+        });
+        if (subtitle) {
+            slide.addText(subtitle, {
+                x: 0.75,
+                y: 2.2,
+                w: 10.8,
+                h: 0.8,
+                fontSize: 15,
+                color: 'CBD5E1',
+                fit: 'shrink',
+            });
+        }
+    };
+
+    addTitle(
+        pptx.addSlide(),
+        course.courseTitle || 'Untitled Course',
+        cleanText(course.description) || course.category,
+    );
+
+    const roadmap = pptx.addSlide();
+    roadmap.addText('Course Roadmap', {
+        x: 0.6,
+        y: 0.45,
+        w: 12,
+        h: 0.5,
+        fontSize: 26,
+        bold: true,
+        color: '0F172A',
+    });
+    roadmap.addTable(
+        [
+            [
+                { text: '#', options: { bold: true } },
+                { text: 'Chapter', options: { bold: true } },
+                { text: 'Lessons', options: { bold: true } },
+            ],
+            ...course.chapters.map((chapter, index) => [
+                { text: String(index + 1) },
+                { text: chapter.chapterName },
+                { text: String(chapter.content?.length || 0) },
+            ]),
+        ],
+        {
+            x: 0.65,
+            y: 1.25,
+            w: 12,
+            border: { color: 'E5E7EB' },
+            fontSize: 12,
+            color: '111827',
+            fill: { color: 'FFFFFF' },
+        },
+    );
+
+    course.chapters.forEach((chapter, chapterIndex) => {
+        const slide = pptx.addSlide();
+        slide.addShape(pptx.ShapeType.rect, {
+            x: 0,
+            y: 0,
+            w: 13.33,
+            h: 0.18,
+            fill: { color: '0284C7' },
+            line: { color: '0284C7' },
+        });
+        slide.addText(`${chapterIndex + 1}. ${chapter.chapterName}`, {
+            x: 0.6,
+            y: 0.55,
+            w: 12,
+            h: 0.6,
+            fontSize: 24,
+            bold: true,
+            color: '0F172A',
+            fit: 'shrink',
+        });
+        slide.addText(
+            chapter.content
+                .slice(0, 5)
+                .map((item, index) => `${index + 1}. ${item.topic || item.explain?.slice(0, 70) || 'Lesson'}`)
+                .join('\n'),
+            {
+                x: 0.8,
+                y: 1.45,
+                w: 11.6,
+                h: 4.7,
+                fontSize: 16,
+                breakLine: false,
+                color: '334155',
+                fit: 'shrink',
+                valign: 'middle',
+            },
+        );
+    });
+
+    await pptx.writeFile({ fileName: `${safeFileName(course.courseTitle || 'course')}.pptx` });
+};
+
+export const downloadCourseXLSX = async (course: Course) => {
+    const workbook = new ExcelJS.Workbook();
+    workbook.creator = 'CheFu Academy';
+    workbook.created = new Date();
+
+    const outline = workbook.addWorksheet('Course Outline');
+    outline.columns = [
+        { header: 'Chapter #', key: 'chapter', width: 12 },
+        { header: 'Chapter Name', key: 'chapterName', width: 36 },
+        { header: 'Lesson #', key: 'lesson', width: 12 },
+        { header: 'Topic', key: 'topic', width: 34 },
+        { header: 'Completed', key: 'completed', width: 14 },
+        { header: 'Notes', key: 'notes', width: 42 },
+    ];
+    outline.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    outline.getRow(1).fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FF0F172A' },
+    };
+
+    course.chapters.forEach((chapter, chapterIndex) => {
+        chapter.content.forEach((item, itemIndex) => {
+            outline.addRow({
+                chapter: chapterIndex + 1,
+                chapterName: chapter.chapterName,
+                lesson: itemIndex + 1,
+                topic: item.topic || '',
+                completed: course.completedChapter?.includes(String(chapterIndex))
+                    ? 'Yes'
+                    : 'No',
+                notes: '',
+            });
+        });
+    });
+
+    const practice = workbook.addWorksheet('Practice');
+    practice.columns = [
+        { header: 'Type', key: 'type', width: 18 },
+        { header: 'Prompt', key: 'prompt', width: 60 },
+        { header: 'Answer', key: 'answer', width: 60 },
+    ];
+    practice.getRow(1).font = { bold: true };
+    course.quiz.forEach(item => {
+        practice.addRow({
+            type: 'Quiz',
+            prompt: item.question,
+            answer: item.correctAns,
+        });
+    });
+    course.flashcards.forEach(item => {
+        practice.addRow({
+            type: 'Flashcard',
+            prompt: item.front,
+            answer: item.back,
+        });
+    });
+    course.qa.forEach(item => {
+        practice.addRow({
+            type: 'Q&A',
+            prompt: item.question,
+            answer: item.answer,
+        });
+    });
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    saveBlob(
+        new Blob([buffer], {
+            type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        }),
+        `${safeFileName(course.courseTitle || 'course')}-study-tracker.xlsx`,
+    );
+};
+
+const downloadCoursePDF_Legacy = async (course: Course) => {
     if (!course) return;
 
     const doc = new jsPDF({ unit: 'mm', format: 'a4', compress: true });
