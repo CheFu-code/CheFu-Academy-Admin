@@ -5,9 +5,17 @@ import { Search } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-export default function CourseSearchBox() {
+export default function CourseSearchBox({
+    initialValue = '',
+    placeholder = 'Search courses by name, category...',
+    className = '',
+}: {
+    initialValue?: string;
+    placeholder?: string;
+    className?: string;
+}) {
     const router = useRouter();
-    const [search, setSearch] = useState('');
+    const [search, setSearch] = useState(initialValue);
 
     const submitSearch = () => {
         const query = search.trim();
@@ -16,14 +24,14 @@ export default function CourseSearchBox() {
     };
 
     return (
-        <div className="relative mt-1">
+        <div className={`relative mt-1 ${className}`}>
             <Input
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 onKeyDown={e => {
                     if (e.key === 'Enter') submitSearch();
                 }}
-                placeholder="Search courses by name, category..."
+                placeholder={placeholder}
                 aria-label="Search courses"
             />
 
