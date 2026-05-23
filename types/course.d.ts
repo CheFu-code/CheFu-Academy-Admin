@@ -46,6 +46,11 @@ export interface Course {
     quiz: Quiz[];
     completedChapter?: string[];
     originalCourseId?: string
+    lastStudiedAt?: Timestamp;
+    lastStudiedChapterIndex?: number;
+    lastStudiedContentIndex?: number;
+    lastStudiedChapterName?: string;
+    lastStudiedTopic?: string;
 }
 
 export interface CourseProgressProps {

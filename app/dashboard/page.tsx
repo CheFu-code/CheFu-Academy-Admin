@@ -4,6 +4,7 @@ import { getServerSessionMeta } from '@/lib/server-session';
 import {
     countCoursesServer,
     fetchCoursesServer,
+    fetchSmartResumeCourseServer,
 } from '@/services/serverCourseService';
 import { fetchPublicVideosServer } from '@/services/serverVideoService';
 import {
@@ -34,6 +35,7 @@ export default async function DashboardPage() {
         countCoursesServer(),
         fetchPublicVideosServer(),
     ]);
+    const smartResumeCourse = await fetchSmartResumeCourseServer(session?.email);
     const featuredCourses = courses.slice(0, 3);
     const featuredVideos = videos.slice(0, 3);
     const firstName =
@@ -76,17 +78,50 @@ export default async function DashboardPage() {
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-base">
                             <Sparkles className="size-4 text-primary" />
-                            Next Best Step
+                            {smartResumeCourse
+                                ? 'Continue Where You Left Off'
+                                : 'Next Best Step'}
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="flex flex-col gap-3">
-                        <p className="text-sm text-muted-foreground">
-                            Build momentum with a short practice session or a
-                            beginner-friendly video.
-                        </p>
-                        <Button variant="secondary" asChild>
-                            <Link href="/courses/practice">Start Practice</Link>
-                        </Button>
+                        {smartResumeCourse ? (
+                            <>
+                                <div>
+                                    <p className="line-clamp-1 text-sm font-medium">
+                                        {smartResumeCourse.courseTitle}
+                                    </p>
+                                    <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
+                                        {smartResumeCourse.lastStudiedChapterName ||
+                                            'Resume your course'}
+                                        {smartResumeCourse.lastStudiedTopic
+                                            ? ` - ${smartResumeCourse.lastStudiedTopic}`
+                                            : ''}
+                                    </p>
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                    Last studied {formatDashboardDate(
+                                        smartResumeCourse.lastStudiedAt,
+                                    )}
+                                </p>
+                                <Button variant="secondary" asChild>
+                                    <Link
+                                        href={`/courses/my-courses/course-view/${smartResumeCourse.id}/course-learning?chapter=${smartResumeCourse.lastStudiedChapterIndex || 0}&lesson=${smartResumeCourse.lastStudiedContentIndex || 0}`}
+                                    >
+                                        Continue Learning
+                                    </Link>
+                                </Button>
+                            </>
+                        ) : (
+                            <>
+                                <p className="text-sm text-muted-foreground">
+                                    Build momentum with a short practice session
+                                    or a beginner-friendly video.
+                                </p>
+                                <Button variant="secondary" asChild>
+                                    <Link href="/courses/practice">Start Practice</Link>
+                                </Button>
+                            </>
+                        )}
                     </CardContent>
                 </Card>
             </section>
@@ -216,6 +251,23 @@ export default async function DashboardPage() {
             </Card>
         </main>
     );
+}
+
+function formatDashboardDate(value: unknown) {
+    if (
+        value &&
+        typeof value === 'object' &&
+        'toDate' in value &&
+        typeof value.toDate === 'function'
+    ) {
+        return value.toDate().toLocaleDateString(undefined, {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+        });
+    }
+
+    return 'recently';
 }
 
 function StatCard({

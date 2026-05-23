@@ -628,16 +628,6 @@ const ProfileTabUI = ({
                                     ? 'Clearing...'
                                     : 'Clear Learning Progress'}
                             </Button>
-                            <Button
-                                variant="destructive"
-                                onClick={deleteGeneratedCourses}
-                                disabled={saving === 'deleteCourses'}
-                            >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                {saving === 'deleteCourses'
-                                    ? 'Deleting...'
-                                    : 'Delete Generated Courses'}
-                            </Button>
                         </div>
                     </div>
 

@@ -20,6 +20,15 @@ function toCourse(id: string, data: FirebaseFirestore.DocumentData): Course {
             ? data.completedChapter
             : [],
         originalCourseId: data.originalCourseId,
+        lastStudiedAt: data.lastStudiedAt,
+        lastStudiedChapterIndex: Number.isFinite(data.lastStudiedChapterIndex)
+            ? data.lastStudiedChapterIndex
+            : undefined,
+        lastStudiedContentIndex: Number.isFinite(data.lastStudiedContentIndex)
+            ? data.lastStudiedContentIndex
+            : undefined,
+        lastStudiedChapterName: data.lastStudiedChapterName,
+        lastStudiedTopic: data.lastStudiedTopic,
     };
 }
 
@@ -55,4 +64,41 @@ export async function searchCoursesServer(queryText: string): Promise<Course[]> 
             course.category?.toLowerCase().includes(normalized) ||
             course.courseTitle?.toLowerCase().includes(normalized),
     );
+}
+
+function timestampToMillis(value: unknown) {
+    if (
+        value &&
+        typeof value === 'object' &&
+        'toMillis' in value &&
+        typeof value.toMillis === 'function'
+    ) {
+        return value.toMillis();
+    }
+
+    return 0;
+}
+
+export async function fetchSmartResumeCourseServer(
+    email?: string,
+): Promise<Course | null> {
+    if (!email) return null;
+
+    const snapshot = await getFirebaseAdminDb()
+        .collection('course')
+        .where('createdBy', '==', email)
+        .limit(50)
+        .get();
+
+    const courses = snapshot.docs
+        .map(doc => toCourse(doc.id, doc.data()))
+        .filter(course => course.lastStudiedAt);
+
+    courses.sort(
+        (a, b) =>
+            timestampToMillis(b.lastStudiedAt) -
+            timestampToMillis(a.lastStudiedAt),
+    );
+
+    return courses[0] || null;
 }

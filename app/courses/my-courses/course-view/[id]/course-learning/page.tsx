@@ -9,7 +9,13 @@ import { useAuthUser } from '@/hooks/useAuthUser';
 import { useScrollIntoView } from '@/hooks/useScrollIntoView';
 import { db } from '@/lib/firebase';
 import { Course } from '@/types/course';
-import { arrayUnion, doc, getDoc, updateDoc } from 'firebase/firestore';
+import {
+    arrayUnion,
+    doc,
+    getDoc,
+    serverTimestamp,
+    updateDoc,
+} from 'firebase/firestore';
 import jsPDF from 'jspdf';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -21,12 +27,13 @@ const CourseLearning = () => {
     const searchParams = useSearchParams();
     const courseId = params.id;
     const initialChapterIndex = Number(searchParams.get('chapter') || 0);
+    const initialContentIndex = Number(searchParams.get('lesson') || 0);
 
     const { user } = useAuthUser();
     const { ref: scrollRef, scroll } = useScrollIntoView<HTMLDivElement>();
     const [course, setCourse] = useState<Course | null>(null);
     const [chapterIndex] = useState(initialChapterIndex);
-    const [contentIndex, setContentIndex] = useState(0);
+    const [contentIndex, setContentIndex] = useState(initialContentIndex);
     const [loading, setLoading] = useState(false);
     const [loadingCourse, setLoadingCourse] = useState(true);
 
@@ -66,6 +73,30 @@ const CourseLearning = () => {
         }
     }, [course, user, router, loading]);
 
+    useEffect(() => {
+        if (!course || !user || course.createdBy !== user.email) return;
+
+        const chapter = course.chapters[chapterIndex];
+        const content = chapter?.content?.[contentIndex];
+        if (!chapter || !content) return;
+
+        const persistResume = async () => {
+            try {
+                await updateDoc(doc(db, 'course', course.id), {
+                    lastStudiedAt: serverTimestamp(),
+                    lastStudiedChapterIndex: chapterIndex,
+                    lastStudiedContentIndex: contentIndex,
+                    lastStudiedChapterName: chapter.chapterName,
+                    lastStudiedTopic: content.topic || '',
+                });
+            } catch (error) {
+                console.error('Failed to update smart resume:', error);
+            }
+        };
+
+        void persistResume();
+    }, [chapterIndex, contentIndex, course, user]);
+
     if (!course && !loadingCourse) return <NoCourse />;
     if (loadingCourse) return <CourseLearningSkeleton />;
     if (!course) return null;
@@ -76,6 +107,7 @@ const CourseLearning = () => {
     const totalContents = chapter.content.length;
     const progressPercent = (contentIndex + 1) / totalContents;
     const content = chapter.content[contentIndex];
+    if (!content) return <NoChapter />;
     const code = content.code || '';
     const cleanCode = code
         ? code.replace(/^```[\w]*\n/, '').replace(/```$/, '')
