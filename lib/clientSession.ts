@@ -21,7 +21,14 @@ export async function syncSessionCookie() {
     });
 
     if (!response.ok) {
-        throw new Error('Failed to sync auth session.');
+        const data = await response.json().catch(() => ({})) as {
+            error?: string;
+            requestId?: string;
+        };
+        const requestId = data.requestId ? ` Request ID: ${data.requestId}` : '';
+        throw new Error(
+            `${data.error || 'Failed to sync auth session.'}${requestId}`,
+        );
     }
 }
 
