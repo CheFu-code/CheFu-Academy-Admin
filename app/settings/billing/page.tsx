@@ -7,8 +7,7 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import BillingHistory from '../_components/BillingHistory';
-import CurrentPlan from '../_components/CurrentPlan';
+import BillingCenter from '../_components/BillingCenter';
 
 const BillingPage = () => {
     return (
@@ -60,10 +59,7 @@ const BillingPage = () => {
 
             <Separator />
 
-            <div className="space-y-4">
-                <CurrentPlan />
-                <BillingHistory />
-            </div>
+            <BillingCenter />
         </div>
     );
 };
