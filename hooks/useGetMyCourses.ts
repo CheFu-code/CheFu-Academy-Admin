@@ -33,6 +33,12 @@ export const useGetMyCourse = () => {
                     qa: data.qa || [],
                     quiz: data.quiz || [],
                     completedChapter: data.completedChapter || [],
+                    originalCourseId: data.originalCourseId,
+                    lastStudiedAt: data.lastStudiedAt,
+                    lastStudiedChapterIndex: data.lastStudiedChapterIndex,
+                    lastStudiedContentIndex: data.lastStudiedContentIndex,
+                    lastStudiedChapterName: data.lastStudiedChapterName || '',
+                    lastStudiedTopic: data.lastStudiedTopic || '',
                 };
             });
 
