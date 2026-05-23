@@ -1,7 +1,10 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getServerSessionMeta } from '@/lib/server-session';
-import { fetchCoursesServer } from '@/services/serverCourseService';
+import {
+    countCoursesServer,
+    fetchCoursesServer,
+} from '@/services/serverCourseService';
 import { fetchPublicVideosServer } from '@/services/serverVideoService';
 import {
     BookOpen,
@@ -25,15 +28,18 @@ export const metadata: Metadata = {
 };
 
 export default async function DashboardPage() {
-    const [session, courses, videos] = await Promise.all([
+    const [session, courses, totalCourses, videos] = await Promise.all([
         getServerSessionMeta(),
         fetchCoursesServer(6),
+        countCoursesServer(),
         fetchPublicVideosServer(),
     ]);
     const featuredCourses = courses.slice(0, 3);
     const featuredVideos = videos.slice(0, 3);
     const firstName =
-        session?.email?.split('@')[0]?.replace(/[._-]+/g, ' ') || 'learner';
+        session?.name?.split(' ')[0] ||
+        session?.email?.split('@')[0]?.replace(/[._-]+/g, ' ') ||
+        'learner';
 
     return (
         <main className="flex flex-col gap-6">
@@ -89,7 +95,7 @@ export default async function DashboardPage() {
                 <StatCard
                     icon={BookOpen}
                     label="Available courses"
-                    value={courses.length}
+                    value={totalCourses}
                 />
                 <StatCard
                     icon={CirclePlay}

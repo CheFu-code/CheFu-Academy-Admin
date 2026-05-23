@@ -33,6 +33,15 @@ export async function fetchCoursesServer(limitCount = 24): Promise<Course[]> {
     return snapshot.docs.map(doc => toCourse(doc.id, doc.data()));
 }
 
+export async function countCoursesServer(): Promise<number> {
+    const snapshot = await getFirebaseAdminDb()
+        .collection('course')
+        .count()
+        .get();
+
+    return snapshot.data().count;
+}
+
 export async function searchCoursesServer(queryText: string): Promise<Course[]> {
     const normalized = queryText.trim().toLowerCase();
     const courses = await fetchCoursesServer(100);

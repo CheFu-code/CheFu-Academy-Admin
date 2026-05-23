@@ -73,7 +73,7 @@ const UpgradeUI = ({
                     <div className="flex flex-row items-center gap-2">
                         <Lock className="w-3 h-3 text-muted-foreground" />
                         <p className="text-xs text-muted-foreground">
-                            Powered by CheFu Academy
+                            Powered by CheFu Inc.
                         </p>
                     </div>
                 </CardContent>
