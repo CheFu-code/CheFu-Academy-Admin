@@ -10,12 +10,13 @@
         "dev": "next dev --turbopack",
         "desktop:dev": "concurrently -k \"npm run dev\" \"wait-on http://localhost:3000 && electron electron/main.cjs\"",
         "desktop:start": "electron electron/main.cjs",
-        "desktop:prepare": "node scripts/prepare-electron-build.cjs",
-        "desktop:pack": "npm run desktop:prepare && electron-builder --dir",
-        "desktop:build": "npm run desktop:prepare && electron-builder",
-        "desktop:build:win": "npm run desktop:prepare && electron-builder --win nsis portable",
-        "desktop:build:mac": "npm run desktop:prepare && electron-builder --mac dmg",
-        "desktop:build:linux": "npm run desktop:prepare && electron-builder --linux AppImage deb",
+        "desktop:assets": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/create-electron-assets.ps1",
+        "desktop:prepare": "npm run desktop:assets && node scripts/prepare-electron-build.cjs",
+        "desktop:pack": "npm run build && npm run desktop:prepare && electron-builder --dir",
+        "desktop:build": "npm run build && npm run desktop:prepare && electron-builder",
+        "desktop:build:win": "npm run build && npm run desktop:prepare && electron-builder --win nsis portable",
+        "desktop:build:mac": "npm run build && npm run desktop:prepare && electron-builder --mac dmg",
+        "desktop:build:linux": "npm run build && npm run desktop:prepare && electron-builder --linux AppImage deb",
         "build": "next build --turbopack",
         "enable:totp": "tsx services/enable-totp-mfa.ts",
         "enable": "ts-node services/enable-totp-mfa.ts",
@@ -124,6 +125,12 @@
         "productName": "CheFu Academy",
         "copyright": "Copyright (c) 2026 CheFu Inc",
         "asar": true,
+        "asarUnpack": [
+            "server.js",
+            ".next/**/*",
+            "node_modules/**/*",
+            "public/**/*"
+        ],
         "npmRebuild": false,
         "nodeGypRebuild": false,
         "buildDependenciesFromSource": false,
@@ -154,7 +161,7 @@
             }
         ],
         "win": {
-            "icon": "public/icon.png",
+            "icon": "build/icon.ico",
             "target": [
                 {
                     "target": "nsis",
@@ -172,14 +179,21 @@
         },
         "nsis": {
             "oneClick": false,
+            "license": "build/license.txt",
+            "installerIcon": "build/icon.ico",
+            "uninstallerIcon": "build/icon.ico",
+            "installerHeader": "build/installer-header.bmp",
+            "installerSidebar": "build/installer-sidebar.bmp",
             "allowToChangeInstallationDirectory": true,
+            "displayLanguageSelector": true,
+            "menuCategory": "CheFu Academy",
             "createDesktopShortcut": true,
             "createStartMenuShortcut": true,
             "shortcutName": "CheFu Academy"
         },
         "mac": {
             "category": "public.app-category.education",
-            "icon": "public/icon.png",
+            "icon": "build/icon.ico",
             "target": [
                 "dmg"
             ]

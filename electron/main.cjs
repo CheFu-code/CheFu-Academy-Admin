@@ -13,7 +13,10 @@ const {
     session,
     shell,
 } = require('electron');
+const { spawn } = require('child_process');
 const fs = require('fs/promises');
+const fsSync = require('fs');
+const http = require('http');
 const https = require('https');
 const path = require('path');
 
@@ -25,6 +28,8 @@ const releaseApiUrl =
     'https://api.github.com/repos/CheFu-code/CheFu-Academy-Admin/releases/latest';
 
 let mainWindow;
+let localServer;
+let localServerUrl;
 let tray;
 let reminderTimer;
 let quitting = false;
@@ -36,7 +41,8 @@ if (!gotLock) {
 }
 
 function getBaseUrl() {
-    return isDev ? devUrl : prodUrl;
+    if (isDev) return devUrl;
+    return localServerUrl || prodUrl;
 }
 
 function routeUrl(route = '/') {
@@ -165,6 +171,79 @@ async function createWindow() {
     if (isDev) {
         mainWindow.webContents.openDevTools({ mode: 'detach' });
     }
+}
+
+function getRandomPort() {
+    return 41000 + Math.floor(Math.random() * 10000);
+}
+
+function waitForLocalServer(url, timeoutMs = 30000) {
+    const startedAt = Date.now();
+
+    return new Promise((resolve, reject) => {
+        const check = () => {
+            const client = url.startsWith('https:') ? https : http;
+
+            const ping = client.get(url, response => {
+                response.resume();
+                resolve(true);
+            });
+
+            ping.on('error', () => {
+                if (Date.now() - startedAt > timeoutMs) {
+                    reject(new Error('Local desktop server did not start in time.'));
+                    return;
+                }
+
+                setTimeout(check, 350);
+            });
+            ping.setTimeout(2000, () => {
+                ping.destroy();
+            });
+        };
+
+        check();
+    });
+}
+
+async function startBundledNextServer() {
+    if (isDev) return devUrl;
+
+    const unpackedServerPath = path.join(
+        process.resourcesPath,
+        'app.asar.unpacked',
+        'server.js',
+    );
+    const serverPath = fsSync.existsSync(unpackedServerPath)
+        ? unpackedServerPath
+        : path.join(process.resourcesPath, 'app.asar', 'server.js');
+    const port = Number(process.env.ELECTRON_NEXT_PORT || getRandomPort());
+    localServerUrl = `http://127.0.0.1:${port}`;
+
+    localServer = spawn(process.execPath, [serverPath], {
+        cwd: path.dirname(serverPath),
+        env: {
+            ...process.env,
+            ELECTRON_RUN_AS_NODE: '1',
+            HOSTNAME: '127.0.0.1',
+            NODE_ENV: 'production',
+            PORT: String(port),
+        },
+        stdio: isDev ? 'inherit' : 'ignore',
+        windowsHide: true,
+    });
+
+    localServer.on('exit', code => {
+        if (!quitting) {
+            showNativeNotification({
+                title: 'Desktop runtime stopped',
+                body: `Local app server exited with code ${code ?? 'unknown'}.`,
+            });
+        }
+    });
+
+    await waitForLocalServer(localServerUrl);
+    return localServerUrl;
 }
 
 function setupWindowGuards(window) {
@@ -576,6 +655,7 @@ app.whenReady().then(async () => {
     app.setAsDefaultProtocolClient(appProtocol);
     setupDownloadHandling();
     createAppMenu();
+    await startBundledNextServer();
     await createWindow();
     createTray();
     registerShortcuts();
@@ -603,6 +683,7 @@ app.on('before-quit', () => {
 app.on('will-quit', () => {
     globalShortcut.unregisterAll();
     if (reminderTimer) clearInterval(reminderTimer);
+    if (localServer && !localServer.killed) localServer.kill();
 });
 
 app.on('window-all-closed', () => {

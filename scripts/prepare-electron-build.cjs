@@ -3,6 +3,8 @@ const path = require('path');
 
 const rootDir = path.resolve(__dirname, '..');
 const buildDir = path.join(rootDir, 'desktop-build', 'app');
+const standaloneDir = path.join(rootDir, '.next', 'standalone');
+const rootPackage = require(path.join(rootDir, 'package.json'));
 
 async function copyDir(from, to) {
     await fs.rm(to, { force: true, recursive: true });
@@ -15,13 +17,25 @@ async function copyFile(from, to) {
 }
 
 async function main() {
+    try {
+        await fs.access(path.join(standaloneDir, 'server.js'));
+    } catch {
+        throw new Error('Missing .next/standalone/server.js. Run npm run build before packaging the desktop app.');
+    }
+
     await fs.rm(path.join(rootDir, 'desktop-build'), {
         force: true,
         recursive: true,
     });
     await fs.mkdir(buildDir, { recursive: true });
 
+    await copyDir(standaloneDir, buildDir);
     await copyDir(path.join(rootDir, 'electron'), path.join(buildDir, 'electron'));
+    await copyDir(
+        path.join(rootDir, '.next', 'static'),
+        path.join(buildDir, '.next', 'static'),
+    );
+    await copyDir(path.join(rootDir, 'public'), path.join(buildDir, 'public'));
     await copyFile(
         path.join(rootDir, 'public', 'icon.png'),
         path.join(buildDir, 'public', 'icon.png'),
@@ -48,9 +62,7 @@ async function main() {
         productName: 'CheFu Academy',
         main: 'electron/main.cjs',
         private: true,
-        dependencies: {
-            'pdf-parse': '^2.4.5',
-        },
+        dependencies: rootPackage.dependencies,
     };
 
     await fs.writeFile(
