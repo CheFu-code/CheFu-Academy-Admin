@@ -23,6 +23,8 @@ export const metadata: Metadata = {
 };
 
 const releaseVersion = 'Desktop Preview';
+const releaseBaseUrl =
+    'https://github.com/CheFu-code/CheFu-Academy-Admin/releases/download/desktop-v0.1.0';
 
 const platforms = [
     {
@@ -31,7 +33,9 @@ const platforms = [
         description: 'Windows 10 and 11',
         primaryLabel: 'Windows installer',
         secondaryLabel: 'Portable build',
-        availability: 'Coming soon',
+        availability: 'Available',
+        primaryHref: `${releaseBaseUrl}/chefu-academy-setup-0.1.0.exe`,
+        secondaryHref: `${releaseBaseUrl}/chefu-academy-portable-0.1.0.exe`,
     },
     {
         name: 'macOS',
@@ -40,6 +44,8 @@ const platforms = [
         primaryLabel: 'macOS universal',
         secondaryLabel: 'DMG package',
         availability: 'Coming soon',
+        primaryHref: null,
+        secondaryHref: null,
     },
     {
         name: 'Linux',
@@ -48,6 +54,8 @@ const platforms = [
         primaryLabel: 'AppImage',
         secondaryLabel: 'Debian package',
         availability: 'Coming soon',
+        primaryHref: null,
+        secondaryHref: null,
     },
 ];
 
@@ -132,7 +140,7 @@ export default function DownloadsPage() {
                 <div className="mx-auto grid max-w-6xl gap-4 px-4 py-8 sm:px-6 md:grid-cols-3">
                     <SummaryItem label="Runtime" value="Electron desktop" />
                     <SummaryItem label="Security" value="Isolated preload bridge" />
-                    <SummaryItem label="Status" value="Packaging setup next" />
+                    <SummaryItem label="Status" value="Windows build available" />
                 </div>
             </section>
 
@@ -141,8 +149,8 @@ export default function DownloadsPage() {
                     <p className="text-sm font-medium text-primary">Choose your platform</p>
                     <h2 className="text-3xl font-bold tracking-tight">Desktop downloads</h2>
                     <p className="max-w-2xl text-muted-foreground">
-                        The desktop runtime is wired in the app. Installers can be added here
-                        once packaged builds are produced for each platform.
+                        The Windows installer and portable build are available now. macOS
+                        and Linux builds will appear here when those platform packages are produced.
                     </p>
                 </div>
 
@@ -159,8 +167,8 @@ export default function DownloadsPage() {
                         <div>
                             <h2 className="text-xl font-semibold">Developer preview</h2>
                             <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                                While installers are not published yet, you can run the desktop app
-                                locally with the Electron dev script.
+                                Desktop packaging is configured. Use this command while developing
+                                native features before making another installer.
                             </p>
                         </div>
                         <div className="rounded-lg border bg-muted px-4 py-3 font-mono text-sm">
@@ -183,6 +191,8 @@ function PlatformCard({
         primaryLabel: string;
         secondaryLabel: string;
         availability: string;
+        primaryHref: string | null;
+        secondaryHref: string | null;
     };
 }) {
     const Icon = platform.icon;
@@ -206,17 +216,38 @@ function PlatformCard({
                 </div>
             </CardHeader>
             <CardContent className="space-y-3">
-                <Button className="w-full justify-between" disabled>
-                    <span className="flex items-center gap-2">
+                {platform.primaryHref ? (
+                    <Button asChild className="w-full justify-between">
+                        <Link href={platform.primaryHref}>
+                            <span className="flex items-center gap-2">
+                                <Download className="h-4 w-4" />
+                                {platform.primaryLabel}
+                            </span>
+                            <CheckCircle2 className="h-4 w-4 opacity-70" />
+                        </Link>
+                    </Button>
+                ) : (
+                    <Button className="w-full justify-between" disabled>
+                        <span className="flex items-center gap-2">
+                            <Download className="h-4 w-4" />
+                            {platform.primaryLabel}
+                        </span>
+                        <CheckCircle2 className="h-4 w-4 opacity-50" />
+                    </Button>
+                )}
+                {platform.secondaryHref ? (
+                    <Button asChild className="w-full justify-start" variant="outline">
+                        <Link href={platform.secondaryHref}>
+                            <Download className="h-4 w-4" />
+                            {platform.secondaryLabel}
+                        </Link>
+                    </Button>
+                ) : (
+                    <Button className="w-full justify-start" variant="outline" disabled>
                         <Download className="h-4 w-4" />
-                        {platform.primaryLabel}
-                    </span>
-                    <CheckCircle2 className="h-4 w-4 opacity-50" />
-                </Button>
-                <Button className="w-full justify-start" variant="outline" disabled>
-                    <Download className="h-4 w-4" />
-                    {platform.secondaryLabel}
-                </Button>
+                        {platform.secondaryLabel}
+                    </Button>
+                )}
             </CardContent>
         </Card>
     );

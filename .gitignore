@@ -19,6 +19,9 @@
 
 # production
 /build
+/desktop-build
+/dist-desktop
+/public/downloads/*.exe
 /backend
 
 # misc

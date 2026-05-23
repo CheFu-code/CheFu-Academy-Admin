@@ -13,7 +13,7 @@ const {
 const fs = require('fs/promises');
 const path = require('path');
 
-const isDev = process.env.NODE_ENV !== 'production';
+const isDev = !app.isPackaged && process.env.NODE_ENV !== 'production';
 const devUrl = process.env.ELECTRON_START_URL || 'http://localhost:3000';
 const prodUrl = process.env.ELECTRON_APP_URL || 'https://academy.chefuinc.com';
 
