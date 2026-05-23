@@ -23,6 +23,7 @@
 /dist-desktop
 /public/downloads/*.exe
 /backend
+/flow
 
 # misc
 .DS_Store
