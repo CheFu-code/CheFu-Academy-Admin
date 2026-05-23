@@ -15,6 +15,12 @@ import {
     TotpMultiFactorGenerator,
     TotpSecret,
 } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
+import {
+    generateMfaBackupCodes,
+    hashMfaBackupCodes,
+} from '@/helpers/mfaBackupCodes';
+import { db } from '@/lib/firebase';
 import QRCode from 'qrcode';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -28,6 +34,7 @@ const SystemSettings = () => {
     const [totpSecret, setTotpSecret] = useState<TotpSecret | null>(null);
     const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
     const [secretText, setSecretText] = useState<string | null>(null);
+    const [backupCodes, setBackupCodes] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
     const [mfaKnown, setMfaKnown] = useState(false);
 
@@ -172,10 +179,30 @@ const SystemSettings = () => {
                 assertion,
                 'Admin TOTP',
             );
+            const user = auth.currentUser;
+            if (!user?.email) {
+                throw new Error('Missing user email for backup code storage.');
+            }
+
+            const codes = generateMfaBackupCodes();
+            const hashedCodes = await hashMfaBackupCodes(codes, user.uid);
+
+            await setDoc(
+                doc(db, 'users', user.email),
+                {
+                    mfaBackupCodes: {
+                        generatedAt: new Date(),
+                        remaining: codes.length,
+                        codes: hashedCodes,
+                    },
+                },
+                { merge: true },
+            );
+
             await auth.currentUser?.reload();
             setAdmin2FA(true);
-            toast.success('2FA enabled');
-            setShow2FAModal(false);
+            setBackupCodes(codes);
+            toast.success('2FA enabled. Save your backup codes now.');
             setTwoFACode('');
             setTotpSecret(null);
             setQrDataUrl(null);
@@ -240,8 +267,22 @@ const SystemSettings = () => {
             if (factor) {
                 await mfaUser.unenroll(factor.uid);
             }
+            if (u.email) {
+                await setDoc(
+                    doc(db, 'users', u.email),
+                    {
+                        mfaBackupCodes: {
+                            disabledAt: new Date(),
+                            remaining: 0,
+                            codes: [],
+                        },
+                    },
+                    { merge: true },
+                );
+            }
             await auth.currentUser?.reload();
             setAdmin2FA(false);
+            setBackupCodes([]);
             toast.success('2FA disabled');
         } catch (e) {
             if (
@@ -282,6 +323,11 @@ const SystemSettings = () => {
             secretText={secretText}
             onToggle2FA={onToggle2FA}
             mfaKnown={mfaKnown}
+            backupCodes={backupCodes}
+            onBackupCodesSaved={() => {
+                setBackupCodes([]);
+                setShow2FAModal(false);
+            }}
         />
     );
 };

@@ -37,6 +37,8 @@ const SystemSettingUI = ({
     secretText,
     onToggle2FA,
     mfaKnown,
+    backupCodes,
+    onBackupCodesSaved,
 }: {
     admin2FA: boolean;
     setAdmin2FA: (value: boolean) => void;
@@ -52,6 +54,8 @@ const SystemSettingUI = ({
     secretText: string | null;
     onToggle2FA: (enabled: boolean) => void;
     mfaKnown: boolean;
+    backupCodes: string[];
+    onBackupCodesSaved: () => void;
 }) => {
     return (
         <>
@@ -228,6 +232,8 @@ const SystemSettingUI = ({
                 qrDataUrl={qrDataUrl}
                 secretText={secretText}
                 loading={loading}
+                backupCodes={backupCodes}
+                onBackupCodesSaved={onBackupCodesSaved}
             />
         </>
     );

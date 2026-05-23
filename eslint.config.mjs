@@ -19,6 +19,7 @@ const eslintConfig = [
       "build/**",
       "backend/**",
       "desktop-build/**",
+      "dist-desktop/**",
       "electron/**",
       "scripts/*.cjs",
       "next-env.d.ts",
