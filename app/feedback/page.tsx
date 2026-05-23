@@ -186,10 +186,6 @@ const Feedback = () => {
                     </CardContent>
                 </Card>
             </div>
-
-            <p className="text-center text-xs text-muted-foreground sm:text-sm">
-                Copyright {currentYear} CheFu Academy. All rights reserved.
-            </p>
         </div>
     );
 };
