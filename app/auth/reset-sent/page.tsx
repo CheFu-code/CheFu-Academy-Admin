@@ -30,7 +30,7 @@ export default async function ResetSentPage({
                 <CardContent className="space-y-5 text-center">
                     <p className="text-sm leading-6 text-muted-foreground">
                         If {email ? <strong>{email}</strong> : 'that address'} is
-                        registered, Firebase will send password reset instructions shortly.
+                        registered, We will send password reset instructions shortly.
                     </p>
                     <div className="flex flex-wrap justify-center gap-2">
                         <Button asChild>

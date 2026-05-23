@@ -4,10 +4,22 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { auth, db } from '@/lib/firebase';
 import { Course } from '@/types/course';
-import { doc, increment, runTransaction, serverTimestamp } from 'firebase/firestore';
+import { onAuthStateChanged } from 'firebase/auth';
+import {
+    doc,
+    getDoc,
+    increment,
+    runTransaction,
+    serverTimestamp,
+} from 'firebase/firestore';
 import { Star } from 'lucide-react';
-import { useState, useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { toast } from 'sonner';
+
+type ExistingReview = {
+    rating: number;
+    comment: string;
+};
 
 export default function CourseReviewPanel({
     course,
@@ -18,7 +30,69 @@ export default function CourseReviewPanel({
 }) {
     const [rating, setRating] = useState(0);
     const [comment, setComment] = useState('');
+    const [existingReview, setExistingReview] =
+        useState<ExistingReview | null>(null);
+    const [editing, setEditing] = useState(false);
+    const [loadingReview, setLoadingReview] = useState(true);
+    const [stats, setStats] = useState({
+        averageRating: Number(course.averageRating) || 0,
+        reviewCount: Number(course.reviewCount) || 0,
+    });
     const [pending, startTransition] = useTransition();
+
+    useEffect(() => {
+        setStats({
+            averageRating: Number(course.averageRating) || 0,
+            reviewCount: Number(course.reviewCount) || 0,
+        });
+    }, [course.averageRating, course.reviewCount]);
+
+    useEffect(() => {
+        if (!completed) return;
+
+        setLoadingReview(true);
+
+        const unsubscribe = onAuthStateChanged(auth, async user => {
+            if (!user) {
+                setExistingReview(null);
+                setRating(0);
+                setComment('');
+                setEditing(false);
+                setLoadingReview(false);
+                return;
+            }
+
+            try {
+                const reviewRef = doc(db, 'course', course.id, 'reviews', user.uid);
+                const reviewSnap = await getDoc(reviewRef);
+
+                if (reviewSnap.exists()) {
+                    const review = reviewSnap.data();
+                    const savedReview = {
+                        rating: Number(review.rating) || 0,
+                        comment: String(review.comment || ''),
+                    };
+
+                    setExistingReview(savedReview);
+                    setRating(savedReview.rating);
+                    setComment(savedReview.comment);
+                    setEditing(false);
+                } else {
+                    setExistingReview(null);
+                    setRating(0);
+                    setComment('');
+                    setEditing(true);
+                }
+            } catch (error) {
+                console.error('Failed to load review:', error);
+                toast.error('Could not check your existing review.');
+            } finally {
+                setLoadingReview(false);
+            }
+        });
+
+        return () => unsubscribe();
+    }, [completed, course.id]);
 
     if (!completed) return null;
 
@@ -39,6 +113,8 @@ export default function CourseReviewPanel({
             const reviewRef = doc(db, 'course', course.id, 'reviews', user.uid);
 
             try {
+                let submittedStats = stats;
+
                 await runTransaction(db, async transaction => {
                     const [courseSnap, reviewSnap] = await Promise.all([
                         transaction.get(courseRef),
@@ -54,6 +130,7 @@ export default function CourseReviewPanel({
                     const nextTotal =
                         currentAverage * currentCount - previousRating + rating;
                     const nextAverage = nextCount > 0 ? nextTotal / nextCount : rating;
+                    const roundedAverage = Number(nextAverage.toFixed(2));
 
                     transaction.set(
                         reviewRef,
@@ -74,16 +151,35 @@ export default function CourseReviewPanel({
                     transaction.set(
                         courseRef,
                         {
-                            averageRating: Number(nextAverage.toFixed(2)),
+                            averageRating: roundedAverage,
                             reviewCount: reviewSnap.exists()
                                 ? currentCount
                                 : increment(1),
                         },
                         { merge: true },
                     );
+
+                    submittedStats = {
+                        averageRating: roundedAverage,
+                        reviewCount: nextCount,
+                    };
                 });
 
-                toast.success('Thanks for reviewing this course.');
+                const savedReview = {
+                    rating,
+                    comment: comment.trim(),
+                };
+
+                setStats(submittedStats);
+                setExistingReview(savedReview);
+                setRating(savedReview.rating);
+                setComment(savedReview.comment);
+                setEditing(false);
+                toast.success(
+                    existingReview
+                        ? 'Your review has been updated.'
+                        : 'Thanks for reviewing this course.',
+                );
             } catch (error) {
                 console.error('Failed to submit review:', error);
                 toast.error('Could not save your review.');
@@ -106,39 +202,102 @@ export default function CourseReviewPanel({
                     </p>
                 </div>
                 <div className="text-sm text-muted-foreground">
-                    Current: {(course.averageRating || 0).toFixed(1)} from{' '}
-                    {course.reviewCount || 0} review
-                    {(course.reviewCount || 0) !== 1 ? 's' : ''}
+                    Current: {stats.averageRating.toFixed(1)} from{' '}
+                    {stats.reviewCount} review{stats.reviewCount !== 1 ? 's' : ''}
                 </div>
             </div>
 
-            <div className="mt-5 space-y-3">
-                <div className="flex gap-1">
-                    {[1, 2, 3, 4, 5].map(value => (
-                        <button
-                            key={value}
-                            type="button"
-                            onClick={() => setRating(value)}
-                            className="rounded-md p-1 text-yellow-500 transition hover:bg-muted"
-                            aria-label={`Rate ${value} stars`}
-                        >
-                            <Star
-                                className="size-6"
-                                fill={value <= rating ? 'currentColor' : 'none'}
-                            />
-                        </button>
-                    ))}
+            {loadingReview ? (
+                <div className="mt-5 rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
+                    Checking your saved review...
                 </div>
-                <Textarea
-                    value={comment}
-                    onChange={event => setComment(event.target.value)}
-                    placeholder="What made this course useful?"
-                    className="min-h-24"
-                />
-                <Button type="button" onClick={submitReview} disabled={pending}>
-                    {pending ? 'Saving...' : 'Submit review'}
-                </Button>
-            </div>
+            ) : existingReview && !editing ? (
+                <div className="mt-5 rounded-lg border bg-muted/40 p-4">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                            <p className="text-sm font-semibold">
+                                Your review is saved
+                            </p>
+                            <div className="mt-2 flex gap-1 text-yellow-500">
+                                {[1, 2, 3, 4, 5].map(value => (
+                                    <Star
+                                        key={value}
+                                        className="size-5"
+                                        fill={
+                                            value <= existingReview.rating
+                                                ? 'currentColor'
+                                                : 'none'
+                                        }
+                                    />
+                                ))}
+                            </div>
+                            {existingReview.comment ? (
+                                <p className="mt-3 text-sm text-muted-foreground">
+                                    {existingReview.comment}
+                                </p>
+                            ) : null}
+                        </div>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setEditing(true)}
+                        >
+                            Edit review
+                        </Button>
+                    </div>
+                </div>
+            ) : (
+                <div className="mt-5 space-y-3">
+                    <div className="flex gap-1">
+                        {[1, 2, 3, 4, 5].map(value => (
+                            <button
+                                key={value}
+                                type="button"
+                                onClick={() => setRating(value)}
+                                className="rounded-md p-1 text-yellow-500 transition hover:bg-muted"
+                                aria-label={`Rate ${value} stars`}
+                            >
+                                <Star
+                                    className="size-6"
+                                    fill={value <= rating ? 'currentColor' : 'none'}
+                                />
+                            </button>
+                        ))}
+                    </div>
+                    <Textarea
+                        value={comment}
+                        onChange={event => setComment(event.target.value)}
+                        placeholder="What made this course useful?"
+                        className="min-h-24"
+                    />
+                    <div className="flex flex-wrap gap-2">
+                        <Button
+                            type="button"
+                            onClick={submitReview}
+                            disabled={pending}
+                        >
+                            {pending
+                                ? 'Saving...'
+                                : existingReview
+                                  ? 'Update review'
+                                  : 'Submit review'}
+                        </Button>
+                        {existingReview ? (
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                onClick={() => {
+                                    setRating(existingReview.rating);
+                                    setComment(existingReview.comment);
+                                    setEditing(false);
+                                }}
+                            >
+                                Cancel
+                            </Button>
+                        ) : null}
+                    </div>
+                </div>
+            )}
         </section>
     );
 }
