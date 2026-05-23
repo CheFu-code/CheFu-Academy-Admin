@@ -15,6 +15,9 @@ type Prefs = {
     general: boolean;
     marketing: boolean;
     security: boolean;
+    courseReminders: boolean;
+    aiCourseCompletion: boolean;
+    weeklyProgressSummary: boolean;
 };
 
 const NotificationsTabUI = ({
@@ -53,6 +56,21 @@ const NotificationsTabUI = ({
             title: 'Security Emails',
             description: 'Sign-in alerts, password changes, and account protection notices.',
         },
+        {
+            key: 'courseReminders',
+            title: 'Course Reminders',
+            description: 'Nudges to continue active courses and keep your learning rhythm.',
+        },
+        {
+            key: 'aiCourseCompletion',
+            title: 'AI Course Completion Emails',
+            description: 'Get notified when generated courses and AI learning material are ready.',
+        },
+        {
+            key: 'weeklyProgressSummary',
+            title: 'Weekly Progress Summary',
+            description: 'A weekly recap of completed lessons, progress, and suggested next steps.',
+        },
     ];
 
     const enabledCount = Object.values(prefs).filter(Boolean).length;
@@ -72,7 +90,7 @@ const NotificationsTabUI = ({
                             </CardDescription>
                         </div>
                         <div className="rounded-full border bg-muted/50 px-3 py-1 text-xs text-muted-foreground">
-                            {enabledCount}/4 enabled
+                            {enabledCount}/{notificationItems.length} enabled
                         </div>
                     </div>
                     <div className="flex flex-wrap gap-2">

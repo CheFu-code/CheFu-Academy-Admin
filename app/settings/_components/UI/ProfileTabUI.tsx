@@ -17,9 +17,11 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
 import { TabsContent } from '@/components/ui/tabs';
 import { User } from '@/types/user';
 import {
+    Brain,
     CalendarDays,
     CheckCircle2,
     Clock3,
@@ -27,13 +29,29 @@ import {
     Globe2,
     Mail,
     MapIcon,
+    RotateCcw,
     ShieldAlert,
     ShieldCheck,
-    Smartphone
+    Smartphone,
+    Target,
+    Trash2,
+    UserRoundCog
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import countryList from 'react-select-country-list';
 import { toast } from 'sonner';
+
+type SaveKey =
+    | null
+    | 'fullname'
+    | 'bio'
+    | 'country'
+    | 'learning'
+    | 'privacy'
+    | 'export'
+    | 'resetOnboarding'
+    | 'clearProgress'
+    | 'deleteCourses';
 
 const ProfileTabUI = ({
     user,
@@ -43,6 +61,11 @@ const ProfileTabUI = ({
     setBio,
     updateField,
     updateCountry,
+    updateAccountSettings,
+    exportAccountData,
+    resetOnboarding,
+    clearLearningProgress,
+    deleteGeneratedCourses,
     saving,
     loggingOut,
     handleLogout,
@@ -54,16 +77,74 @@ const ProfileTabUI = ({
     setBio: (value: string) => void;
     updateField: (field: 'fullname' | 'bio', value: string) => void;
     updateCountry: (countryCode: string) => void;
-    saving: null | 'fullname' | 'bio' | 'country';
+    updateAccountSettings: (
+        payload: Record<string, unknown>,
+        savingKey: NonNullable<SaveKey>,
+        successMessage: string,
+    ) => void;
+    exportAccountData: () => void;
+    resetOnboarding: () => void;
+    clearLearningProgress: () => void;
+    deleteGeneratedCourses: () => void;
+    saving: SaveKey;
     loggingOut: boolean;
     handleLogout: () => void;
 }) => {
     const countries = useMemo(() => countryList().getData(), []);
     const [countryCode, setCountryCode] = useState(user.countryCode || '');
+    const [language, setLanguage] = useState(user.language || 'English');
+    const [learningGoal, setLearningGoal] = useState(user.learningGoal || '');
+    const [skillLevel, setSkillLevel] = useState(
+        user.skillLevel || 'beginner',
+    );
+    const [interests, setInterests] = useState(
+        user.learningInterests?.join(', ') || '',
+    );
+    const [weeklyLearningGoal, setWeeklyLearningGoal] = useState(
+        String(user.weeklyLearningGoal || 3),
+    );
+    const [lessonStyle, setLessonStyle] = useState(
+        user.lessonStyle || 'example-heavy',
+    );
+    const [defaultCourseDifficulty, setDefaultCourseDifficulty] = useState(
+        user.defaultCourseDifficulty || 'beginner',
+    );
+    const [preferredContentFormat, setPreferredContentFormat] = useState(
+        user.preferredContentFormat || 'examples',
+    );
+    const [aiTutorSuggestions, setAiTutorSuggestions] = useState(
+        user.aiTutorSuggestions ?? true,
+    );
+    const [privacy, setPrivacy] = useState({
+        publicProfile: user.privacy?.publicProfile ?? false,
+        showCompletedCourses: user.privacy?.showCompletedCourses ?? false,
+        showCountry: user.privacy?.showCountry ?? true,
+        personalizedAiRecommendations:
+            user.privacy?.personalizedAiRecommendations ?? true,
+    });
 
     useEffect(() => {
         setCountryCode(user.countryCode || '');
     }, [user.countryCode]);
+
+    useEffect(() => {
+        setLanguage(user.language || 'English');
+        setLearningGoal(user.learningGoal || '');
+        setSkillLevel(user.skillLevel || 'beginner');
+        setInterests(user.learningInterests?.join(', ') || '');
+        setWeeklyLearningGoal(String(user.weeklyLearningGoal || 3));
+        setLessonStyle(user.lessonStyle || 'example-heavy');
+        setDefaultCourseDifficulty(user.defaultCourseDifficulty || 'beginner');
+        setPreferredContentFormat(user.preferredContentFormat || 'examples');
+        setAiTutorSuggestions(user.aiTutorSuggestions ?? true);
+        setPrivacy({
+            publicProfile: user.privacy?.publicProfile ?? false,
+            showCompletedCourses: user.privacy?.showCompletedCourses ?? false,
+            showCountry: user.privacy?.showCountry ?? true,
+            personalizedAiRecommendations:
+                user.privacy?.personalizedAiRecommendations ?? true,
+        });
+    }, [user]);
 
     const roles = user.roles?.length
         ? user.roles.map(role => role.charAt(0).toUpperCase() + role.slice(1))
@@ -95,6 +176,38 @@ const ProfileTabUI = ({
         } catch {
             toast.error(`Failed to copy ${label}.`);
         }
+    };
+
+    const saveLearningPreferences = () => {
+        const parsedGoal = Number(weeklyLearningGoal);
+        updateAccountSettings(
+            {
+                language: language.trim() || 'English',
+                learningGoal: learningGoal.trim(),
+                skillLevel,
+                learningInterests: interests
+                    .split(',')
+                    .map(item => item.trim())
+                    .filter(Boolean),
+                weeklyLearningGoal: Number.isFinite(parsedGoal)
+                    ? Math.max(0, parsedGoal)
+                    : 0,
+                lessonStyle,
+                defaultCourseDifficulty,
+                preferredContentFormat,
+                aiTutorSuggestions,
+            },
+            'learning',
+            'Learning preferences saved.',
+        );
+    };
+
+    const savePrivacyControls = () => {
+        updateAccountSettings(
+            { privacy },
+            'privacy',
+            'Privacy controls saved.',
+        );
     };
 
     return (
@@ -252,6 +365,279 @@ const ProfileTabUI = ({
                                     Copy Email
                                 </Button>
                             </div>
+                        </div>
+                    </div>
+
+                    <Separator />
+
+                    <div className="grid gap-3 rounded-xl border bg-muted/20 p-4">
+                        <div className="flex items-center gap-2">
+                            <Target className="h-4 w-4 text-cyan-500" />
+                            <h3 className="text-sm font-semibold text-muted-foreground">
+                                Learning Preferences
+                            </h3>
+                        </div>
+
+                        <div className="grid gap-4 md:grid-cols-2">
+                            <div className="grid gap-2">
+                                <Label htmlFor="learning-goal">Learning Goal</Label>
+                                <Input
+                                    id="learning-goal"
+                                    value={learningGoal}
+                                    onChange={e => setLearningGoal(e.target.value)}
+                                    placeholder="Example: become confident with JavaScript"
+                                />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="language">Preferred Language</Label>
+                                <Input
+                                    id="language"
+                                    value={language}
+                                    onChange={e => setLanguage(e.target.value)}
+                                    placeholder="English"
+                                />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label>Skill Level</Label>
+                                <Select
+                                    value={skillLevel}
+                                    onValueChange={value =>
+                                        setSkillLevel(value as typeof skillLevel)
+                                    }
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="beginner">Beginner</SelectItem>
+                                        <SelectItem value="intermediate">Intermediate</SelectItem>
+                                        <SelectItem value="advanced">Advanced</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="grid gap-2">
+                                <Label>Default Course Difficulty</Label>
+                                <Select
+                                    value={defaultCourseDifficulty}
+                                    onValueChange={value =>
+                                        setDefaultCourseDifficulty(
+                                            value as typeof defaultCourseDifficulty,
+                                        )
+                                    }
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="beginner">Beginner</SelectItem>
+                                        <SelectItem value="intermediate">Intermediate</SelectItem>
+                                        <SelectItem value="advanced">Advanced</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="grid gap-2">
+                                <Label>Lesson Style</Label>
+                                <Select
+                                    value={lessonStyle}
+                                    onValueChange={value =>
+                                        setLessonStyle(value as typeof lessonStyle)
+                                    }
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="short">Short</SelectItem>
+                                        <SelectItem value="detailed">Detailed</SelectItem>
+                                        <SelectItem value="example-heavy">
+                                            Example-heavy
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="grid gap-2">
+                                <Label>Preferred Content Format</Label>
+                                <Select
+                                    value={preferredContentFormat}
+                                    onValueChange={value =>
+                                        setPreferredContentFormat(
+                                            value as typeof preferredContentFormat,
+                                        )
+                                    }
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="text">Text</SelectItem>
+                                        <SelectItem value="examples">Examples</SelectItem>
+                                        <SelectItem value="quizzes">Quizzes</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="weekly-goal">Weekly Learning Goal</Label>
+                                <Input
+                                    id="weekly-goal"
+                                    type="number"
+                                    min={0}
+                                    value={weeklyLearningGoal}
+                                    onChange={e => setWeeklyLearningGoal(e.target.value)}
+                                />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="interests">Interests</Label>
+                                <Input
+                                    id="interests"
+                                    value={interests}
+                                    onChange={e => setInterests(e.target.value)}
+                                    placeholder="AI, cooking, business"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex items-center justify-between gap-4 rounded-lg border bg-background p-3">
+                            <div>
+                                <p className="text-sm font-medium">AI tutor suggestions</p>
+                                <p className="text-xs text-muted-foreground">
+                                    Let the app use your preferences to guide tutor responses.
+                                </p>
+                            </div>
+                            <Switch
+                                checked={aiTutorSuggestions}
+                                onCheckedChange={setAiTutorSuggestions}
+                            />
+                        </div>
+
+                        <div>
+                            <Button
+                                onClick={saveLearningPreferences}
+                                disabled={saving === 'learning'}
+                            >
+                                {saving === 'learning'
+                                    ? 'Saving...'
+                                    : 'Save Learning Preferences'}
+                            </Button>
+                        </div>
+                    </div>
+
+                    <Separator />
+
+                    <div className="grid gap-3 rounded-xl border bg-muted/20 p-4">
+                        <div className="flex items-center gap-2">
+                            <UserRoundCog className="h-4 w-4 text-cyan-500" />
+                            <h3 className="text-sm font-semibold text-muted-foreground">
+                                Privacy Controls
+                            </h3>
+                        </div>
+
+                        {[
+                            {
+                                key: 'publicProfile',
+                                title: 'Public profile',
+                                description: 'Allow your basic profile to be shown publicly.',
+                            },
+                            {
+                                key: 'showCompletedCourses',
+                                title: 'Show completed courses',
+                                description: 'Allow completed-course activity on your profile.',
+                            },
+                            {
+                                key: 'showCountry',
+                                title: 'Show country',
+                                description: 'Allow your country to appear where profiles are shown.',
+                            },
+                            {
+                                key: 'personalizedAiRecommendations',
+                                title: 'Personalized AI recommendations',
+                                description: 'Use preferences and activity to personalize AI suggestions.',
+                            },
+                        ].map(item => (
+                            <div
+                                key={item.key}
+                                className="flex items-center justify-between gap-4 rounded-lg border bg-background p-3"
+                            >
+                                <div>
+                                    <p className="text-sm font-medium">{item.title}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                        {item.description}
+                                    </p>
+                                </div>
+                                <Switch
+                                    checked={
+                                        privacy[item.key as keyof typeof privacy]
+                                    }
+                                    onCheckedChange={value =>
+                                        setPrivacy(prev => ({
+                                            ...prev,
+                                            [item.key]: value,
+                                        }))
+                                    }
+                                />
+                            </div>
+                        ))}
+
+                        <div>
+                            <Button
+                                onClick={savePrivacyControls}
+                                disabled={saving === 'privacy'}
+                            >
+                                {saving === 'privacy'
+                                    ? 'Saving...'
+                                    : 'Save Privacy Controls'}
+                            </Button>
+                        </div>
+                    </div>
+
+                    <Separator />
+
+                    <div className="grid gap-3 rounded-xl border bg-muted/20 p-4">
+                        <div className="flex items-center gap-2">
+                            <Brain className="h-4 w-4 text-cyan-500" />
+                            <h3 className="text-sm font-semibold text-muted-foreground">
+                                Account Data
+                            </h3>
+                        </div>
+
+                        <div className="grid gap-3 md:grid-cols-2">
+                            <Button
+                                variant="outline"
+                                onClick={exportAccountData}
+                                disabled={saving === 'export'}
+                            >
+                                <Copy className="mr-2 h-4 w-4" />
+                                {saving === 'export' ? 'Exporting...' : 'Export My Data'}
+                            </Button>
+                            <Button
+                                variant="outline"
+                                onClick={resetOnboarding}
+                                disabled={saving === 'resetOnboarding'}
+                            >
+                                <RotateCcw className="mr-2 h-4 w-4" />
+                                {saving === 'resetOnboarding'
+                                    ? 'Resetting...'
+                                    : 'Reset Onboarding'}
+                            </Button>
+                            <Button
+                                variant="outline"
+                                onClick={clearLearningProgress}
+                                disabled={saving === 'clearProgress'}
+                            >
+                                <RotateCcw className="mr-2 h-4 w-4" />
+                                {saving === 'clearProgress'
+                                    ? 'Clearing...'
+                                    : 'Clear Learning Progress'}
+                            </Button>
+                            <Button
+                                variant="destructive"
+                                onClick={deleteGeneratedCourses}
+                                disabled={saving === 'deleteCourses'}
+                            >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                {saving === 'deleteCourses'
+                                    ? 'Deleting...'
+                                    : 'Delete Generated Courses'}
+                            </Button>
                         </div>
                     </div>
 

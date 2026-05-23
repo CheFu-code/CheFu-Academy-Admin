@@ -9,107 +9,131 @@ function hashString(input: string): string {
     let hash = 0;
     for (let i = 0; i < input.length; i++) {
         hash = (hash << 5) - hash + input.charCodeAt(i);
-        hash |= 0; // Convert to 32-bit integer
+        hash |= 0;
     }
-    // base36 for compactness, ensure positive
     return Math.abs(hash).toString(36);
 }
 
+type MarkdownToken = {
+    delimiter: string;
+    type: 'bold' | 'italic' | 'code';
+};
+
+const markdownTokens: MarkdownToken[] = [
+    { delimiter: '**', type: 'bold' },
+    { delimiter: '__', type: 'bold' },
+    { delimiter: '`', type: 'code' },
+    { delimiter: '*', type: 'italic' },
+    { delimiter: '_', type: 'italic' },
+];
+
+const findTokenAt = (value: string, index: number) =>
+    markdownTokens.find(({ delimiter }) => value.startsWith(delimiter, index));
+
+const isEscaped = (value: string, index: number) => {
+    let slashCount = 0;
+    for (let i = index - 1; i >= 0 && value[i] === '\\'; i--) {
+        slashCount++;
+    }
+    return slashCount % 2 === 1;
+};
+
+const hasClosingDelimiter = (
+    value: string,
+    delimiter: string,
+    startIndex: number,
+) => {
+    for (let i = startIndex; i < value.length; i++) {
+        if (!isEscaped(value, i) && value.startsWith(delimiter, i)) {
+            return true;
+        }
+    }
+    return false;
+};
+
 /**
- * Parses a paragraph and returns React nodes where:
- * - Text inside single quotes '...' is wrapped in <strong>.
- * - Text inside backticks `...` is wrapped in <code> with a unique data-uid and class "unique".
+ * Render a small, safe subset of inline Markdown.
  *
- * Notes:
- * - This supports multiple occurrences.
- * - Single quotes and backticks are treated as **inline delimiters**; no nesting resolution is attempted.
- * - If you need to render literal quotes/backticks, escape them in the source (e.g., \', \`).
+ * Supported:
+ * - **bold** and __bold__
+ * - *italic* and _italic_
+ * - `inline code`
+ * - escaped delimiters such as \*\* or \`
+ *
+ * Important: apostrophes/single quotes are treated as normal text, so phrases
+ * like "Newton's First Law" are not accidentally bolded.
  */
 export function formatParagraph(paragraph: string): React.ReactNode[] {
     if (!paragraph) return [];
 
-    // We will scan the string and break into tokens while respecting delimiters.
-    // Delimiters we care about: ' (single quote), ` (backtick)
-    // Strategy:
-    //   Iterate character by character, track current mode: normal | bold | code
-    //   Push nodes on transitions or at the end.
-
     const nodes: React.ReactNode[] = [];
-    let buf = '';
-    type Mode = 'normal' | 'bold' | 'code';
-    let mode: Mode = 'normal';
+    let buffer = '';
+    let activeToken: MarkdownToken | null = null;
 
     const flush = () => {
-        if (!buf) return;
-        if (mode === 'normal') {
-            nodes.push(buf);
-        } else if (mode === 'bold') {
-            nodes.push(<strong key={`b-${nodes.length}`}>{buf}</strong>);
+        if (!buffer) return;
+
+        if (!activeToken) {
+            nodes.push(buffer);
+        } else if (activeToken.type === 'bold') {
+            nodes.push(<strong key={`b-${nodes.length}`}>{buffer}</strong>);
+        } else if (activeToken.type === 'italic') {
+            nodes.push(<em key={`i-${nodes.length}`}>{buffer}</em>);
         } else {
-            // code mode
-            const uid = hashString(buf);
             nodes.push(
                 <code
                     key={`c-${nodes.length}`}
                     className="unique"
-                    data-uid={uid}
+                    data-uid={hashString(buffer)}
                 >
-                    {buf}
+                    {buffer}
                 </code>,
             );
         }
-        buf = '';
+
+        buffer = '';
     };
 
-    const s = paragraph;
-    for (let i = 0; i < s.length; i++) {
-        const ch = s[i];
-
-        // Handle escapes for \' and \`
-        if (
-            ch === '\\' &&
-            i + 1 < s.length &&
-            (s[i + 1] === "'" || s[i + 1] === '`')
-        ) {
-            buf += s[i + 1];
+    for (let i = 0; i < paragraph.length; i++) {
+        if (paragraph[i] === '\\' && i + 1 < paragraph.length) {
+            buffer += paragraph[i + 1];
             i++;
             continue;
         }
 
-        if (ch === "'" && mode !== 'code') {
-            // toggle bold
-            if (mode === 'bold') {
-                // closing bold
+        if (activeToken) {
+            if (paragraph.startsWith(activeToken.delimiter, i)) {
                 flush();
-                mode = 'normal';
-            } else if (mode === 'normal') {
-                // opening bold
-                flush();
-                mode = 'bold';
-            } else {
-                // should not happen: only normal/code/bold
+                i += activeToken.delimiter.length - 1;
+                activeToken = null;
+                continue;
             }
+
+            buffer += paragraph[i];
             continue;
         }
 
-        if (ch === '`' && mode !== 'bold') {
-            // toggle code
-            if (mode === 'code') {
-                // closing code
-                flush();
-                mode = 'normal';
-            } else if (mode === 'normal') {
-                // opening code
-                flush();
-                mode = 'code';
-            }
+        const token = findTokenAt(paragraph, i);
+        if (
+            token &&
+            hasClosingDelimiter(
+                paragraph,
+                token.delimiter,
+                i + token.delimiter.length,
+            )
+        ) {
+            flush();
+            activeToken = token;
+            i += token.delimiter.length - 1;
             continue;
         }
 
-        buf += ch;
+        buffer += paragraph[i];
     }
 
-    // Flush remaining buffer
+    if (activeToken) {
+        buffer = `${activeToken.delimiter}${buffer}`;
+    }
     flush();
 
     return nodes;

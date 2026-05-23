@@ -31,6 +31,7 @@ const SecurityTab = () => {
     const [loadingChange, setLoadingChange] = useState(false);
     const [loadingPasskey, setLoadingPasskey] = useState(false);
     const [generatedPassword, setGeneratedPassword] = useState('');
+    const [securityInfoVersion, setSecurityInfoVersion] = useState(0);
     const [passkeySupport, setPasskeySupport] = useState<
         'checking' | 'supported' | 'unsupported'
     >('checking');
@@ -279,6 +280,26 @@ const SecurityTab = () => {
         }
     };
 
+    const refreshSecurityInfo = async () => {
+        const user = auth.currentUser;
+        if (!user) {
+            toast.error('No user is logged in.');
+            return;
+        }
+
+        try {
+            await user.reload();
+            await user.getIdToken(true);
+            setSecurityInfoVersion(version => version + 1);
+            toast.success('Security session refreshed.');
+        } catch (error) {
+            console.error('Failed to refresh security session:', error);
+            toast.error('Failed to refresh security session.');
+        }
+    };
+
+    const currentUser = auth.currentUser;
+
     return (
         <SecurityTabUI
             openDelete={openDelete}
@@ -309,6 +330,13 @@ const SecurityTab = () => {
             handleCopyGeneratedPassword={handleCopyGeneratedPassword}
             handleUseGeneratedPassword={handleUseGeneratedPassword}
             handleCopySecuritySnapshot={handleCopySecuritySnapshot}
+            handleRefreshSecurityInfo={refreshSecurityInfo}
+            securityInfoVersion={securityInfoVersion}
+            connectedProviders={
+                currentUser?.providerData.map(provider => provider.providerId) || []
+            }
+            createdAt={currentUser?.metadata.creationTime || 'N/A'}
+            lastSignInAt={currentUser?.metadata.lastSignInTime || 'N/A'}
         />
     );
 };

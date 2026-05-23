@@ -11,17 +11,25 @@ type Prefs = {
     general: boolean;
     marketing: boolean;
     security: boolean;
+    courseReminders: boolean;
+    aiCourseCompletion: boolean;
+    weeklyProgressSummary: boolean;
+};
+
+const defaultPrefs: Prefs = {
+    activity: false,
+    general: false,
+    marketing: false,
+    security: true,
+    courseReminders: true,
+    aiCourseCompletion: true,
+    weeklyProgressSummary: false,
 };
 
 const NotificationsTab = () => {
     const { user, loading } = useAuthUser();
     const [prefs, setPrefs] = useState<Prefs>(
-        user?.emailPreferences ?? {
-            activity: false,
-            general: false,
-            marketing: false,
-            security: true,
-        },
+        { ...defaultPrefs, ...user?.emailPreferences },
     );
     const [changingPrefKey, setChangingPrefKey] = useState<
         keyof Prefs | 'bulk' | null
@@ -29,7 +37,7 @@ const NotificationsTab = () => {
 
     useEffect(() => {
         if (user?.emailPreferences) {
-            setPrefs(user.emailPreferences as Prefs);
+            setPrefs({ ...defaultPrefs, ...user.emailPreferences });
         }
     }, [user]);
 
@@ -74,12 +82,18 @@ const NotificationsTab = () => {
                     general: true,
                     marketing: true,
                     security: true,
+                    courseReminders: true,
+                    aiCourseCompletion: true,
+                    weeklyProgressSummary: true,
                 }
                 : {
                     activity: true,
                     general: true,
                     marketing: false,
                     security: true,
+                    courseReminders: true,
+                    aiCourseCompletion: true,
+                    weeklyProgressSummary: true,
                 };
 
         await persistPrefs(newPrefs, 'bulk', previousPrefs);

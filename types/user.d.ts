@@ -13,6 +13,20 @@ export interface User {
     fcmToken?: string;
     isVerified: boolean;
     language: string;
+    learningGoal?: string;
+    skillLevel?: 'beginner' | 'intermediate' | 'advanced';
+    learningInterests?: string[];
+    weeklyLearningGoal?: number;
+    lessonStyle?: 'short' | 'detailed' | 'example-heavy';
+    defaultCourseDifficulty?: 'beginner' | 'intermediate' | 'advanced';
+    preferredContentFormat?: 'text' | 'examples' | 'quizzes';
+    aiTutorSuggestions?: boolean;
+    privacy?: {
+        publicProfile?: boolean;
+        showCompletedCourses?: boolean;
+        showCountry?: boolean;
+        personalizedAiRecommendations?: boolean;
+    };
     lastLogin: Timestamp;
     lastSeen: Timestamp;
     member: boolean;
@@ -28,6 +42,9 @@ export interface User {
         general: boolean;
         marketing: boolean;
         security: boolean;
+        courseReminders?: boolean;
+        aiCourseCompletion?: boolean;
+        weeklyProgressSummary?: boolean;
     };
     deviceInfo: {
         deviceBrand: string;

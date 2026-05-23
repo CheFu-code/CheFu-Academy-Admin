@@ -57,6 +57,11 @@ const SecurityTabUI = ({
     handleCopyGeneratedPassword,
     handleUseGeneratedPassword,
     handleCopySecuritySnapshot,
+    handleRefreshSecurityInfo,
+    securityInfoVersion,
+    connectedProviders,
+    createdAt,
+    lastSignInAt,
 }: {
     openDelete: boolean;
     setOpenDelete: (value: boolean) => void;
@@ -86,6 +91,11 @@ const SecurityTabUI = ({
     handleCopyGeneratedPassword: () => void;
     handleUseGeneratedPassword: () => void;
     handleCopySecuritySnapshot: () => void;
+    handleRefreshSecurityInfo: () => void;
+    securityInfoVersion: number;
+    connectedProviders: string[];
+    createdAt: string;
+    lastSignInAt: string;
 }) => {
     const passwordStrength = [
         newPassword.length >= 12,
@@ -341,6 +351,59 @@ const SecurityTabUI = ({
                             </DialogFooter>
                         </DialogContent>
                     </Dialog>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-base sm:text-lg">
+                        Connected Sign-in & Activity
+                    </CardTitle>
+                    <CardDescription className="text-xs sm:text-sm">
+                        Review providers and recent Firebase authentication metadata.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="grid gap-3 md:grid-cols-2">
+                        <div className="rounded-lg border bg-muted/20 p-3">
+                            <p className="text-sm font-medium">Connected providers</p>
+                            <div className="mt-2 flex flex-wrap gap-2">
+                                {connectedProviders.length ? (
+                                    connectedProviders.map(provider => (
+                                        <Badge key={provider} variant="secondary">
+                                            {provider}
+                                        </Badge>
+                                    ))
+                                ) : (
+                                    <Badge variant="secondary">No providers found</Badge>
+                                )}
+                            </div>
+                        </div>
+                        <div className="rounded-lg border bg-muted/20 p-3">
+                            <p className="text-sm font-medium">Recent security activity</p>
+                            <div className="mt-2 space-y-1 text-xs text-muted-foreground">
+                                <p>Created: {createdAt}</p>
+                                <p>Last sign-in: {lastSignInAt}</p>
+                                <p>Session refreshes: {securityInfoVersion}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={handleRefreshSecurityInfo}
+                        >
+                            Refresh Session Info
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setOpenChange(true)}
+                        >
+                            Log Out Other Devices via Password Change
+                        </Button>
+                    </div>
                 </CardContent>
             </Card>
 
