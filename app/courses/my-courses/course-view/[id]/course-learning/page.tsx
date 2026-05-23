@@ -7,6 +7,7 @@ import CourseLearningSkeleton from '@/components/skeletons/CourseLearningSkeleto
 import { getBlurredLogoDataUrl } from '@/helpers/downloadChapter';
 import { useAuthUser } from '@/hooks/useAuthUser';
 import { useScrollIntoView } from '@/hooks/useScrollIntoView';
+import { arrayBufferToBase64, saveNativeFile } from '@/lib/desktop-files';
 import { db } from '@/lib/firebase';
 import { Course } from '@/types/course';
 import {
@@ -96,6 +97,11 @@ const CourseLearning = () => {
 
         void persistResume();
     }, [chapterIndex, contentIndex, course, user]);
+
+    useEffect(() => {
+        if (!course || !window.chefuDesktop?.isElectron) return;
+        void window.chefuDesktop.cacheCourse(course);
+    }, [course]);
 
     if (!course && !loadingCourse) return <NoCourse />;
     if (loadingCourse) return <CourseLearningSkeleton />;
@@ -294,7 +300,18 @@ const CourseLearning = () => {
             );
         }
 
-        doc.save(`${chapter.chapterName.replace(/\s+/g, '_')}.pdf`);
+        const fileName = `${chapter.chapterName.replace(/\s+/g, '_')}.pdf`;
+        const nativeResult = await saveNativeFile({
+            title: 'Save chapter PDF',
+            defaultPath: fileName,
+            data: arrayBufferToBase64(doc.output('arraybuffer')),
+            encoding: 'base64',
+            filters: [{ name: 'PDF', extensions: ['pdf'] }],
+        });
+
+        if (!nativeResult) {
+            doc.save(fileName);
+        }
     };
 
     return (

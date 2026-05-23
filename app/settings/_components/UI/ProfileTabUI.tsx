@@ -29,6 +29,7 @@ import {
     Globe2,
     Mail,
     MapIcon,
+    MonitorCog,
     RotateCcw,
     ShieldAlert,
     ShieldCheck,
@@ -122,10 +123,19 @@ const ProfileTabUI = ({
         personalizedAiRecommendations:
             user.privacy?.personalizedAiRecommendations ?? true,
     });
+    const [desktopAvailable, setDesktopAvailable] = useState(false);
+    const [autoLaunch, setAutoLaunch] = useState(false);
+    const [reminderMinutes, setReminderMinutes] = useState('1440');
 
     useEffect(() => {
         setCountryCode(user.countryCode || '');
     }, [user.countryCode]);
+
+    useEffect(() => {
+        if (!window.chefuDesktop?.isElectron) return;
+        setDesktopAvailable(true);
+        void window.chefuDesktop.getAutoLaunch().then(setAutoLaunch);
+    }, []);
 
     useEffect(() => {
         setLanguage(user.language || 'English');
@@ -208,6 +218,24 @@ const ProfileTabUI = ({
             'privacy',
             'Privacy controls saved.',
         );
+    };
+
+    const toggleAutoLaunch = async (enabled: boolean) => {
+        if (!window.chefuDesktop?.isElectron) return;
+        const next = await window.chefuDesktop.setAutoLaunch(enabled);
+        setAutoLaunch(next);
+        toast.success(next ? 'Desktop autolaunch enabled.' : 'Desktop autolaunch disabled.');
+    };
+
+    const scheduleDesktopReminder = async () => {
+        if (!window.chefuDesktop?.isElectron) return;
+        const minutes = Number(reminderMinutes);
+        const ok = await window.chefuDesktop.scheduleReminder(minutes);
+        if (ok) {
+            toast.success('Desktop learning reminder scheduled.');
+        } else {
+            toast.error('Enter a valid reminder interval.');
+        }
     };
 
     return (
@@ -590,6 +618,59 @@ const ProfileTabUI = ({
                     </div>
 
                     <Separator />
+
+                    {desktopAvailable && (
+                        <>
+                            <div className="grid gap-3 rounded-xl border bg-muted/20 p-4">
+                                <div className="flex items-center gap-2">
+                                    <MonitorCog className="h-4 w-4 text-cyan-500" />
+                                    <h3 className="text-sm font-semibold text-muted-foreground">
+                                        Desktop App
+                                    </h3>
+                                </div>
+
+                                <div className="flex items-center justify-between gap-4 rounded-lg border bg-background p-3">
+                                    <div>
+                                        <p className="text-sm font-medium">
+                                            Launch when your computer starts
+                                        </p>
+                                        <p className="text-xs text-muted-foreground">
+                                            Open CheFu Academy automatically on desktop sign-in.
+                                        </p>
+                                    </div>
+                                    <Switch
+                                        checked={autoLaunch}
+                                        onCheckedChange={toggleAutoLaunch}
+                                    />
+                                </div>
+
+                                <div className="grid gap-3 rounded-lg border bg-background p-3 md:grid-cols-[1fr_auto]">
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="desktop-reminder">
+                                            Learning reminder interval, minutes
+                                        </Label>
+                                        <Input
+                                            id="desktop-reminder"
+                                            type="number"
+                                            min={1}
+                                            value={reminderMinutes}
+                                            onChange={event =>
+                                                setReminderMinutes(event.target.value)
+                                            }
+                                        />
+                                    </div>
+                                    <Button
+                                        className="self-end"
+                                        onClick={scheduleDesktopReminder}
+                                    >
+                                        Schedule Reminder
+                                    </Button>
+                                </div>
+                            </div>
+
+                            <Separator />
+                        </>
+                    )}
 
                     <div className="grid gap-3 rounded-xl border bg-muted/20 p-4">
                         <div className="flex items-center gap-2">

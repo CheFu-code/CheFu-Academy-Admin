@@ -38,3 +38,18 @@ export async function notifyDesktop({
         return false;
     }
 }
+
+export async function setDesktopProgress(
+    value?: number,
+    mode: 'none' | 'normal' | 'indeterminate' | 'error' | 'paused' = 'normal',
+) {
+    if (typeof window === 'undefined') return false;
+    if (!window.chefuDesktop?.isElectron) return false;
+
+    try {
+        return await window.chefuDesktop.setProgress({ value, mode });
+    } catch (error) {
+        console.error('Failed to set desktop progress:', error);
+        return false;
+    }
+}

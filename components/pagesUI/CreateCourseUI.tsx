@@ -4,6 +4,7 @@ import {
     BookOpenCheck,
     BrainCircuit,
     CheckCircle2,
+    FileUp,
     Layers3,
     Loader,
     Save,
@@ -49,6 +50,7 @@ const CreateCourseUI = ({
     setUserInput,
     generatingTopic,
     generateTopic,
+    onImportLearningFile,
     generatingCourse,
     onGenerateCourse,
     selectedTopics,
@@ -95,6 +97,18 @@ const CreateCourseUI = ({
                                 {generatingTopic
                                     ? 'Generating Topic...'
                                     : 'Generate Topic'}
+                            </Button>
+                        )}
+                        {onImportLearningFile && (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={onImportLearningFile}
+                                disabled={generatingCourse || generatingTopic}
+                                className="mt-3 w-full"
+                            >
+                                <FileUp className="size-4" />
+                                Import PDF, Markdown, or Text
                             </Button>
                         )}
                     </CardContent>

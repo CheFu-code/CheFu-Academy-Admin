@@ -69,5 +69,6 @@ export interface AddCourseProp {
     generatingCourse: boolean;
     onGenerateCourse: () => void;
     generateTopic: () => void;
+    onImportLearningFile?: () => void;
     mainWrapperRef: React.RefObject<HTMLDivElement | null>
 }

@@ -6,6 +6,7 @@ import React, { useState } from 'react';
 import { useAuthUser } from './useAuthUser';
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { setDesktopProgress } from '@/lib/desktop-notify';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
@@ -78,6 +79,7 @@ export const useGenerateTopic = (
         }
 
         setGeneratingCourse(true);
+        void setDesktopProgress(undefined, 'indeterminate');
 
         const promptText = selectedTopics.join(', ') + Prompt.COURSE;
         const contents = [
@@ -135,6 +137,7 @@ export const useGenerateTopic = (
             );
         } finally {
             setGeneratingCourse(false);
+            void setDesktopProgress(-1, 'none');
         }
     };
 
