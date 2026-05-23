@@ -2,7 +2,7 @@ import { Course } from '@/types/course';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { isCourseOwnerEmail } from '@/lib/courseOwnership';
+import { canAccessCourseAsLearner } from '@/lib/courseOwnership';
 import { useAuthUser } from './useAuthUser';
 
 export const useCourseFunctions = (course?: Course) => {
@@ -17,7 +17,7 @@ export const useCourseFunctions = (course?: Course) => {
         const isCompleted = completedChaptersState.includes(idx.toString());
 
         if (
-            isCourseOwnerEmail(course?.createdBy, user?.email) &&
+            canAccessCourseAsLearner(course, user) &&
             !user?.member &&
             isCompleted
         ) {

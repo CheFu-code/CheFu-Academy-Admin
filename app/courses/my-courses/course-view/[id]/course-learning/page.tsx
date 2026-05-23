@@ -8,7 +8,7 @@ import { getBlurredLogoDataUrl } from '@/helpers/downloadChapter';
 import { useAuthUser } from '@/hooks/useAuthUser';
 import { useScrollIntoView } from '@/hooks/useScrollIntoView';
 import { getApiUrl } from '@/lib/api-url';
-import { isCourseOwnerEmail } from '@/lib/courseOwnership';
+import { canAccessCourseAsLearner } from '@/lib/courseOwnership';
 import { arrayBufferToBase64, saveNativeFile } from '@/lib/desktop-files';
 import getUserToken from '@/lib/getToken';
 import { Course } from '@/types/course';
@@ -114,7 +114,7 @@ const CourseLearning = () => {
     const isBlockedCompletedChapter = Boolean(
         course &&
             user &&
-            isCourseOwnerEmail(course.createdBy, user.email) &&
+            canAccessCourseAsLearner(course, user) &&
             !user.member &&
             isCompletedChapter,
     );
@@ -123,7 +123,7 @@ const CourseLearning = () => {
         if (accessDenied || authLoading || loadingCourse || !course || !user || loading) {
             return;
         }
-        if (!isCourseOwnerEmail(course.createdBy, user.email)) {
+        if (!canAccessCourseAsLearner(course, user)) {
             toast.error('You are not authorized to view this course!');
             router.replace('/courses');
         }
@@ -131,7 +131,7 @@ const CourseLearning = () => {
 
     useEffect(() => {
         if (authLoading || loadingCourse || !course || !user) return;
-        if (!isCourseOwnerEmail(course.createdBy, user.email)) return;
+        if (!canAccessCourseAsLearner(course, user)) return;
         if (!isBlockedCompletedChapter) return;
 
         toast.warning('Chapter completed, subscribe to revisit this chapter.');
@@ -146,7 +146,7 @@ const CourseLearning = () => {
     ]);
 
     useEffect(() => {
-        if (!course || !user || !isCourseOwnerEmail(course.createdBy, user.email)) {
+        if (!course || !user || !canAccessCourseAsLearner(course, user)) {
             return;
         }
         if (isBlockedCompletedChapter) return;

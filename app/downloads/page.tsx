@@ -22,9 +22,9 @@ export const metadata: Metadata = {
         'Download CheFu Academy for desktop and learn with native notifications, offline course access, and desktop shortcuts.',
 };
 
-const releaseVersion = 'Desktop Preview';
+const releaseVersion = 'Desktop v0.1.1';
 const releaseBaseUrl =
-    'https://github.com/CheFu-code/CheFu-Academy-Admin/releases/download/desktop-v0.1.0';
+    'https://github.com/CheFu-code/CheFu-Academy-Admin/releases/download/desktop-v0.1.1';
 
 const platforms = [
     {
@@ -34,8 +34,8 @@ const platforms = [
         primaryLabel: 'Windows installer',
         secondaryLabel: 'Portable build',
         availability: 'Available',
-        primaryHref: `${releaseBaseUrl}/chefu-academy-setup-0.1.0.exe`,
-        secondaryHref: `${releaseBaseUrl}/chefu-academy-portable-0.1.0.exe`,
+        primaryHref: `${releaseBaseUrl}/chefu-academy-setup-0.1.1.exe`,
+        secondaryHref: `${releaseBaseUrl}/chefu-academy-portable-0.1.1.exe`,
     },
     {
         name: 'macOS',

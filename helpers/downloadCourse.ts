@@ -2,6 +2,8 @@ import type { Course } from '@/types/course';
 import { getApiUrl } from '@/lib/api-url';
 import getUserToken from '@/lib/getToken';
 import {
+    AlignmentType,
+    BorderStyle,
     Document,
     HeadingLevel,
     Packer,
@@ -62,6 +64,28 @@ const cleanCode = (value?: string) =>
         .replace(/```$/, '')
         .trim();
 
+const courseStats = (course: Course) => {
+    const lessons = course.chapters.reduce(
+        (total, chapter) => total + (chapter.content?.length || 0),
+        0,
+    );
+    const practice =
+        (course.quiz?.length || 0) +
+        (course.flashcards?.length || 0) +
+        (course.qa?.length || 0);
+
+    return {
+        lessons,
+        practice,
+        sessions: Math.max(1, Math.ceil(lessons / 4)),
+    };
+};
+
+const snippet = (value?: string, length = 220) => {
+    const text = cleanText(value);
+    return text.length > length ? `${text.slice(0, length - 1)}...` : text;
+};
+
 export const downloadCoursePDF_Office = async (course: Course) => {
     if (!course?.id) return downloadCoursePDF_Legacy(course);
 
@@ -88,13 +112,72 @@ export const downloadCoursePDF_Office = async (course: Course) => {
 };
 
 export const downloadCourseDOCX = async (course: Course) => {
+    const stats = courseStats(course);
+    const noBorder = {
+        top: { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' },
+        bottom: { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' },
+        left: { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' },
+        right: { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' },
+    };
+
     const doc = new Document({
         creator: 'CheFu Academy',
         title: course.courseTitle,
         description: course.description,
+        styles: {
+            paragraphStyles: [
+                {
+                    id: 'Title',
+                    name: 'Title',
+                    basedOn: 'Normal',
+                    next: 'Normal',
+                    quickFormat: true,
+                    run: { size: 56, bold: true, color: '0F172A', font: 'Aptos Display' },
+                    paragraph: { spacing: { after: 260 } },
+                },
+                {
+                    id: 'Heading1',
+                    name: 'Heading 1',
+                    basedOn: 'Normal',
+                    next: 'Normal',
+                    quickFormat: true,
+                    run: { size: 34, bold: true, color: '0F172A', font: 'Aptos Display' },
+                    paragraph: { spacing: { before: 360, after: 160 } },
+                },
+                {
+                    id: 'Heading2',
+                    name: 'Heading 2',
+                    basedOn: 'Normal',
+                    next: 'Normal',
+                    quickFormat: true,
+                    run: { size: 25, bold: true, color: '075985', font: 'Aptos Display' },
+                    paragraph: { spacing: { before: 240, after: 120 } },
+                },
+                {
+                    id: 'Heading3',
+                    name: 'Heading 3',
+                    basedOn: 'Normal',
+                    next: 'Normal',
+                    quickFormat: true,
+                    run: { size: 21, bold: true, color: '0F172A', font: 'Aptos' },
+                    paragraph: { spacing: { before: 180, after: 80 } },
+                },
+            ],
+        },
         sections: [
             {
                 children: [
+                    new Paragraph({
+                        alignment: AlignmentType.RIGHT,
+                        children: [
+                            new TextRun({
+                                text: 'CHEFU ACADEMY WORKBOOK',
+                                bold: true,
+                                color: '0284C7',
+                                size: 19,
+                            }),
+                        ],
+                    }),
                     new Paragraph({
                         text: course.courseTitle || 'Untitled Course',
                         heading: HeadingLevel.TITLE,
@@ -108,7 +191,73 @@ export const downloadCourseDOCX = async (course: Course) => {
                             }),
                         ],
                     }),
-                    new Paragraph(cleanText(course.description) || 'Structured course notes.'),
+                    new Paragraph({
+                        children: [
+                            new TextRun({
+                                text:
+                                    cleanText(course.description) ||
+                                    'A structured learning path with lessons, examples, and practice material.',
+                                size: 23,
+                                color: '334155',
+                            }),
+                        ],
+                        spacing: { after: 240 },
+                    }),
+                    new Table({
+                        width: { size: 100, type: WidthType.PERCENTAGE },
+                        borders: noBorder,
+                        rows: [
+                            new TableRow({
+                                children: [
+                                    ['Chapters', String(course.chapters.length)],
+                                    ['Lessons', String(stats.lessons)],
+                                    ['Practice', String(stats.practice)],
+                                    ['Sessions', String(stats.sessions)],
+                                ].map(
+                                    ([label, value]) =>
+                                        new TableCell({
+                                            shading: { fill: 'F0F9FF' },
+                                            borders: noBorder,
+                                            margins: {
+                                                top: 170,
+                                                bottom: 170,
+                                                left: 170,
+                                                right: 170,
+                                            },
+                                            children: [
+                                                new Paragraph({
+                                                    children: [
+                                                        new TextRun({
+                                                            text: value,
+                                                            bold: true,
+                                                            size: 30,
+                                                            color: '0F172A',
+                                                        }),
+                                                    ],
+                                                }),
+                                                new Paragraph({
+                                                    children: [
+                                                        new TextRun({
+                                                            text: label.toUpperCase(),
+                                                            bold: true,
+                                                            size: 16,
+                                                            color: '0369A1',
+                                                        }),
+                                                    ],
+                                                }),
+                                            ],
+                                        }),
+                                ),
+                            }),
+                        ],
+                    }),
+                    new Paragraph({
+                        text: 'How to use this workbook',
+                        heading: HeadingLevel.HEADING_1,
+                    }),
+                    new Paragraph(
+                        'Read each lesson, pause on examples, then test yourself with the practice pack. Use the roadmap to plan short study sessions and revisit chapters you want to strengthen.',
+                    ),
                     new Paragraph({
                         text: 'Course Roadmap',
                         heading: HeadingLevel.HEADING_1,
@@ -195,6 +344,7 @@ export const downloadCourseDOCX = async (course: Course) => {
 };
 
 export const downloadCoursePPTX = async (course: Course) => {
+    const stats = courseStats(course);
     const pptx = new pptxgen();
     pptx.author = 'CheFu Academy';
     pptx.company = 'CheFu Inc';
@@ -206,15 +356,55 @@ export const downloadCoursePPTX = async (course: Course) => {
         bodyFontFace: 'Aptos',
     };
 
+    const addRibbon = (slide: pptxgen.Slide, label = 'CheFu Academy') => {
+        slide.addShape(pptx.ShapeType.rect, {
+            x: 0,
+            y: 0,
+            w: 13.33,
+            h: 0.16,
+            fill: { color: '0EA5E9' },
+            line: { color: '0EA5E9' },
+        });
+        slide.addText(label, {
+            x: 0.55,
+            y: 0.32,
+            w: 3,
+            h: 0.24,
+            fontSize: 8.5,
+            bold: true,
+            color: '0284C7',
+            margin: 0,
+            fit: 'shrink',
+        });
+    };
+
     const addTitle = (slide: pptxgen.Slide, title: string, subtitle?: string) => {
         slide.background = { color: '0F172A' };
+        slide.addShape(pptx.ShapeType.rect, {
+            x: 8.8,
+            y: 0,
+            w: 4.6,
+            h: 7.5,
+            fill: { color: '075985', transparency: 8 },
+            line: { color: '075985', transparency: 100 },
+        });
+        slide.addText('CHEFU ACADEMY', {
+            x: 0.75,
+            y: 0.62,
+            w: 3.5,
+            h: 0.25,
+            fontSize: 9,
+            bold: true,
+            color: '7DD3FC',
+            margin: 0,
+        });
         slide.addText(title, {
             x: 0.7,
-            y: 1.2,
-            w: 11.8,
-            h: 0.9,
+            y: 1.35,
+            w: 8.4,
+            h: 1.2,
             fontFace: 'Aptos Display',
-            fontSize: 32,
+            fontSize: 34,
             bold: true,
             color: 'FFFFFF',
             fit: 'shrink',
@@ -222,23 +412,59 @@ export const downloadCoursePPTX = async (course: Course) => {
         if (subtitle) {
             slide.addText(subtitle, {
                 x: 0.75,
-                y: 2.2,
-                w: 10.8,
-                h: 0.8,
+                y: 2.65,
+                w: 7.8,
+                h: 0.95,
                 fontSize: 15,
                 color: 'CBD5E1',
                 fit: 'shrink',
             });
         }
+        [
+            ['Chapters', String(course.chapters.length)],
+            ['Lessons', String(stats.lessons)],
+            ['Practice', String(stats.practice)],
+        ].forEach(([label, value], index) => {
+            slide.addShape(pptx.ShapeType.roundRect, {
+                x: 0.75 + index * 2.05,
+                y: 5.35,
+                w: 1.75,
+                h: 0.82,
+                rectRadius: 0.08,
+                fill: { color: 'FFFFFF', transparency: 88 },
+                line: { color: '38BDF8', transparency: 30 },
+            });
+            slide.addText(value, {
+                x: 0.93 + index * 2.05,
+                y: 5.48,
+                w: 1.35,
+                h: 0.24,
+                fontSize: 17,
+                bold: true,
+                color: 'FFFFFF',
+                margin: 0,
+            });
+            slide.addText(label.toUpperCase(), {
+                x: 0.93 + index * 2.05,
+                y: 5.82,
+                w: 1.35,
+                h: 0.18,
+                fontSize: 6.5,
+                bold: true,
+                color: 'BAE6FD',
+                margin: 0,
+            });
+        });
     };
 
     addTitle(
         pptx.addSlide(),
         course.courseTitle || 'Untitled Course',
-        cleanText(course.description) || course.category,
+        snippet(course.description, 180) || course.category,
     );
 
     const roadmap = pptx.addSlide();
+    addRibbon(roadmap, course.category || 'Course roadmap');
     roadmap.addText('Course Roadmap', {
         x: 0.6,
         y: 0.45,
@@ -272,16 +498,57 @@ export const downloadCoursePPTX = async (course: Course) => {
         },
     );
 
+    const studyFlow = pptx.addSlide();
+    addRibbon(studyFlow, 'Study plan');
+    studyFlow.addText('How to use this deck', {
+        x: 0.65,
+        y: 0.75,
+        w: 8.6,
+        h: 0.55,
+        fontSize: 28,
+        bold: true,
+        color: '0F172A',
+        margin: 0,
+    });
+    [
+        'Read one chapter at a time.',
+        'Pause on worked examples and code blocks.',
+        'Use flashcards, Q&A, and quizzes for recall.',
+        'Revisit weak topics after each study session.',
+    ].forEach((item, index) => {
+        studyFlow.addShape(pptx.ShapeType.roundRect, {
+            x: 0.78,
+            y: 1.65 + index * 0.92,
+            w: 11.5,
+            h: 0.62,
+            rectRadius: 0.08,
+            fill: { color: index % 2 ? 'F8FAFC' : 'F0F9FF' },
+            line: { color: 'DBE3EE' },
+        });
+        studyFlow.addText(String(index + 1).padStart(2, '0'), {
+            x: 1.05,
+            y: 1.84 + index * 0.92,
+            w: 0.38,
+            h: 0.2,
+            fontSize: 9,
+            bold: true,
+            color: '0284C7',
+            margin: 0,
+        });
+        studyFlow.addText(item, {
+            x: 1.65,
+            y: 1.78 + index * 0.92,
+            w: 9.8,
+            h: 0.28,
+            fontSize: 14,
+            color: '334155',
+            margin: 0,
+        });
+    });
+
     course.chapters.forEach((chapter, chapterIndex) => {
         const slide = pptx.addSlide();
-        slide.addShape(pptx.ShapeType.rect, {
-            x: 0,
-            y: 0,
-            w: 13.33,
-            h: 0.18,
-            fill: { color: '0284C7' },
-            line: { color: '0284C7' },
-        });
+        addRibbon(slide, `Chapter ${chapterIndex + 1}`);
         slide.addText(`${chapterIndex + 1}. ${chapter.chapterName}`, {
             x: 0.6,
             y: 0.55,
@@ -315,11 +582,44 @@ export const downloadCoursePPTX = async (course: Course) => {
 };
 
 export const downloadCourseXLSX = async (course: Course) => {
+    const stats = courseStats(course);
     const workbook = new ExcelJS.Workbook();
     workbook.creator = 'CheFu Academy';
     workbook.created = new Date();
 
+    const summary = workbook.addWorksheet('Dashboard');
+    summary.properties.defaultRowHeight = 22;
+    summary.columns = [
+        { key: 'label', width: 28 },
+        { key: 'value', width: 46 },
+    ];
+    summary.mergeCells('A1:B1');
+    summary.getCell('A1').value = course.courseTitle || 'Untitled Course';
+    summary.getCell('A1').font = {
+        bold: true,
+        size: 22,
+        color: { argb: 'FF0F172A' },
+    };
+    summary.getCell('A1').alignment = { vertical: 'middle' };
+    summary.addRow(['Category', course.category || 'General']);
+    summary.addRow(['Description', cleanText(course.description)]);
+    summary.addRow(['Chapters', course.chapters.length]);
+    summary.addRow(['Lessons', stats.lessons]);
+    summary.addRow(['Practice Items', stats.practice]);
+    summary.addRow(['Recommended Study Sessions', stats.sessions]);
+    summary.getColumn(1).font = { bold: true, color: { argb: 'FF0369A1' } };
+    summary.eachRow(row => {
+        row.eachCell(cell => {
+            cell.border = {
+                bottom: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+            };
+            cell.alignment = { vertical: 'top', wrapText: true };
+        });
+    });
+    summary.getRow(1).height = 34;
+
     const outline = workbook.addWorksheet('Course Outline');
+    outline.views = [{ state: 'frozen', ySplit: 1 }];
     outline.columns = [
         { header: 'Chapter #', key: 'chapter', width: 12 },
         { header: 'Chapter Name', key: 'chapterName', width: 36 },
@@ -333,6 +633,10 @@ export const downloadCourseXLSX = async (course: Course) => {
         type: 'pattern',
         pattern: 'solid',
         fgColor: { argb: 'FF0F172A' },
+    };
+    outline.autoFilter = {
+        from: 'A1',
+        to: 'F1',
     };
 
     course.chapters.forEach((chapter, chapterIndex) => {
@@ -349,14 +653,35 @@ export const downloadCourseXLSX = async (course: Course) => {
             });
         });
     });
+    outline.eachRow((row, rowNumber) => {
+        row.eachCell(cell => {
+            cell.alignment = { vertical: 'top', wrapText: true };
+            cell.border = {
+                bottom: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+            };
+            if (rowNumber > 1 && rowNumber % 2 === 0) {
+                cell.fill = {
+                    type: 'pattern',
+                    pattern: 'solid',
+                    fgColor: { argb: 'FFF8FAFC' },
+                };
+            }
+        });
+    });
 
     const practice = workbook.addWorksheet('Practice');
+    practice.views = [{ state: 'frozen', ySplit: 1 }];
     practice.columns = [
         { header: 'Type', key: 'type', width: 18 },
         { header: 'Prompt', key: 'prompt', width: 60 },
         { header: 'Answer', key: 'answer', width: 60 },
     ];
-    practice.getRow(1).font = { bold: true };
+    practice.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    practice.getRow(1).fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FF075985' },
+    };
     course.quiz.forEach(item => {
         practice.addRow({
             type: 'Quiz',
@@ -376,6 +701,62 @@ export const downloadCourseXLSX = async (course: Course) => {
             type: 'Q&A',
             prompt: item.question,
             answer: item.answer,
+        });
+    });
+    practice.autoFilter = {
+        from: 'A1',
+        to: 'C1',
+    };
+    practice.eachRow((row, rowNumber) => {
+        row.eachCell(cell => {
+            cell.alignment = { vertical: 'top', wrapText: true };
+            cell.border = {
+                bottom: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+            };
+            if (rowNumber > 1 && rowNumber % 2 === 0) {
+                cell.fill = {
+                    type: 'pattern',
+                    pattern: 'solid',
+                    fgColor: { argb: 'FFF8FAFC' },
+                };
+            }
+        });
+    });
+
+    const weekly = workbook.addWorksheet('Weekly Plan');
+    weekly.columns = [
+        { header: 'Week', key: 'week', width: 12 },
+        { header: 'Focus', key: 'focus', width: 42 },
+        { header: 'Goal', key: 'goal', width: 42 },
+        { header: 'Done', key: 'done', width: 12 },
+    ];
+    weekly.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    weekly.getRow(1).fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FF0F172A' },
+    };
+    course.chapters.forEach((chapter, index) => {
+        weekly.addRow({
+            week: index + 1,
+            focus: chapter.chapterName,
+            goal: `Complete ${chapter.content?.length || 0} lessons and write a short summary.`,
+            done: '',
+        });
+    });
+    weekly.eachRow((row, rowNumber) => {
+        row.eachCell(cell => {
+            cell.alignment = { vertical: 'top', wrapText: true };
+            cell.border = {
+                bottom: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+            };
+            if (rowNumber > 1 && rowNumber % 2 === 0) {
+                cell.fill = {
+                    type: 'pattern',
+                    pattern: 'solid',
+                    fgColor: { argb: 'FFF8FAFC' },
+                };
+            }
         });
     });
 

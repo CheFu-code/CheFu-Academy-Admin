@@ -56,7 +56,7 @@ async function main() {
 
     const packageJson = {
         name: 'chefu-academy-desktop',
-        version: '0.1.0',
+        version: rootPackage.version,
         description: 'CheFu Academy desktop learning app.',
         author: 'CheFu Inc',
         productName: 'CheFu Academy',

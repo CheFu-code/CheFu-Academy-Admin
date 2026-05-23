@@ -1,6 +1,6 @@
 {
     "name": "admin-web",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "description": "CheFu Academy desktop and web learning platform.",
     "author": "CheFu Inc",
     "private": true,
