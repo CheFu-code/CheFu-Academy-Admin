@@ -12,14 +12,14 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { db } from '@/lib/firebase';
+import { getApiUrl } from '@/lib/api-url';
 import { ManageUsersProps } from '@/types';
-import { doc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { Copy, Loader2, Search, Trash2, Users, X } from 'lucide-react';
 import * as React from 'react';
 import DeleteModal from './DeleteModal';
 import { copyToClipboard } from '@/helpers/copyToClipboard';
 import { EditableRolesCell } from '../EditableRoleCell';
+import getUserToken from '@/lib/getToken';
 
 const ManageUsersUI: React.FC<ManageUsersProps> = ({
     loading,
@@ -231,18 +231,50 @@ const ManageUsersUI: React.FC<ManageUsersProps> = ({
                                                             userEmail,
                                                             newRoles,
                                                         ) => {
-                                                            await updateDoc(
-                                                                doc(
-                                                                    db,
-                                                                    'users',
-                                                                    userEmail,
-                                                                ),
-                                                                {
-                                                                    roles: newRoles,
-                                                                    updatedAt:
-                                                                        serverTimestamp(),
-                                                                },
-                                                            );
+                                                            const token =
+                                                                await getUserToken();
+
+                                                            if (!token) {
+                                                                throw new Error(
+                                                                    'Please sign in again.',
+                                                                );
+                                                            }
+
+                                                            const response =
+                                                                await fetch(
+                                                                    getApiUrl(
+                                                                        '/admin/user-roles',
+                                                                    ),
+                                                                    {
+                                                                        method: 'PATCH',
+                                                                        headers: {
+                                                                            Authorization: `Bearer ${token}`,
+                                                                            'Content-Type':
+                                                                                'application/json',
+                                                                        },
+                                                                        body: JSON.stringify(
+                                                                            {
+                                                                                email: userEmail,
+                                                                                roles: newRoles,
+                                                                            },
+                                                                        ),
+                                                                    },
+                                                                );
+
+                                                            if (!response.ok) {
+                                                                const data =
+                                                                    await response
+                                                                        .json()
+                                                                        .catch(
+                                                                            () =>
+                                                                                ({}),
+                                                                        );
+                                                                throw new Error(
+                                                                    data?.message ||
+                                                                        data?.error ||
+                                                                        'Failed to update roles',
+                                                                );
+                                                            }
                                                         }}
                                                     />
                                                 </TableCell>

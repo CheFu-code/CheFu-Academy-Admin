@@ -7,16 +7,10 @@ import CourseLearningSkeleton from '@/components/skeletons/CourseLearningSkeleto
 import { getBlurredLogoDataUrl } from '@/helpers/downloadChapter';
 import { useAuthUser } from '@/hooks/useAuthUser';
 import { useScrollIntoView } from '@/hooks/useScrollIntoView';
+import { getApiUrl } from '@/lib/api-url';
 import { arrayBufferToBase64, saveNativeFile } from '@/lib/desktop-files';
-import { db } from '@/lib/firebase';
+import getUserToken from '@/lib/getToken';
 import { Course } from '@/types/course';
-import {
-    arrayUnion,
-    doc,
-    getDoc,
-    serverTimestamp,
-    updateDoc,
-} from 'firebase/firestore';
 import jsPDF from 'jspdf';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -26,17 +20,18 @@ const CourseLearning = () => {
     const params = useParams();
     const router = useRouter();
     const searchParams = useSearchParams();
-    const courseId = params.id;
+    const courseId = Array.isArray(params.id) ? params.id[0] : params.id;
     const initialChapterIndex = Number(searchParams.get('chapter') || 0);
     const initialContentIndex = Number(searchParams.get('lesson') || 0);
 
-    const { user } = useAuthUser();
+    const { user, loading: authLoading } = useAuthUser();
     const { ref: scrollRef, scroll } = useScrollIntoView<HTMLDivElement>();
     const [course, setCourse] = useState<Course | null>(null);
     const [chapterIndex] = useState(initialChapterIndex);
     const [contentIndex, setContentIndex] = useState(initialContentIndex);
     const [loading, setLoading] = useState(false);
     const [loadingCourse, setLoadingCourse] = useState(true);
+    const [accessDenied, setAccessDenied] = useState(false);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -50,32 +45,86 @@ const CourseLearning = () => {
         const fetchCourse = async () => {
             if (!courseId) return;
             try {
-                const docRef = doc(db, 'course', courseId as string);
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) {
-                    setCourse({ id: docSnap.id, ...docSnap.data() } as Course);
-                } else {
-                    console.error('Course not found:', courseId);
+                const token = await getUserToken();
+                if (!token) {
+                    toast.error('Please sign in again.');
+                    router.replace('/login');
+                    return;
                 }
+
+                const response = await fetch(
+                    getApiUrl(
+                        `/courses/${courseId}/learning?chapter=${chapterIndex}`,
+                    ),
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    },
+                );
+                const data = await response.json().catch(() => ({}));
+
+                if (!response.ok) {
+                    const message =
+                        data?.message ||
+                        data?.error ||
+                        'You are not allowed to open this chapter.';
+                    setAccessDenied(true);
+                    toast.warning(message);
+                    router.replace(`/courses/my-courses/course-view/${courseId}`);
+                    return;
+                }
+
+                setCourse(data.course as Course);
             } catch (error) {
                 console.error('Error fetching course:', error);
+                toast.error('Failed to load course.');
             } finally {
                 setLoadingCourse(false);
             }
         };
         fetchCourse();
-    }, [courseId]);
+    }, [chapterIndex, courseId, router]);
+
+    const selectedChapterKey = chapterIndex.toString();
+    const isCompletedChapter = Boolean(
+        course?.completedChapter?.includes(selectedChapterKey),
+    );
+    const isBlockedCompletedChapter = Boolean(
+        course &&
+            user &&
+            course.createdBy === user.email &&
+            !user.member &&
+            isCompletedChapter,
+    );
 
     useEffect(() => {
-        if (!user || loading) return;
+        if (accessDenied || authLoading || !user || loading) return;
         if (course?.createdBy !== user.email) {
             toast.error('You are not authorized to view this course!');
             router.replace('/courses');
         }
-    }, [course, user, router, loading]);
+    }, [accessDenied, authLoading, course, user, router, loading]);
+
+    useEffect(() => {
+        if (authLoading || loadingCourse || !course || !user) return;
+        if (course.createdBy !== user.email) return;
+        if (!isBlockedCompletedChapter) return;
+
+        toast.warning('Chapter completed, subscribe to revisit this chapter.');
+        router.replace(`/courses/my-courses/course-view/${course.id}`);
+    }, [
+        authLoading,
+        course,
+        isBlockedCompletedChapter,
+        loadingCourse,
+        router,
+        user,
+    ]);
 
     useEffect(() => {
         if (!course || !user || course.createdBy !== user.email) return;
+        if (isBlockedCompletedChapter) return;
 
         const chapter = course.chapters[chapterIndex];
         const content = chapter?.content?.[contentIndex];
@@ -83,28 +132,53 @@ const CourseLearning = () => {
 
         const persistResume = async () => {
             try {
-                await updateDoc(doc(db, 'course', course.id), {
-                    lastStudiedAt: serverTimestamp(),
-                    lastStudiedChapterIndex: chapterIndex,
-                    lastStudiedContentIndex: contentIndex,
-                    lastStudiedChapterName: chapter.chapterName,
-                    lastStudiedTopic: content.topic || '',
-                });
+                const token = await getUserToken();
+                if (!token) return;
+
+                const response = await fetch(
+                    getApiUrl(`/courses/${course.id}/resume`),
+                    {
+                        method: 'PATCH',
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            chapterIndex,
+                            contentIndex,
+                        }),
+                    },
+                );
+
+                if (!response.ok) {
+                    const data = await response.json().catch(() => ({}));
+                    console.error(
+                        'Failed to update smart resume:',
+                        data?.message || response.statusText,
+                    );
+                }
             } catch (error) {
                 console.error('Failed to update smart resume:', error);
             }
         };
 
         void persistResume();
-    }, [chapterIndex, contentIndex, course, user]);
+    }, [chapterIndex, contentIndex, course, isBlockedCompletedChapter, user]);
 
     useEffect(() => {
         if (!course || !window.chefuDesktop?.isElectron) return;
         void window.chefuDesktop.cacheCourse(course);
     }, [course]);
 
+    if (
+        accessDenied ||
+        authLoading ||
+        loadingCourse ||
+        isBlockedCompletedChapter
+    ) {
+        return <CourseLearningSkeleton />;
+    }
     if (!course && !loadingCourse) return <NoCourse />;
-    if (loadingCourse) return <CourseLearningSkeleton />;
     if (!course) return null;
 
     const chapter = course.chapters[chapterIndex];
@@ -130,15 +204,50 @@ const CourseLearning = () => {
         setLoading(true);
 
         try {
-            const courseRef = doc(db, 'course', course.id);
-            await updateDoc(courseRef, {
-                completedChapter: arrayUnion(chapterIndex.toString()),
+            const token = await getUserToken();
+            if (!token) {
+                toast.error('Please sign in again.');
+                router.replace('/login');
+                return;
+            }
+
+            const response = await fetch(
+                getApiUrl(`/courses/${course.id}/complete-chapter`),
+                {
+                    method: 'POST',
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ chapterIndex }),
+                },
+            );
+
+            if (!response.ok) {
+                const data = await response.json().catch(() => ({}));
+                throw new Error(
+                    data?.message ||
+                        data?.error ||
+                        'Error completing chapter!',
+                );
+            }
+
+            setCourse({
+                ...course,
+                completedChapter: Array.from(
+                    new Set([
+                        ...(course.completedChapter || []),
+                        chapterIndex.toString(),
+                    ]),
+                ),
             });
             toast.success('Chapter completed...');
             router.replace(`/courses/my-courses/course-view/${course.id}`);
         } catch (err) {
             console.error(err);
-            toast.error('Error completing chapter!');
+            toast.error(
+                err instanceof Error ? err.message : 'Error completing chapter!',
+            );
         } finally {
             setLoading(false);
         }
