@@ -64,11 +64,85 @@ export async function searchCoursesServer(queryText: string): Promise<Course[]> 
 
     if (!normalized) return courses;
 
-    return courses.filter(
-        course =>
-            course.category?.toLowerCase().includes(normalized) ||
-            course.courseTitle?.toLowerCase().includes(normalized),
-    );
+    return courses
+        .map(course => ({
+            course,
+            score: scoreCourseForSearch(course, normalized),
+        }))
+        .filter(item => item.score > 0)
+        .sort((a, b) => b.score - a.score)
+        .map(item => item.course);
+}
+
+function normalizeSearch(value: string) {
+    return value.trim().toLowerCase();
+}
+
+function tokenizeSearch(value: string) {
+    return normalizeSearch(value)
+        .split(/[^a-z0-9]+/i)
+        .filter(token => token.length > 1);
+}
+
+function hasNearMatch(text: string, token: string) {
+    if (text.includes(token)) return true;
+    if (token.length < 4) return false;
+
+    return text
+        .split(/[^a-z0-9]+/i)
+        .some(word => word.length > 2 && levenshtein(word, token) <= 1);
+}
+
+function courseQualityScore(course: Course) {
+    let score = 0;
+    if (course.chapters.length) score += Math.min(course.chapters.length, 8);
+    if (course.quiz.length) score += 2;
+    if (course.flashcards.length) score += 2;
+    if (course.qa.length) score += 2;
+    if (course.description && course.description.length > 80) score += 1;
+    return score;
+}
+
+function scoreCourseForSearch(course: Course, normalizedQuery: string) {
+    const tokens = tokenizeSearch(normalizedQuery);
+    if (!tokens.length) return 0;
+
+    const title = normalizeSearch(course.courseTitle);
+    const category = normalizeSearch(course.category);
+    const description = normalizeSearch(course.description);
+    const titleWords = title.split(/[^a-z0-9]+/i);
+    let score = 0;
+
+    if (title === normalizedQuery) score += 20;
+    if (category === normalizedQuery) score += 14;
+
+    tokens.forEach(token => {
+        if (title.includes(token)) score += 8;
+        if (category.includes(token)) score += 7;
+        if (description.includes(token)) score += 3;
+        if (titleWords.some(word => word.startsWith(token))) score += 3;
+        if (hasNearMatch(title, token)) score += 2;
+        if (hasNearMatch(category, token)) score += 2;
+    });
+
+    return score + courseQualityScore(course) * 0.35;
+}
+
+function levenshtein(a: string, b: string) {
+    const dp = Array.from({ length: a.length + 1 }, (_, index) => [index]);
+
+    for (let j = 1; j <= b.length; j += 1) dp[0][j] = j;
+
+    for (let i = 1; i <= a.length; i += 1) {
+        for (let j = 1; j <= b.length; j += 1) {
+            dp[i][j] =
+                a[i - 1] === b[j - 1]
+                    ? dp[i - 1][j - 1]
+                    : Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]) + 1;
+        }
+    }
+
+    return dp[a.length][b.length];
 }
 
 function timestampToMillis(value: unknown) {
@@ -106,4 +180,16 @@ export async function fetchSmartResumeCourseServer(
     );
 
     return courses[0] || null;
+}
+
+export async function fetchMyCoursesServer(email?: string): Promise<Course[]> {
+    if (!email) return [];
+
+    const snapshot = await getFirebaseAdminDb()
+        .collection('course')
+        .where('createdBy', '==', email)
+        .limit(80)
+        .get();
+
+    return snapshot.docs.map(doc => toCourse(doc.id, doc.data()));
 }

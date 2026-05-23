@@ -3,7 +3,7 @@ import React from 'react';
 import { Badge } from '../ui/badge';
 import { CardDescription, CardTitle } from '../ui/card';
 import Link from 'next/link';
-import { ArrowRight, BookOpen, Sparkles } from 'lucide-react';
+import { ArrowRight, BookOpen, Layers3, Sparkles } from 'lucide-react';
 
 type CourseCardProps = {
     id: string;
@@ -11,6 +11,8 @@ type CourseCardProps = {
     title: string;
     description?: string;
     chaptersCount: number;
+    category?: string;
+    qualityLabel?: string;
 };
 
 const CourseCard = ({
@@ -19,6 +21,8 @@ const CourseCard = ({
     title,
     description,
     chaptersCount,
+    category,
+    qualityLabel,
 }: CourseCardProps) => {
     return (
         <Link
@@ -40,6 +44,14 @@ const CourseCard = ({
                         ? '1 Chapter'
                         : `${chaptersCount} Chapters`}
                 </Badge>
+                {category && (
+                    <Badge
+                        variant="secondary"
+                        className="absolute right-3 top-3 max-w-[45%] truncate bg-background/90 text-foreground backdrop-blur"
+                    >
+                        {category}
+                    </Badge>
+                )}
                 <div className="absolute bottom-3 left-3 right-3">
                     <div className="flex items-center gap-2 text-xs font-medium text-cyan-100">
                         <Sparkles className="h-3.5 w-3.5" />
@@ -57,8 +69,9 @@ const CourseCard = ({
                 </CardDescription>
 
                 <div className="mt-5 flex items-center justify-between">
-                    <span className="text-xs font-medium text-muted-foreground">
-                        Start learning
+                    <span className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground">
+                        <Layers3 className="h-3.5 w-3.5" />
+                        {qualityLabel || 'Start learning'}
                     </span>
                     <span className="flex size-9 items-center justify-center rounded-full bg-cyan-500 text-white transition group-hover:translate-x-1">
                         <ArrowRight className="h-4 w-4" />

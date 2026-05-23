@@ -206,6 +206,12 @@ const MyCourseUI = ({ courses }: { courses: Course[] }) => {
                             totalChapters={totalChapters}
                             completedChapters={completedChapters}
                             progress={progress}
+                            lastStudiedAt={course.lastStudiedAt}
+                            lastStudiedChapterIndex={course.lastStudiedChapterIndex}
+                            lastStudiedContentIndex={course.lastStudiedContentIndex}
+                            lastStudiedChapterName={course.lastStudiedChapterName}
+                            lastStudiedTopic={course.lastStudiedTopic}
+                            course={course}
                         />
                     );
                 })}

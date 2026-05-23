@@ -13,6 +13,7 @@ import {
     FacebookAuthProvider,
     GoogleAuthProvider,
     MultiFactorError,
+    ActionCodeSettings,
     sendPasswordResetEmail,
     signInWithEmailAndPassword,
     signInWithPopup,
@@ -34,6 +35,19 @@ const getClientContext = () => {
         locationInfo: isBrowser
             ? Intl.DateTimeFormat().resolvedOptions().timeZone || 'unknown'
             : 'unknown',
+    };
+};
+
+const getPasswordResetSettings = (): ActionCodeSettings | undefined => {
+    if (typeof window === 'undefined') return undefined;
+
+    const continueUrl =
+        process.env.NEXT_PUBLIC_PASSWORD_RESET_CONTINUE_URL ||
+        `${window.location.origin}/login`;
+
+    return {
+        url: continueUrl,
+        handleCodeInApp: false,
     };
 };
 
@@ -277,7 +291,11 @@ export const UseAuth = (onSignedIn?: () => void) => {
 
         startResetTransition(async () => {
             try {
-                await sendPasswordResetEmail(auth, resetEmail);
+                await sendPasswordResetEmail(
+                    auth,
+                    resetEmail,
+                    getPasswordResetSettings(),
+                );
                 toast.success('Password reset link sent.', {
                     description:
                         'If this email is registered, you will receive reset instructions shortly.',
@@ -287,6 +305,21 @@ export const UseAuth = (onSignedIn?: () => void) => {
 
                 if (code === 'auth/invalid-email') {
                     toast.error('Enter a valid email address.');
+                    return;
+                }
+                if (code === 'auth/unauthorized-continue-uri') {
+                    toast.error('Password reset domain is not authorized.', {
+                        description:
+                            'Add your app domain in Firebase Authentication authorized domains.',
+                    });
+                    return;
+                }
+                if (code === 'auth/missing-android-pkg-name') {
+                    toast.error('Password reset configuration is incomplete.');
+                    return;
+                }
+                if (code === 'auth/too-many-requests') {
+                    toast.error('Too many reset attempts. Please try again later.');
                     return;
                 }
 

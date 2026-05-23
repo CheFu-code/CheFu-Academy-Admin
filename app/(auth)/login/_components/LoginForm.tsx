@@ -128,7 +128,7 @@ export default function LoginForm({
                                     variant="link"
                                     size="sm"
                                     className="h-auto px-0 py-0 text-xs"
-                                    disabled={!email || resetPending}
+                                    disabled={resetPending}
                                     onClick={() => void handleForgotPassword()}
                                 >
                                     {resetPending ? 'Sending...' : 'Forgot password?'}

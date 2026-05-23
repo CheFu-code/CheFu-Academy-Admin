@@ -5,6 +5,7 @@ import type { Course } from '@/types/course';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import CourseSearchBox from '../_components/CourseSearchBox';
+import SearchFilters from '../_components/SearchFilters';
 import SearchPersonalization, {
     SearchableCourse,
 } from '../_components/SearchPersonalization';
@@ -13,7 +14,12 @@ import { BookOpen, Compass, Search, Sparkles, TrendingUp } from 'lucide-react';
 export const dynamic = 'force-dynamic';
 
 type SearchPageProps = {
-    searchParams: Promise<{ query?: string }>;
+    searchParams: Promise<{
+        query?: string;
+        category?: string;
+        depth?: string;
+        sort?: string;
+    }>;
 };
 
 function normalize(value: string) {
@@ -42,6 +48,45 @@ function scoreCourse(course: Course, query: string) {
     }, 0);
 }
 
+function courseQualityScore(course: Course) {
+    let score = 0;
+    if (course.chapters?.length) score += Math.min(course.chapters.length, 8);
+    if (course.quiz?.length) score += 2;
+    if (course.flashcards?.length) score += 2;
+    if (course.qa?.length) score += 2;
+    if (course.description && course.description.length > 80) score += 1;
+    return score;
+}
+
+function getQualityLabel(course: Course) {
+    const score = courseQualityScore(course);
+    if (score >= 10) return 'Rich course';
+    if (score >= 6) return 'Well built';
+    return 'Quick path';
+}
+
+function timestampToMillis(value: unknown) {
+    if (
+        value &&
+        typeof value === 'object' &&
+        'toMillis' in value &&
+        typeof value.toMillis === 'function'
+    ) {
+        return value.toMillis();
+    }
+
+    if (
+        value &&
+        typeof value === 'object' &&
+        'seconds' in value &&
+        typeof value.seconds === 'number'
+    ) {
+        return value.seconds * 1000;
+    }
+
+    return 0;
+}
+
 function toSearchableCourse(course: Course): SearchableCourse {
     return {
         id: course.id,
@@ -65,6 +110,47 @@ function getTopCategories(courses: Course[]) {
         .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
         .slice(0, 8)
         .map(([category]) => category);
+}
+
+function filterCourses(
+    courses: Course[],
+    {
+        category,
+        depth,
+    }: {
+        category: string;
+        depth: string;
+    },
+) {
+    return courses.filter(course => {
+        if (category && course.category !== category) return false;
+
+        const chapterCount = course.chapters?.length || 0;
+        if (depth === 'short') return chapterCount >= 1 && chapterCount <= 4;
+        if (depth === 'medium') return chapterCount >= 5 && chapterCount <= 8;
+        if (depth === 'deep') return chapterCount >= 9;
+
+        return true;
+    });
+}
+
+function sortCourses(courses: Course[], sort: string, query: string) {
+    return [...courses].sort((a, b) => {
+        if (sort === 'quality') {
+            return courseQualityScore(b) - courseQualityScore(a);
+        }
+        if (sort === 'newest') {
+            return timestampToMillis(b.createdOn) - timestampToMillis(a.createdOn);
+        }
+        if (sort === 'chapters') {
+            return (b.chapters?.length || 0) - (a.chapters?.length || 0);
+        }
+        if (sort === 'title') {
+            return (a.courseTitle || '').localeCompare(b.courseTitle || '');
+        }
+
+        return scoreCourse(b, query) - scoreCourse(a, query);
+    });
 }
 
 function getRelatedCourses({
@@ -116,20 +202,34 @@ export async function generateMetadata({
 }
 
 export default async function SearchPage({ searchParams }: SearchPageProps) {
-    const { query = '' } = await searchParams;
+    const {
+        query = '',
+        category = '',
+        depth = '',
+        sort = 'relevance',
+    } = await searchParams;
     const trimmedQuery = query.trim();
     const [results, allCourses] = await Promise.all([
         searchCoursesServer(trimmedQuery),
         fetchCoursesServer(120),
     ]);
 
+    const filteredResults = sortCourses(
+        filterCourses(results, { category, depth }),
+        sort,
+        trimmedQuery,
+    );
+
     const relatedCourses = getRelatedCourses({
         courses: allCourses,
-        results,
+        results: filteredResults,
         query: trimmedQuery,
     });
     const topCategories = getTopCategories(allCourses);
-    const resultIds = results.map(course => course.id);
+    const allCategories = Array.from(
+        new Set(allCourses.map(course => course.category).filter(Boolean)),
+    ).sort((a, b) => a.localeCompare(b));
+    const resultIds = filteredResults.map(course => course.id);
     const searchableCourses = allCourses.map(toSearchableCourse);
     const hasQuery = Boolean(trimmedQuery);
 
@@ -145,8 +245,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                             </Badge>
                             {hasQuery && (
                                 <Badge variant="outline">
-                                    {results.length} result
-                                    {results.length !== 1 ? 's' : ''}
+                                    {filteredResults.length} result
+                                    {filteredResults.length !== 1 ? 's' : ''}
                                 </Badge>
                             )}
                         </div>
@@ -169,6 +269,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                             initialValue={trimmedQuery}
                             placeholder="Try data science, public speaking, Python, design..."
                             className="max-w-2xl"
+                            suggestions={topCategories}
                         />
                     </div>
 
@@ -181,7 +282,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                         <SearchStat
                             icon={Sparkles}
                             label="Matched"
-                            value={results.length}
+                            value={filteredResults.length}
                         />
                         <SearchStat
                             icon={Compass}
@@ -202,6 +303,12 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                             Explore by category
                         </h2>
                     </div>
+                    <SearchFilters
+                        categories={allCategories}
+                        selectedCategory={category}
+                        selectedDepth={depth}
+                        selectedSort={sort}
+                    />
                 </div>
                 <div className="flex flex-wrap gap-2">
                     {topCategories.map(category => (
@@ -242,9 +349,9 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                     )}
                 </div>
 
-                {results.length > 0 ? (
+                {filteredResults.length > 0 ? (
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        {results.map(course => (
+                        {filteredResults.map(course => (
                             <CourseCard
                                 key={course.id}
                                 id={course.id}
@@ -252,6 +359,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                                 title={course.courseTitle}
                                 description={course.description}
                                 chaptersCount={course.chapters?.length || 0}
+                                category={course.category}
+                                qualityLabel={getQualityLabel(course)}
                             />
                         ))}
                     </div>
@@ -288,6 +397,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                                 title={course.courseTitle}
                                 description={course.description}
                                 chaptersCount={course.chapters?.length || 0}
+                                category={course.category}
+                                qualityLabel={getQualityLabel(course)}
                             />
                         ))}
                     </div>

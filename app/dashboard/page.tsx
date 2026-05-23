@@ -4,9 +4,11 @@ import { getServerSessionMeta } from '@/lib/server-session';
 import {
     countCoursesServer,
     fetchCoursesServer,
+    fetchMyCoursesServer,
     fetchSmartResumeCourseServer,
 } from '@/services/serverCourseService';
 import { fetchPublicVideosServer } from '@/services/serverVideoService';
+import type { Course } from '@/types/course';
 import {
     BookOpen,
     Brain,
@@ -16,6 +18,7 @@ import {
     Layers3,
     Plus,
     Sparkles,
+    Target,
 } from 'lucide-react';
 import type { Metadata } from 'next';
 import Image from 'next/image';
@@ -35,8 +38,17 @@ export default async function DashboardPage() {
         countCoursesServer(),
         fetchPublicVideosServer(),
     ]);
-    const smartResumeCourse = await fetchSmartResumeCourseServer(session?.email);
-    const featuredCourses = courses.slice(0, 3);
+    const [smartResumeCourse, myCourses] = await Promise.all([
+        fetchSmartResumeCourseServer(session?.email),
+        fetchMyCoursesServer(session?.email),
+    ]);
+    const completedCourses = myCourses.filter(course => isCourseComplete(course));
+    const activeCourses = myCourses.length - completedCourses.length;
+    const focusCategory = getFocusCategory(myCourses);
+    const featuredCourses = getDashboardRecommendations(
+        courses,
+        focusCategory,
+    ).slice(0, 3);
     const featuredVideos = videos.slice(0, 3);
     const firstName =
         session?.name?.split(' ')[0] ||
@@ -129,13 +141,13 @@ export default async function DashboardPage() {
             <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                 <StatCard
                     icon={BookOpen}
-                    label="Available courses"
-                    value={totalCourses}
+                    label="Your active courses"
+                    value={activeCourses}
                 />
                 <StatCard
-                    icon={CirclePlay}
-                    label="Public videos"
-                    value={videos.length}
+                    icon={Target}
+                    label="Completed courses"
+                    value={completedCourses.length}
                 />
                 <StatCard
                     icon={Brain}
@@ -143,9 +155,38 @@ export default async function DashboardPage() {
                     value={3}
                 />
                 <StatCard
+                    icon={CirclePlay}
+                    label="Available courses"
+                    value={totalCourses}
+                />
+            </section>
+
+            <section className="grid gap-4 md:grid-cols-3">
+                <QuickActionCard
+                    href={smartResumeCourse ? `/courses/my-courses/course-view/${smartResumeCourse.id}/course-learning?chapter=${smartResumeCourse.lastStudiedChapterIndex || 0}&lesson=${smartResumeCourse.lastStudiedContentIndex || 0}` : '/courses/my-courses'}
                     icon={Clock3}
-                    label="Recommended today"
-                    value={featuredCourses.length + featuredVideos.length}
+                    title="Resume today"
+                    description={
+                        smartResumeCourse
+                            ? smartResumeCourse.courseTitle
+                            : 'Open your course list and choose a path.'
+                    }
+                />
+                <QuickActionCard
+                    href={focusCategory ? `/courses/search?query=${encodeURIComponent(focusCategory)}&category=${encodeURIComponent(focusCategory)}` : '/courses/search'}
+                    icon={Sparkles}
+                    title="Recommended focus"
+                    description={
+                        focusCategory
+                            ? `More ${focusCategory} courses`
+                            : 'Discover courses from your interests.'
+                    }
+                />
+                <QuickActionCard
+                    href="/courses/practice"
+                    icon={Brain}
+                    title="Practice session"
+                    description="Turn your course material into recall practice."
                 />
             </section>
 
@@ -270,6 +311,33 @@ function formatDashboardDate(value: unknown) {
     return 'recently';
 }
 
+function isCourseComplete(course: { chapters?: unknown[]; completedChapter?: string[] }) {
+    const total = course.chapters?.length || 0;
+    if (!total) return false;
+    return (course.completedChapter?.length || 0) >= total;
+}
+
+function getFocusCategory(courses: { category?: string; lastStudiedAt?: unknown }[]) {
+    const counts = new Map<string, number>();
+
+    courses.forEach(course => {
+        if (!course.category) return;
+        counts.set(course.category, (counts.get(course.category) || 0) + 1);
+    });
+
+    return [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || '';
+}
+
+function getDashboardRecommendations(courses: Course[], focusCategory: string) {
+    if (!focusCategory) return courses;
+
+    return [...courses].sort((a, b) => {
+        const aMatch = a.category === focusCategory ? 1 : 0;
+        const bMatch = b.category === focusCategory ? 1 : 0;
+        return bMatch - aMatch;
+    });
+}
+
 function StatCard({
     icon: Icon,
     label,
@@ -316,6 +384,37 @@ function QuickLink({
             <div>
                 <p className="text-sm font-medium">{title}</p>
                 <p className="text-xs text-muted-foreground">{description}</p>
+            </div>
+        </Link>
+    );
+}
+
+function QuickActionCard({
+    href,
+    icon: Icon,
+    title,
+    description,
+}: {
+    href: string;
+    icon: React.ComponentType<{ className?: string }>;
+    title: string;
+    description: string;
+}) {
+    return (
+        <Link
+            href={href}
+            className="rounded-lg border bg-card p-4 transition-colors hover:bg-muted/60"
+        >
+            <div className="flex items-start gap-3">
+                <div className="flex size-10 items-center justify-center rounded-md bg-primary/10 text-primary">
+                    <Icon className="size-5" />
+                </div>
+                <div>
+                    <p className="font-semibold">{title}</p>
+                    <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
+                        {description}
+                    </p>
+                </div>
             </div>
         </Link>
     );
