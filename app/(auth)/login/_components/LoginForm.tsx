@@ -18,7 +18,9 @@ export default function LoginForm({
     googlePending,
     handleGoogle,
     handlePasskey,
+    handleForgotPassword,
     passkeyPending,
+    resetPending,
     email,
     setEmail,
     password,
@@ -30,14 +32,17 @@ export default function LoginForm({
     googlePending: boolean;
     emailPending: boolean;
     passkeyPending: boolean;
+    resetPending: boolean;
     email: string;
     password: string;
     handleGoogle: () => Promise<void>;
     handlePasskey: () => Promise<void>;
+    handleForgotPassword: () => Promise<void>;
     setEmail: Dispatch<SetStateAction<string>>;
     setPassword: Dispatch<SetStateAction<string>>;
 }) {
-    const anyPending = loading || emailPending || googlePending || passkeyPending;
+    const anyPending =
+        loading || emailPending || googlePending || passkeyPending || resetPending;
 
     return (
         <Card>
@@ -116,7 +121,19 @@ export default function LoginForm({
                             />
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="password">Password</Label>
+                            <div className="flex items-center justify-between gap-3">
+                                <Label htmlFor="password">Password</Label>
+                                <Button
+                                    type="button"
+                                    variant="link"
+                                    size="sm"
+                                    className="h-auto px-0 py-0 text-xs"
+                                    disabled={!email || resetPending}
+                                    onClick={() => void handleForgotPassword()}
+                                >
+                                    {resetPending ? 'Sending...' : 'Forgot password?'}
+                                </Button>
+                            </div>
                             <Input
                                 id="password"
                                 type="password"

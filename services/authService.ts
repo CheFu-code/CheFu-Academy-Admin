@@ -13,6 +13,7 @@ import {
     FacebookAuthProvider,
     GoogleAuthProvider,
     MultiFactorError,
+    sendPasswordResetEmail,
     signInWithEmailAndPassword,
     signInWithPopup,
     User,
@@ -104,6 +105,7 @@ export const UseAuth = (onSignedIn?: () => void) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [emailPending, startEmailTransition] = useTransition();
+    const [resetPending, startResetTransition] = useTransition();
     const [facebookPending, setFacebookPending] = useState(false);
 
     const mfaResolveRef = useRef<((challenge: MfaChallengeResponse) => void) | null>(null);
@@ -265,6 +267,46 @@ export const UseAuth = (onSignedIn?: () => void) => {
         });
     };
 
+    const handleForgotPassword = async () => {
+        const resetEmail = email.trim();
+
+        if (!resetEmail) {
+            toast.error('Enter your email address first.');
+            return;
+        }
+
+        startResetTransition(async () => {
+            try {
+                await sendPasswordResetEmail(auth, resetEmail);
+                toast.success('Password reset link sent.', {
+                    description:
+                        'If this email is registered, you will receive reset instructions shortly.',
+                });
+            } catch (error) {
+                const code = (error as FirebaseError)?.code;
+
+                if (code === 'auth/invalid-email') {
+                    toast.error('Enter a valid email address.');
+                    return;
+                }
+
+                if (
+                    code === 'auth/user-not-found' ||
+                    code === 'auth/missing-email'
+                ) {
+                    toast.success('Password reset link sent.', {
+                        description:
+                            'If this email is registered, you will receive reset instructions shortly.',
+                    });
+                    return;
+                }
+
+                console.error('Password reset failed:', error);
+                toast.error('Could not send reset link. Please try again.');
+            }
+        });
+    };
+
     const signInWithFacebook = async () => {
         try {
             setFacebookPending(true);
@@ -336,6 +378,8 @@ export const UseAuth = (onSignedIn?: () => void) => {
         password,
         setPassword,
         emailPending,
+        handleForgotPassword,
+        resetPending,
         signInWithFacebook,
         facebookPending,
         DialogPortal,

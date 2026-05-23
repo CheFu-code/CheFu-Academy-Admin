@@ -38,6 +38,8 @@ export default function LoginPage() {
         password,
         setPassword,
         emailPending,
+        handleForgotPassword,
+        resetPending,
     } = UseAuth(redirectAfterSignIn);
     const [passkeyPending, setPasskeyPending] = useState(false);
     const [openPasskeyDialog, setOpenPasskeyDialog] = useState(false);
@@ -107,6 +109,8 @@ export default function LoginPage() {
                 handleGoogle={handleGoogle}
                 handlePasskey={handlePasskey}
                 passkeyPending={passkeyPending}
+                handleForgotPassword={handleForgotPassword}
+                resetPending={resetPending}
             />
 
             <Dialog open={openPasskeyDialog} onOpenChange={setOpenPasskeyDialog}>
