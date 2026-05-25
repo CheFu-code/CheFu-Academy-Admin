@@ -7,3 +7,4 @@ Host: https://academy.chefuinc.com
 
 # Sitemaps
 Sitemap: https://academy.chefuinc.com/sitemap.xml
+Sitemap: https://academy.chefuinc.com/sitemap-0.xml
