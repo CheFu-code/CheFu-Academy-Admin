@@ -186,29 +186,7 @@ const ProfileTab = () => {
         }
     };
 
-    const deleteGeneratedCourses = async () => {
-        if (!user) return;
-
-        setSaving('deleteCourses');
-        try {
-            const coursesSnapshot = await getDocs(
-                query(collection(db, 'course'), where('createdBy', '==', user.email)),
-            );
-            const batch = writeBatch(db);
-            coursesSnapshot.docs.forEach(courseDoc => {
-                batch.delete(courseDoc.ref);
-            });
-            await batch.commit();
-            toast.success('Generated courses deleted.');
-            window.location.reload();
-        } catch (error) {
-            console.error('Failed to delete generated courses:', error);
-            toast.error('Failed to delete generated courses.');
-        } finally {
-            setSaving(null);
-        }
-    };
-
+    
     return (
         <ProfileTabUI
             user={user}
@@ -222,7 +200,6 @@ const ProfileTab = () => {
             exportAccountData={exportAccountData}
             resetOnboarding={resetOnboarding}
             clearLearningProgress={clearLearningProgress}
-            deleteGeneratedCourses={deleteGeneratedCourses}
             saving={saving}
             loggingOut={loggingOut}
             handleLogout={handleLogout}

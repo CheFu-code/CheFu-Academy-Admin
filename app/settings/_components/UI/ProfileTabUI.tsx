@@ -51,8 +51,7 @@ type SaveKey =
     | 'privacy'
     | 'export'
     | 'resetOnboarding'
-    | 'clearProgress'
-    | 'deleteCourses';
+    | 'clearProgress';
 
 const ProfileTabUI = ({
     user,
@@ -66,7 +65,6 @@ const ProfileTabUI = ({
     exportAccountData,
     resetOnboarding,
     clearLearningProgress,
-    deleteGeneratedCourses,
     saving,
     loggingOut,
     handleLogout,
@@ -86,7 +84,6 @@ const ProfileTabUI = ({
     exportAccountData: () => void;
     resetOnboarding: () => void;
     clearLearningProgress: () => void;
-    deleteGeneratedCourses: () => void;
     saving: SaveKey;
     loggingOut: boolean;
     handleLogout: () => void;
@@ -793,24 +790,7 @@ const ProfileTabUI = ({
                                     ? 'Clearing...'
                                     : 'Clear Learning Progress'}
                             </Button>
-                            <Button
-                                variant="destructive"
-                                onClick={() => {
-                                    if (
-                                        window.confirm(
-                                            'Delete all generated courses? This cannot be undone.',
-                                        )
-                                    ) {
-                                        deleteGeneratedCourses();
-                                    }
-                                }}
-                                disabled={saving === 'deleteCourses'}
-                            >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                {saving === 'deleteCourses'
-                                    ? 'Deleting...'
-                                    : 'Delete Generated Courses'}
-                            </Button>
+
                         </div>
                     </div>
 

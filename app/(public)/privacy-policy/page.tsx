@@ -150,7 +150,7 @@ const policySections = [
         title: 'Contact Us',
         content: (
             <ul className="ml-5 list-disc space-y-1 text-sm text-muted-foreground">
-                <li>Email: chefu.inc@gmail.com</li>
+                <li>Email: support@chefuinc.com</li>
                 <li>Phone: +27 (60) 603-1205</li>
                 <li>Address: 145 CheFu Street, Dinga, Limpopo, South Africa</li>
             </ul>
@@ -239,10 +239,6 @@ const PrivacyPolicy = () => {
                     </CardContent>
                 </Card>
             </div>
-
-            <p className="text-center text-xs text-muted-foreground sm:text-sm">
-                Copyright {currentYear} CheFu Academy. All rights reserved.
-            </p>
         </div>
     );
 };

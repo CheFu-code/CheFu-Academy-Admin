@@ -369,7 +369,7 @@ const SecurityTabUI = ({
                         Connected Sign-in & Activity
                     </CardTitle>
                     <CardDescription className="text-xs sm:text-sm">
-                        Review providers and recent Firebase authentication metadata.
+                        Review providers and recent authentication metadata.
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">

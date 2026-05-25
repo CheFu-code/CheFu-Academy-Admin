@@ -25,7 +25,7 @@ const isDev = !app.isPackaged && process.env.NODE_ENV !== 'production';
 const devUrl = process.env.ELECTRON_START_URL || 'http://localhost:3000';
 const prodUrl = process.env.ELECTRON_APP_URL || 'https://academy.chefuinc.com';
 const releaseApiUrl =
-    'https://api.github.com/repos/CheFu-code/CheFu-Academy-Admin/releases/latest';
+    'https://api.github.com/repos/CheFu-code/CheFu-Academy-Web/releases/latest';
 
 let mainWindow;
 let localServer;
@@ -592,7 +592,7 @@ async function checkForUpdates(showDialog = false) {
                 type: 'info',
                 title: 'Update available',
                 message: `CheFu Academy ${latestVersion} is available.`,
-                detail: `You are using ${currentVersion}. Download the latest desktop installer from GitHub Releases.`,
+                detail: `You are using ${currentVersion}. Download the latest desktop installer .`,
                 buttons: ['Download', 'Later'],
                 defaultId: 0,
                 cancelId: 1,

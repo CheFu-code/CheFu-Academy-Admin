@@ -248,10 +248,10 @@ const Terms = () => {
                                     <li>
                                         Email:{' '}
                                         <a
-                                            href="mailto:chefu.inc@gmail.com"
+                                            href="mailto:support@chefuinc.com"
                                             className="underline text-blue-500"
                                         >
-                                            chefu.inc@gmail.com
+                                            support@chefuinc.com
                                         </a>
                                     </li>
                                     <li>Phone: +27 (60) 603-1205</li>
@@ -268,13 +268,6 @@ const Terms = () => {
                     </div>
                 </div>
             </section>
-            {/* Footer Note */}
-            <p className="text-xs text-center text-muted-foreground mt-4">
-                © {new Date().getFullYear()} CheFu Academy. All rights reserved.
-                <br />
-                Using this platform indicates agreement with these Terms of
-                Service.
-            </p>
         </div>
     );
 };
