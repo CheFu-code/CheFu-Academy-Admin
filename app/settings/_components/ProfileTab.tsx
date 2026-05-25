@@ -29,7 +29,6 @@ const ProfileTab = () => {
         | 'export'
         | 'resetOnboarding'
         | 'clearProgress'
-        | 'deleteCourses'
     >(null);
     const [bio, setBio] = useState(user?.bio ?? '');
     if (!user) return null;
