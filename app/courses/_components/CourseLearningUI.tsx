@@ -20,8 +20,7 @@ import {
     FileText,
     GraduationCap,
     Layers3,
-    Loader2,
-    Sparkles,
+    Loader2
 } from 'lucide-react';
 import { RefObject } from 'react';
 import ChapterAiTutor from './ChapterAiTutor';
@@ -61,7 +60,6 @@ const CourseLearningUI = ({
     );
     const isLastLesson = contentIndex + 1 === totalContents;
     const lessonLabel = `Lesson ${contentIndex + 1} of ${totalContents}`;
-    const hasSupplementalContent = Boolean(cleanCode || content.example);
 
     return (
         <div
@@ -165,76 +163,6 @@ const CourseLearningUI = ({
                         {content.example && <ExampleBlock text={content.example} />}
                     </div>
                 </article>
-
-                <aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
-                    <div className="rounded-xl border bg-card p-5 shadow-sm">
-                        <div className="flex items-center gap-3">
-                            <div className="flex size-11 items-center justify-center rounded-lg bg-cyan-500/10 text-cyan-600 dark:text-cyan-300">
-                                <CheckCircle2 className="h-5 w-5" />
-                            </div>
-                            <div>
-                                <p className="text-sm font-semibold">
-                                    {lessonLabel}
-                                </p>
-                                <p className="text-xs text-muted-foreground">
-                                    {isLastLesson
-                                        ? 'Ready to finish this chapter'
-                                        : 'Continue when you are ready'}
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="mt-5 space-y-3">
-                            <div className="flex items-center justify-between text-sm">
-                                <span className="text-muted-foreground">
-                                    Completed
-                                </span>
-                                <span className="font-medium">
-                                    {contentIndex + 1}/{totalContents}
-                                </span>
-                            </div>
-                            <Progress value={progressValue} className="h-2" />
-                        </div>
-                    </div>
-
-                    <div className="rounded-xl border bg-card p-5 shadow-sm">
-                        <div className="flex items-center gap-2 text-sm font-semibold">
-                            <Sparkles className="h-4 w-4 text-amber-500" />
-                            Learning tools
-                        </div>
-                        <div className="mt-4 grid gap-3 text-sm text-muted-foreground">
-                            <div className="flex items-center justify-between gap-3">
-                                <span>AI tutor</span>
-                                <Badge variant="secondary">Available</Badge>
-                            </div>
-                            <div className="flex items-center justify-between gap-3">
-                                <span>Chapter PDF</span>
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={handleDownloadChapter}
-                                    className="h-8 cursor-pointer"
-                                >
-                                    <Download className="h-3.5 w-3.5" />
-                                    Save
-                                </Button>
-                            </div>
-                            <div className="flex items-center justify-between gap-3">
-                                <span>Practice material</span>
-                                <Badge
-                                    variant={
-                                        hasSupplementalContent
-                                            ? 'default'
-                                            : 'secondary'
-                                    }
-                                >
-                                    {hasSupplementalContent ? 'Included' : 'Basic'}
-                                </Badge>
-                            </div>
-                        </div>
-                    </div>
-                </aside>
             </section>
 
             <ChapterAiTutor

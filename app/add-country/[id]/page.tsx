@@ -40,16 +40,17 @@ const schema = z.object({
 });
 
 type AddCountryCodePageProps = {
-    params: {
+    params: Promise<{
         id: string;
-    };
+    }>;
 };
 
 export default function AddCountryCode({ params }: AddCountryCodePageProps) {
     const router = useRouter();
+    const { id } = React.use(params);
     const countries = React.useMemo(() => countryList().getData(), []);
     const { user, loading } = useAuthUser();
-    const routeUserId = params?.id?.trim();
+    const routeUserId = id?.trim();
 
     const form = useForm<z.infer<typeof schema>>({
         resolver: zodResolver(schema),

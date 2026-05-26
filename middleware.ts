@@ -6,10 +6,13 @@ import {
 import { NextRequest, NextResponse } from 'next/server';
 
 const AGENT_DISCOVERY_LINKS = [
-    '</.well-known/api-catalog>; rel="api-catalog"; type="application/json"',
+    '</.well-known/api-catalog>; rel="api-catalog"; type="application/linkset+json"',
     '</docs>; rel="service-doc"; type="text/html"',
     '</.well-known/agent-skills/index.json>; rel="describedby"; type="application/json"',
-    '</.well-known/api-catalog>; rel="service-desc"; type="application/json"',
+    '</.well-known/openapi.json>; rel="service-desc"; type="application/openapi+json"',
+    '</.well-known/openid-configuration>; rel="openid-configuration"; type="application/json"',
+    '</.well-known/oauth-protected-resource>; rel="oauth-protected-resource"; type="application/json"',
+    '</.well-known/mcp/server-card.json>; rel="describedby"; type="application/json"; title="MCP Server Card"',
 ].join(', ');
 
 const HOME_MARKDOWN = `# CheFu Academy
@@ -24,6 +27,7 @@ CheFu Academy is an AI learning platform for guided courses, videos, quizzes, fl
 - [Developer Documentation](/docs)
 - [API Catalog](/.well-known/api-catalog)
 - [Agent Skills Index](/.well-known/agent-skills/index.json)
+- [MCP Server Card](/.well-known/mcp/server-card.json)
 
 ## Agent Discovery
 

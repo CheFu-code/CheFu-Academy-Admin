@@ -14,11 +14,11 @@ import { db } from '@/lib/firebase';
 import { Course } from '@/types/course';
 import { toast } from 'sonner';
 
-const CourseView = ({ course: initialCourse }: { course?: Course }) => {
+const CourseView = () => {
     const params = useParams();
     const courseId = Array.isArray(params.id) ? params.id[0] : params.id;
-    const [course, setCourse] = useState<Course | undefined>(initialCourse);
-    const [loading, setLoading] = useState(!initialCourse);
+    const [course, setCourse] = useState<Course | undefined>();
+    const [loading, setLoading] = useState(true);
     const {
         user,
         router,
@@ -37,12 +37,6 @@ const CourseView = ({ course: initialCourse }: { course?: Course }) => {
 
     useEffect(() => {
         if (!courseId) return;
-
-        if (initialCourse && initialCourse.id === courseId) {
-            setCourse(initialCourse);
-            setLoading(false);
-            return;
-        }
 
         let cancelled = false;
 
@@ -75,7 +69,7 @@ const CourseView = ({ course: initialCourse }: { course?: Course }) => {
         return () => {
             cancelled = true;
         };
-    }, [courseId, initialCourse]);
+    }, [courseId]);
 
     useEffect(() => {
         if (!user || loading) return;

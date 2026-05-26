@@ -3,47 +3,70 @@ import { BACKEND_URL, SDK_URL, WEBSITE_URL } from '@/constants/Data';
 export const dynamic = 'force-static';
 
 export function GET() {
-    return Response.json(
-        {
-            publisher: 'CheFu Academy',
-            description:
-                'API and developer resources for CheFu Academy courses, videos, authentication, and SDK integrations.',
-            links: [
+    return new Response(
+        JSON.stringify({
+            linkset: [
                 {
-                    rel: 'service-doc',
-                    href: `${WEBSITE_URL}/docs`,
-                    type: 'text/html',
-                    title: 'CheFu Academy API documentation',
+                    anchor: BACKEND_URL,
+                    'service-desc': [
+                        {
+                            href: `${WEBSITE_URL}/.well-known/openapi.json`,
+                            type: 'application/openapi+json',
+                            title: 'CheFu Academy OpenAPI description',
+                        },
+                    ],
+                    'service-doc': [
+                        {
+                            href: `${WEBSITE_URL}/docs`,
+                            type: 'text/html',
+                            title: 'CheFu Academy API documentation',
+                        },
+                    ],
+                    status: [
+                        {
+                            href: `${BACKEND_URL}/health`,
+                            type: 'application/json',
+                            title: 'CheFu Academy API health',
+                        },
+                    ],
+                    describedby: [
+                        {
+                            href: `${WEBSITE_URL}/.well-known/oauth-protected-resource`,
+                            type: 'application/json',
+                            title: 'OAuth protected resource metadata',
+                        },
+                    ],
                 },
                 {
-                    rel: 'service-desc',
-                    href: SDK_URL,
-                    type: 'text/html',
-                    title: 'CheFu Academy SDK service',
-                },
-                {
-                    rel: 'describedby',
-                    href: `${WEBSITE_URL}/.well-known/agent-skills/index.json`,
-                    type: 'application/json',
-                    title: 'Agent skills discovery index',
+                    anchor: SDK_URL,
+                    'service-desc': [
+                        {
+                            href: `${WEBSITE_URL}/.well-known/openapi.json`,
+                            type: 'application/openapi+json',
+                            title: 'CheFu Academy SDK API description',
+                        },
+                    ],
+                    'service-doc': [
+                        {
+                            href: `${WEBSITE_URL}/docs/installation`,
+                            type: 'text/html',
+                            title: 'CheFu Academy SDK installation guide',
+                        },
+                    ],
+                    status: [
+                        {
+                            href: `${BACKEND_URL}/health`,
+                            type: 'application/json',
+                            title: 'CheFu Academy API health',
+                        },
+                    ],
                 },
             ],
-            apis: [
-                {
-                    name: 'CheFu Academy Backend API',
-                    baseUrl: BACKEND_URL,
-                    documentation: `${WEBSITE_URL}/docs`,
-                },
-                {
-                    name: 'CheFu Academy JavaScript SDK',
-                    baseUrl: SDK_URL,
-                    documentation: `${WEBSITE_URL}/docs/installation`,
-                },
-            ],
-        },
+        }),
         {
             headers: {
                 'Cache-Control': 'public, max-age=3600, s-maxage=86400',
+                'Content-Type': 'application/linkset+json; charset=utf-8',
             },
         },
     );

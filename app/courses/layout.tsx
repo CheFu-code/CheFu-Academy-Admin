@@ -8,10 +8,6 @@ import { useAuthUser } from '@/hooks/useAuthUser';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
-export const iframeHeight = '800px';
-
-export const description = 'A sidebar with a header and a search form.';
-
 export default function Page({ children }: { children: React.ReactNode }) {
     const { user, loading } = useAuthUser();
     const router = useRouter();
