@@ -4,4 +4,16 @@ module.exports = {
     generateRobotsTxt: true, // optional, generates robots.txt
     changefreq: 'weekly',
     priority: 0.8,
+    robotsTxtOptions: {
+        transformRobotsTxt: async (_config, robotsTxt) => {
+            if (robotsTxt.includes('Content-Signal:')) {
+                return robotsTxt;
+            }
+
+            return robotsTxt.replace(
+                'Allow: /',
+                'Allow: /\nContent-Signal: ai-train=no, search=yes, ai-input=yes',
+            );
+        },
+    },
 };

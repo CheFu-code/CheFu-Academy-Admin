@@ -5,6 +5,31 @@ import {
 } from '@/lib/session-constants';
 import { NextRequest, NextResponse } from 'next/server';
 
+const AGENT_DISCOVERY_LINKS = [
+    '</.well-known/api-catalog>; rel="api-catalog"; type="application/json"',
+    '</docs>; rel="service-doc"; type="text/html"',
+    '</.well-known/agent-skills/index.json>; rel="describedby"; type="application/json"',
+    '</.well-known/api-catalog>; rel="service-desc"; type="application/json"',
+].join(', ');
+
+const HOME_MARKDOWN = `# CheFu Academy
+
+CheFu Academy is an AI learning platform for guided courses, videos, quizzes, flashcards, and progress tracking.
+
+## Key Resources
+
+- [Courses](/courses)
+- [Videos](/videos/all-videos)
+- [Create a Course](/courses/create-course)
+- [Developer Documentation](/docs)
+- [API Catalog](/.well-known/api-catalog)
+- [Agent Skills Index](/.well-known/agent-skills/index.json)
+
+## Agent Discovery
+
+Agents can use the API catalog, service documentation, WebMCP tools, and published agent skills to discover CheFu Academy learning and developer workflows.
+`;
+
 const AUTH_ROUTES = ['/login', '/phone-number'];
 const PROTECTED_PREFIXES = [
     '/dashboard',
@@ -114,6 +139,34 @@ function redirectToLogin(request: NextRequest) {
     return NextResponse.redirect(url);
 }
 
+function markdownTokenCount(markdown: string) {
+    return String(markdown.trim().split(/\s+/).filter(Boolean).length);
+}
+
+function acceptsMarkdown(request: NextRequest) {
+    const accept = request.headers.get('accept') || '';
+    return accept
+        .split(',')
+        .map(value => value.trim().toLowerCase())
+        .some(value => value.startsWith('text/markdown'));
+}
+
+function withAgentDiscoveryHeaders(response: NextResponse) {
+    response.headers.set('Link', AGENT_DISCOVERY_LINKS);
+    return response;
+}
+
+function markdownHomeResponse() {
+    return new NextResponse(HOME_MARKDOWN, {
+        headers: {
+            'Content-Type': 'text/markdown; charset=utf-8',
+            Link: AGENT_DISCOVERY_LINKS,
+            Vary: 'Accept',
+            'x-markdown-tokens': markdownTokenCount(HOME_MARKDOWN),
+        },
+    });
+}
+
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
     const hasSessionCookie = Boolean(request.cookies.get(SESSION_COOKIE_NAME)?.value);
@@ -121,6 +174,16 @@ export async function middleware(request: NextRequest) {
         request.cookies.get(SESSION_META_COOKIE_NAME)?.value,
     );
     const isSignedIn = hasSessionCookie && Boolean(sessionMeta);
+
+    if (pathname === '/') {
+        if (acceptsMarkdown(request)) {
+            return markdownHomeResponse();
+        }
+
+        const response = withAgentDiscoveryHeaders(NextResponse.next());
+        response.headers.set('Vary', 'Accept');
+        return response;
+    }
 
     if (AUTH_ROUTES.includes(pathname) && isSignedIn) {
         return NextResponse.redirect(new URL('/', request.url));
@@ -149,6 +212,7 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
     matcher: [
+        '/',
         '/login',
         '/phone-number',
         '/dashboard/:path*',

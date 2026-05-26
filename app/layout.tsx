@@ -1,4 +1,5 @@
 import CookieBanner from '@/components/Cookies/CookieBanner';
+import WebMcpProvider from '@/components/Agent/WebMcpProvider';
 import { Toaster } from '@/components/ui/sonner';
 import { ThemeProvider } from '@/components/ui/theme-provider';
 import { ConsentProvider } from '@/helpers/ConsentProvider';
@@ -55,6 +56,7 @@ export default function RootLayout({
                     disableTransitionOnChange
                 >
                     <ConsentProvider>
+                        <WebMcpProvider />
                         {children}
                         <CookieBanner />
                     </ConsentProvider>

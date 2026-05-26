@@ -60,10 +60,10 @@ const data = {
             url: '#',
             icon: Video,
             items: [
-                // {
-                //     title: 'All Videos',
-                //     url: '/videos/all-videos',
-                // },
+                {
+                    title: 'All Videos',
+                    url: '/videos/all-videos',
+                },
                 {
                     title: 'Advanced Videos',
                     url: '/videos/advanced',

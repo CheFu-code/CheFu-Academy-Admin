@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schemas.agentskills.io/discovery/0.2.0/schema.json",
+  "skills": [
+    {
+      "name": "course-learning",
+      "type": "skill-md",
+      "description": "Navigate CheFu Academy course discovery, creation, enrollment, chapter learning, and practice workflows.",
+      "url": "/.well-known/agent-skills/course-learning/SKILL.md",
+      "digest": "sha256:a2e2afb5380b4b3edf1c45db2d18abcf046a28c26a5d801dc1a91e3e1775ae85"
+    },
+    {
+      "name": "video-learning",
+      "type": "skill-md",
+      "description": "Help learners discover CheFu Academy videos, including uploaded lessons and curated YouTube videos.",
+      "url": "/.well-known/agent-skills/video-learning/SKILL.md",
+      "digest": "sha256:be20663f25c6201d85932a13720827702e6383165323e71dbfeaeb84b81e2efd"
+    },
+    {
+      "name": "developer-api",
+      "type": "skill-md",
+      "description": "Help developers discover CheFu Academy API, SDK, authentication, and request documentation.",
+      "url": "/.well-known/agent-skills/developer-api/SKILL.md",
+      "digest": "sha256:940d3ed9aae4409c4f124f3f9d40bef590d0e51b3800dc248da431764be52f1d"
+    }
+  ]
+}
