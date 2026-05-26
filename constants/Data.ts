@@ -125,7 +125,10 @@ export const navigationItems = [
     },
 ];
 
-export const SDK_URL = 'https://chefu-academy-sdk.onrender.com';
+export const SDK_URL =
+    process.env.NODE_ENV === 'development'
+        ? process.env.NEXT_PUBLIC_DEV_API_BASE_URL || 'http://localhost:4000'
+        : process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.chefuinc.com';
 export const WEBSITE_URL = 'https://academy.chefuinc.com';
 export const BACKEND_URL = 'https://chefu-academy-tmzx.onrender.com';
 

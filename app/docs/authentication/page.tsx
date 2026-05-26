@@ -104,7 +104,7 @@ export default Example;`}
                 </p>
 
                 <CodeHighlighter
-                    code={`fetch('${SDK_URL}/courses', {
+                    code={`fetch('${SDK_URL}/api/courses', {
   headers: {
     Authorization: 'Bearer YOUR_API_KEY',
   },

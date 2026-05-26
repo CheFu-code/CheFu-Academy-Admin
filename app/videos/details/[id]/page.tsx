@@ -1,6 +1,7 @@
 'use client';
 
-import { auth, db } from '@/lib/firebase';
+import { useAuthUser } from '@/hooks/useAuthUser';
+import { db } from '@/lib/firebase';
 import { fetchVideoById } from '@/services/videoService';
 import { Video } from '@/types/video';
 import {
@@ -15,17 +16,16 @@ import { useParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-// ✅ Import the components
 import NotFound from '@/components/VideoDetails/NotFound';
 import VideoDetailsUI from '@/components/VideoDetails/UI/VideoDetailsUI';
-import VideoCardSkeleton from '@/components/skeletons/VideoCardSkeleton';
+import VideoDetailsSkeleton from '@/components/skeletons/VideoDetailsSkeleton';
 
 const VideoDetailsPage = () => {
     const params = useParams();
-    const user = auth.currentUser;
+    const { user, loading: authLoading } = useAuthUser();
     const [enrolling, setEnrolling] = useState(false);
     const [video, setVideo] = useState<Video | null>(null);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [enrolled, setEnrolled] = useState(false);
 
     const videoId = typeof params?.id === 'string' ? params.id : '';
@@ -55,7 +55,7 @@ const VideoDetailsPage = () => {
         const checkEnrollment = async () => {
             try {
                 const docSnap = await getDoc(ref);
-                if (docSnap.exists()) setEnrolled(true);
+                setEnrolled(docSnap.exists());
             } catch (err) {
                 console.error('Failed to check enrollment:', err);
             }
@@ -65,7 +65,7 @@ const VideoDetailsPage = () => {
     }, [user?.email, video?.id]);
 
     const handleEnroll = async () => {
-        if (!user) {
+        if (!user?.email) {
             toast.warning('Please log in to enroll.');
             return;
         }
@@ -73,8 +73,8 @@ const VideoDetailsPage = () => {
 
         setEnrolling(true);
         try {
-            if (!user?.email || !video?.id) {
-                console.error('User email or video ID is missing');
+            if (!video?.id) {
+                toast.error('Video is missing its ID.');
                 return;
             }
             const ref = doc(db, 'users', user.email, 'enrollments', video.id);
@@ -105,7 +105,7 @@ const VideoDetailsPage = () => {
         }
     };
 
-    if (loading) return <VideoCardSkeleton />;
+    if (loading || authLoading) return <VideoDetailsSkeleton />;
 
     if (!video) return <NotFound />;
 
@@ -115,6 +115,7 @@ const VideoDetailsPage = () => {
             video={video}
             handleEnroll={handleEnroll}
             enrolling={enrolling}
+            isAuthenticated={Boolean(user?.email)}
         />
     );
 };

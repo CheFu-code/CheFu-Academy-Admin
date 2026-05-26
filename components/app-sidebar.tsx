@@ -43,6 +43,7 @@ const data = {
                 { title: 'Practice', url: '/courses/practice' },
                 { title: 'All Courses', url: '/courses' },
                 { title: 'My Courses', url: '/courses/my-courses' },
+                { title: 'Favourite Courses', url: '/courses/favourites' },
                 {
                     title: 'Completed Courses',
                     url: '/courses/completed-lessons',
