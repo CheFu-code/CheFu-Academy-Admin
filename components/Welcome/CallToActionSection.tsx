@@ -1,42 +1,57 @@
-import { Input } from '../ui/input';
 import { buttonVariants } from '@/components/ui/button';
+import { ArrowRight, Download } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
 
 const CallToActionSection = () => {
     return (
-        <section className="py-20 bg-indigo-600 text-white text-center">
-            <h2 className="text-4xl font-bold mb-4">
-                Start Your Learning Journey Today
-            </h2>
-            <p className="text-lg mb-8 max-w-2xl mx-auto">
-                Join thousands of smart learners who are improving their skills
-                and achieving their goals. Sign up now and get instant access to
-                all courses and resources.
-            </p>
-
-            {/* Newsletter subscription */}
-            <div className="mt-8 max-w-md mx-auto">
-                <p className="mb-4 text-lg  font-medium">
-                    Subscribe to our newsletter for updates
+        <section className="relative left-1/2 w-screen -translate-x-1/2 overflow-hidden py-24 text-white">
+            <Image
+                fill
+                src="/education-teaching.webp"
+                alt="Books and graduation cap"
+                className="object-cover"
+                sizes="100vw"
+            />
+            <div className="absolute inset-0 bg-black/70" />
+            <div className="relative mx-auto max-w-6xl px-4 text-center sm:px-6 lg:px-8">
+                <p className="text-sm font-semibold uppercase text-cyan-200">
+                    Start with one focused session
                 </p>
-                <form
-                    action="mailto:chefu.inc@gmail.com"
-                    method="post"
-                    className="flex gap-2"
-                >
-                    <Input
-                        name="email"
-                        type="email"
-                        placeholder="Enter your email"
-                        required
-                    />
-                    <button
+                <h2 className="mx-auto mt-3 max-w-3xl text-3xl font-bold leading-tight md:text-5xl">
+                    Turn your next idea into a guided course you can actually
+                    finish.
+                </h2>
+                <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-white/75">
+                    Explore courses, practice what you learn, and keep your
+                    progress synced across web and desktop.
+                </p>
+
+                <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+                    <Link
                         className={buttonVariants({
-                            variant: 'secondary',
+                            size: 'lg',
+                            className:
+                                'bg-cyan-500 text-white hover:bg-cyan-600',
                         })}
+                        href="/courses"
                     >
-                        Subscribe
-                    </button>
-                </form>
+                        Browse Courses
+                        <ArrowRight className="h-4 w-4" />
+                    </Link>
+                    <Link
+                        className={buttonVariants({
+                            size: 'lg',
+                            variant: 'outline',
+                            className:
+                                'border-white/30 bg-white/10 text-white hover:bg-white hover:text-foreground',
+                        })}
+                        href="/downloads"
+                    >
+                        <Download className="h-4 w-4" />
+                        Get Desktop App
+                    </Link>
+                </div>
             </div>
         </section>
     );

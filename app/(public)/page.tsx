@@ -11,9 +11,9 @@ import type { Metadata } from 'next';
 
 export function generateMetadata(): Metadata {
     return {
-        title: 'CheFu Academy | Smart Learning Starts Here',
+        title: 'CheFu Academy | AI Courses, Practice, and Progress Tracking',
         description:
-            'Explore CheFu Academy courses, SDK integrations, pricing, and support for smart learners.',
+            'Build practical skills with CheFu Academy through guided AI courses, quizzes, flashcards, smart resume, desktop learning, and progress tracking.',
     };
 }
 

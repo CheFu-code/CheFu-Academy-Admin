@@ -22,7 +22,7 @@ export const features: featureProps[] = [
     {
         title: 'Comprehensive Courses',
         description:
-            'Dive into a vast library of courses that cover a wide range of topics. \nEach course is designed to provide in-depth knowledge and practical skills. \nLearn at your own pace and become an expert in your field.',
+            'Follow guided courses built for practical skills, clear lessons, and steady progress across high-value topics.',
         icon: BookMarked,
     },
     {
@@ -34,19 +34,19 @@ export const features: featureProps[] = [
     {
         title: 'Personalized Learning',
         description:
-            'Receive learning paths tailored specifically to your strengths and interests. \nOur system recommends courses and resources that match your goals. \nEnjoy a learning experience that adapts to your pace and style.',
+            'Pick up from your last session and get clearer paths based on your goals, pace, and recent activity.',
         icon: ShieldCheck,
     },
     {
         title: 'Progress Tracking',
         description:
-            'Monitor your learning journey with detailed progress insights. \nTrack milestones, achievements, and areas for improvement over time. \nStay motivated by seeing tangible results from your hard work.',
+            'See completed chapters, recent study activity, scores, and milestones without digging through menus.',
         icon: ChartSpline,
     },
     {
         title: 'Community Support',
         description:
-            'Connect with a thriving community of learners and experts. \nAsk questions, share knowledge, and collaborate on projects together. \nBenefit from a network that supports your growth every step of the way.',
+            'Get help through support, learning guidance, and tools designed to keep momentum when topics get hard.',
         icon: HandFist,
     },
 ];
