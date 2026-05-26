@@ -7,11 +7,15 @@ import { z } from "zod";
 // ------------------
 export const VideoSchema = z.object({
     id: z.string().optional(), // id often comes from Firestore
+    source: z.enum(["uploaded", "youtube"]).optional(),
+    videoId: z.string().optional(),
+    youtubeVideoId: z.string().optional(),
     title: z.string().min(1, "Title is required"),
     instructorCompany: z.string().min(1, "Instructor company is required"),
     instructorName: z.string().min(1, "Instructor name is required"),
     description: z.string().min(1, "Description is required"),
     videoURL: z.string().url("Must be a valid URL"),
+    embedURL: z.string().url("Must be a valid URL").optional(),
     thumbnailURL: z.string().url("Must be a valid URL"),
     uploadedBy: z.string(),
     uploadedAt: z.any(), // required

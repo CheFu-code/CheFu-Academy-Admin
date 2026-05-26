@@ -2,7 +2,7 @@
 
 import { generateCourse, generateTopics } from '@/config/AIModel';
 import Prompt from '@/constants/Prompt';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuthUser } from './useAuthUser';
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -19,6 +19,43 @@ export const useGenerateTopic = (
     const [topics, setTopics] = useState<string[]>([]);
     const [generatingTopic, setGeneratingTopic] = useState(false);
     const [generatingCourse, setGeneratingCourse] = useState(false);
+    const [courseGenerationProgress, setCourseGenerationProgress] = useState(0);
+    const [courseGenerationStatus, setCourseGenerationStatus] = useState('');
+    const [courseGenerationStepIndex, setCourseGenerationStepIndex] = useState(0);
+
+    const updateGenerationProgress = (
+        progress: number,
+        status: string,
+        stepIndex: number,
+    ) => {
+        const nextProgress = Math.min(Math.max(progress, 0), 100);
+
+        setCourseGenerationProgress(nextProgress);
+        setCourseGenerationStatus(status);
+        setCourseGenerationStepIndex(stepIndex);
+        void setDesktopProgress(nextProgress / 100, 'normal');
+    };
+
+    useEffect(() => {
+        if (!generatingCourse) return;
+
+        const timer = window.setInterval(() => {
+            setCourseGenerationProgress((previousProgress) => {
+                if (previousProgress >= 92) return previousProgress;
+
+                const nextProgress = Math.min(
+                    92,
+                    previousProgress +
+                        Math.max(0.6, (92 - previousProgress) * 0.08),
+                );
+
+                void setDesktopProgress(nextProgress / 100, 'normal');
+                return Number(nextProgress.toFixed(1));
+            });
+        }, 900);
+
+        return () => window.clearInterval(timer);
+    }, [generatingCourse]);
 
     const generateTopic = async () => {
         if (generatingTopic) return;
@@ -79,7 +116,11 @@ export const useGenerateTopic = (
         }
 
         setGeneratingCourse(true);
-        void setDesktopProgress(undefined, 'indeterminate');
+        updateGenerationProgress(
+            6,
+            'Preparing your selected topics...',
+            0,
+        );
 
         const promptText = selectedTopics.join(', ') + Prompt.COURSE;
         const contents = [
@@ -90,7 +131,17 @@ export const useGenerateTopic = (
         ];
 
         try {
+            updateGenerationProgress(
+                18,
+                'AI is designing the course structure...',
+                0,
+            );
             const aiResp = await generateCourse(contents);
+            updateGenerationProgress(
+                72,
+                'Organising generated chapters and lessons...',
+                1,
+            );
 
             if (!aiResp || aiResp.trim() === '') {
                 toast.error("The AI didn't return any course content.");
@@ -106,6 +157,12 @@ export const useGenerateTopic = (
                 return;
             }
 
+            updateGenerationProgress(
+                84,
+                'Checking practice materials and course data...',
+                2,
+            );
+
             const coursesArray = Array.isArray(coursesObj)
                 ? coursesObj
                 : coursesObj.courses;
@@ -117,6 +174,11 @@ export const useGenerateTopic = (
 
             const emailSafe = user?.email.replace(/[@.]/g, '_');
             const docId = emailSafe + '_' + Date.now().toString();
+            updateGenerationProgress(
+                94,
+                'Saving your course to your library...',
+                3,
+            );
             await Promise.all(
                 coursesArray.map(async (course) => {
                     await setDoc(doc(db, 'course', docId), {
@@ -128,6 +190,7 @@ export const useGenerateTopic = (
                 }),
             );
 
+            updateGenerationProgress(100, 'Course ready. Opening it now...', 4);
             router.replace(`/courses/my-courses/course-view/${docId}`);
             toast.success('Course created successfully!');
         } catch (e: unknown) {
@@ -148,5 +211,8 @@ export const useGenerateTopic = (
         setTopics,
         onGenerateCourse,
         generatingCourse,
+        courseGenerationProgress,
+        courseGenerationStatus,
+        courseGenerationStepIndex,
     };
 };

@@ -8,6 +8,7 @@ type VideoGridProps = {
 };
 
 function formatDuration(duration = 0) {
+    if (!duration) return 'YouTube video';
     return `${Math.floor(duration / 60)}m ${duration % 60}s`;
 }
 
@@ -72,7 +73,8 @@ function VideoCard({ video }: { video: Video }) {
                     Level: {formatLevel(video.level)}
                 </p>
                 <p className="text-sm sm:text-base text-gray-500">
-                    Duration: {formatDuration(video.duration)}
+                    {video.source === 'youtube' ? 'Source' : 'Duration'}:{' '}
+                    {formatDuration(video.duration)}
                 </p>
             </div>
         </article>

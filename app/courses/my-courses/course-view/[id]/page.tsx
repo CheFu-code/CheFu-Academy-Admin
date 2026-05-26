@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import NoCourse from '@/components/Courses/noCourse';
 import CourseViewUI from '@/components/Courses/UI/CourseViewUI';
 import CourseCardSkeleton from '@/components/skeletons/CourseCardSkeleton';
+import { useFavoriteCourse } from '@/hooks/useFavoriteCourse';
 import { useCourseFunctions } from '@/hooks/useCourseFunctions';
 import { canAccessCourseAsLearner } from '@/lib/courseOwnership';
 import { db } from '@/lib/firebase';
@@ -25,6 +26,10 @@ const CourseView = ({ course: initialCourse }: { course?: Course }) => {
         completedChaptersState,
         setCompletedChaptersState,
     } = useCourseFunctions(course);
+    const { isFavorite, favoritePending, toggleFavorite } = useFavoriteCourse(
+        course,
+        user,
+    );
 
     useEffect(() => {
         setCompletedChaptersState(course?.completedChapter || []);
@@ -96,6 +101,9 @@ const CourseView = ({ course: initialCourse }: { course?: Course }) => {
             progress={progress}
             handleChapterClick={handleChapterClick}
             completedChaptersState={completedChaptersState}
+            isFavorite={isFavorite}
+            favoritePending={favoritePending}
+            toggleFavorite={toggleFavorite}
             router={router}
         />
     );

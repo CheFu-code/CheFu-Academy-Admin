@@ -73,8 +73,11 @@ export interface AddCourseProp {
     setSelectedTopics: React.Dispatch<React.SetStateAction<string[]>>;
     generatingTopic: boolean;
     generatingCourse: boolean;
-    onGenerateCourse: () => void;
-    generateTopic: () => void;
+    courseGenerationProgress: number;
+    courseGenerationStatus: string;
+    courseGenerationStepIndex: number;
+    onGenerateCourse: () => void | Promise<void>;
+    generateTopic: () => void | Promise<void>;
     onImportLearningFile?: () => void;
     mainWrapperRef: React.RefObject<HTMLDivElement | null>
 }

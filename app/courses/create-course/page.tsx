@@ -7,7 +7,7 @@ import React, { useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 const CreateCourse = () => {
-     const mainWrapperRef = useRef<HTMLDivElement>(null);
+    const mainWrapperRef = useRef<HTMLDivElement>(null);
     const [userInput, setUserInput] = useState('');
     const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
     const {
@@ -17,7 +17,15 @@ const CreateCourse = () => {
         setTopics,
         onGenerateCourse,
         generatingCourse,
+        courseGenerationProgress,
+        courseGenerationStatus,
+        courseGenerationStepIndex,
     } = useGenerateTopic(userInput, setUserInput);
+
+    const handleGenerateTopic = async () => {
+        setSelectedTopics([]);
+        await generateTopic();
+    };
 
     const handleImportLearningFile = async () => {
         const result = await importNativeLearningFile();
@@ -43,7 +51,7 @@ const CreateCourse = () => {
                 userInput={userInput}
                 setUserInput={setUserInput}
                 generatingTopic={generatingTopic}
-                generateTopic={generateTopic}
+                generateTopic={handleGenerateTopic}
                 onImportLearningFile={
                     typeof window !== 'undefined' && window.chefuDesktop?.isElectron
                         ? handleImportLearningFile
@@ -51,6 +59,9 @@ const CreateCourse = () => {
                 }
                 selectedTopics={selectedTopics}
                 generatingCourse={generatingCourse}
+                courseGenerationProgress={courseGenerationProgress}
+                courseGenerationStatus={courseGenerationStatus}
+                courseGenerationStepIndex={courseGenerationStepIndex}
                 onGenerateCourse={() => onGenerateCourse(selectedTopics)}
                 setSelectedTopics={setSelectedTopics}
                 mainWrapperRef={mainWrapperRef}

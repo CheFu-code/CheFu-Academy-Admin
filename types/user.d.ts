@@ -31,6 +31,8 @@ export interface User {
     lastLogin: Timestamp;
     lastSeen: Timestamp;
     member: boolean;
+    favoriteCourseIds?: string[];
+    favoriteCoursesUpdatedAt?: Timestamp;
     onboardingComplete: boolean;
     appGuideComplete?: boolean;
     provider: string;

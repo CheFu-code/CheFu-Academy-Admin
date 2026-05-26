@@ -1,7 +1,7 @@
 'use client';
 
 import { auth, db } from '@/lib/firebase';
-import { fetchUploadedVideos } from '@/services/videoService';
+import { fetchVideoById } from '@/services/videoService';
 import { Video } from '@/types/video';
 import {
     doc,
@@ -33,8 +33,7 @@ const VideoDetailsPage = () => {
     const fetchVideoDetails = useCallback(async () => {
         try {
             setLoading(true);
-            const allVideos = await fetchUploadedVideos();
-            const selected = allVideos.find((v) => v.id === videoId) || null;
+            const selected = await fetchVideoById(videoId);
             setVideo(selected);
         } catch (err) {
             console.error('Failed to fetch video:', err);
@@ -86,8 +85,12 @@ const VideoDetailsPage = () => {
                 enrolledAt: serverTimestamp(),
             });
 
-            const videoRef = doc(db, 'videos', video.id);
-            await updateDoc(videoRef, { views: increment(1) });
+            const videoCollection =
+                video.source === 'youtube' ? 'youTubeVideos' : 'videos';
+            const videoRef = doc(db, videoCollection, video.id);
+            await updateDoc(videoRef, { views: increment(1) }).catch((err) => {
+                console.error('Failed to increment video views:', err);
+            });
 
             setVideo((prev) =>
                 prev ? { ...prev, views: (prev.views || 0) + 1 } : prev,

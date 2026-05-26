@@ -3,6 +3,8 @@ import { Video } from '@/types/video';
 import {
     collection,
     doc,
+    DocumentData,
+    DocumentSnapshot,
     getDoc,
     getDocs,
     orderBy,
@@ -14,6 +16,68 @@ import {
 } from 'firebase/firestore';
 import { getDownloadURL, getStorage, ref, uploadBytes } from 'firebase/storage';
 import { v4 as uuidv4 } from 'uuid';
+
+const youtubeWatchUrl = (videoId: string) =>
+    `https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}`;
+
+const youtubeEmbedUrl = (videoId: string) =>
+    `https://www.youtube.com/embed/${encodeURIComponent(videoId)}`;
+
+type VideoSnapshot =
+    | QueryDocumentSnapshot<DocumentData>
+    | DocumentSnapshot<DocumentData>;
+
+const toUploadedVideo = (docSnap: VideoSnapshot): Video => {
+    const data = docSnap.data() || {};
+
+    return {
+        id: docSnap.id,
+        source: 'uploaded',
+        title: data.title || 'Untitled video',
+        instructorCompany: data.instructorCompany || '',
+        instructorName: data.instructorName || '',
+        description: data.description || '',
+        videoURL: data.videoURL || data.url || '',
+        thumbnailURL: data.thumbnailURL || data.thumbnail || '',
+        uploadedBy: data.uploadedBy || '',
+        uploadedAt: data.uploadedAt || null,
+        category: data.category || 'Tech & Coding',
+        visibility: data.visibility || 'public',
+        level: data.level || '',
+        duration: Number(data.duration || 0),
+        views: Number(data.views || 0),
+        topics: Array.isArray(data.topics) ? data.topics : [],
+    };
+};
+
+const toYouTubeVideo = (docSnap: VideoSnapshot): Video => {
+    const data = docSnap.data() || {};
+    const youtubeVideoId = String(data.videoId || '').trim();
+
+    return {
+        id: docSnap.id,
+        source: 'youtube',
+        videoId: youtubeVideoId,
+        youtubeVideoId,
+        title: data.title || 'Untitled YouTube video',
+        instructorCompany: data.instructorCompany || 'YouTube',
+        instructorName: data.instructorName || data.channelTitle || 'YouTube',
+        description:
+            data.description ||
+            'A curated YouTube lesson selected for CheFu Academy learners.',
+        videoURL: youtubeVideoId ? youtubeWatchUrl(youtubeVideoId) : '',
+        embedURL: youtubeVideoId ? youtubeEmbedUrl(youtubeVideoId) : undefined,
+        thumbnailURL: data.thumbnailURL || data.thumbnail || '',
+        uploadedBy: data.uploadedBy || data.channelTitle || 'YouTube',
+        uploadedAt: data.uploadedAt || data.createdAt || null,
+        category: data.category || 'Tech & Coding',
+        visibility: data.visibility || 'public',
+        level: data.level || 'beginner',
+        duration: Number(data.duration || 0),
+        views: Number(data.views || 0),
+        topics: Array.isArray(data.topics) ? data.topics : [],
+    };
+};
 
 export const uploadVideo = async (
     title: string,
@@ -93,7 +157,7 @@ export const fetchUploadedVideos = async (): Promise<Video[]> => {
     );
 
     const snap = await getDocs(q);
-    return snap.docs.map((doc: QueryDocumentSnapshot) => doc.data() as Video);
+    return snap.docs.map(toUploadedVideo);
 };
 export const fetchYTVideos = async (): Promise<Video[]> => {
     const q = query(
@@ -102,40 +166,37 @@ export const fetchYTVideos = async (): Promise<Video[]> => {
     );
 
     const snap = await getDocs(q);
-    return snap.docs.map((doc: QueryDocumentSnapshot) => doc.data() as Video);
+    return snap.docs.map(toYouTubeVideo);
+};
+
+export const fetchAllPublicVideos = async (): Promise<Video[]> => {
+    const [uploadedVideos, youtubeVideos] = await Promise.all([
+        fetchUploadedVideos(),
+        fetchYTVideos(),
+    ]);
+
+    return [...uploadedVideos, ...youtubeVideos];
 };
 
 export const fetchVideoById = async (
     videoId: string,
 ): Promise<Video | null> => {
     try {
-        const docRef = doc(db, 'videos', videoId);
-        const docSnap = await getDoc(docRef);
+        const uploadedVideoRef = doc(db, 'videos', videoId);
+        const uploadedVideoSnap = await getDoc(uploadedVideoRef);
 
-        if (!docSnap.exists()) {
-            return null;
+        if (uploadedVideoSnap.exists()) {
+            return toUploadedVideo(uploadedVideoSnap);
         }
 
-        const data = docSnap.data();
-        if (!data) return null;
+        const youtubeVideoRef = doc(db, 'youTubeVideos', videoId);
+        const youtubeVideoSnap = await getDoc(youtubeVideoRef);
 
-        return {
-            id: docSnap.id,
-            title: data.title,
-            instructorCompany: data.instructorCompany,
-            instructorName: data.instructorName,
-            description: data.description,
-            videoURL: data.videoURL,
-            thumbnailURL: data.thumbnailURL,
-            uploadedBy: data.uploadedBy,
-            uploadedAt: data.uploadedAt, // Firestore Timestamp
-            category: data.category,
-            visibility: data.visibility,
-            level: data.level,
-            duration: data.duration ?? 0,
-            views: data.views ?? 0,
-            topics: data.topics ?? [],
-        } as Video;
+        if (youtubeVideoSnap.exists()) {
+            return toYouTubeVideo(youtubeVideoSnap);
+        }
+
+        return null;
     } catch (error) {
         console.error('Error fetching video:', error);
         return null;

@@ -1,4 +1,9 @@
 import { downloadCoursePDF_Office } from '@/helpers/downloadCourse';
+import {
+    getCompletedChapterSet,
+    getNextRequiredChapterIndex,
+    isCourseFullyCompleted,
+} from '@/lib/courseProgress';
 import { Course } from '@/types/course';
 import { formatParagraph } from '@/utils/formatParagraph';
 import CourseReviewPanel from '../CourseReviewPanel';
@@ -8,6 +13,7 @@ import {
     CheckCircle2,
     Clock3,
     Download,
+    Heart,
     Layers3,
     LockKeyhole,
     PartyPopper,
@@ -32,6 +38,9 @@ const CourseViewUI = ({
     progress,
     handleChapterClick,
     completedChaptersState,
+    isFavorite,
+    favoritePending,
+    toggleFavorite,
     router,
 }: {
     course: Course;
@@ -40,18 +49,22 @@ const CourseViewUI = ({
     progress: number;
     handleChapterClick: (idx: number) => Promise<void>;
     completedChaptersState: string[];
+    isFavorite: boolean;
+    favoritePending: boolean;
+    toggleFavorite: () => Promise<void>;
     router: ReturnType<typeof import('next/navigation').useRouter>;
 }) => {
-    const nextChapterIndex = Math.min(completedChapters, Math.max(totalChapters - 1, 0));
-    const nextChapter = course.chapters[nextChapterIndex];
-    const completed = totalChapters > 0 && completedChapters >= totalChapters;
-    const currentChapterIndex =
-        typeof course.lastStudiedChapterIndex === 'number'
-            ? Math.min(
-                  Math.max(course.lastStudiedChapterIndex, 0),
-                  Math.max(totalChapters - 1, 0),
-              )
-            : nextChapterIndex;
+    const completedChapterSet = getCompletedChapterSet(completedChaptersState);
+    const nextChapterIndex = getNextRequiredChapterIndex(
+        totalChapters,
+        completedChaptersState,
+    );
+    const nextChapter =
+        nextChapterIndex >= 0 ? course.chapters[nextChapterIndex] : undefined;
+    const completed = isCourseFullyCompleted(
+        totalChapters,
+        completedChaptersState,
+    );
 
     const goToSearch = (category: string) => {
         router.push(`/courses/search?query=${encodeURIComponent(category)}`);
@@ -105,6 +118,7 @@ const CourseViewUI = ({
                                 <Button
                                     size="lg"
                                     onClick={() => handleChapterClick(nextChapterIndex)}
+                                    disabled={nextChapterIndex < 0}
                                 >
                                     <PlayCircle className="h-4 w-4" />
                                     {completed ? 'Review Course' : 'Continue Learning'}
@@ -122,6 +136,22 @@ const CourseViewUI = ({
                                     </TooltipTrigger>
                                     <TooltipContent>Download Course</TooltipContent>
                                 </Tooltip>
+                                <Button
+                                    size="lg"
+                                    variant={isFavorite ? 'default' : 'secondary'}
+                                    onClick={toggleFavorite}
+                                    disabled={favoritePending}
+                                    aria-pressed={isFavorite}
+                                >
+                                    <Heart
+                                        className={`h-4 w-4 ${
+                                            isFavorite ? 'fill-current' : ''
+                                        }`}
+                                    />
+                                    {isFavorite
+                                        ? 'In Favourites'
+                                        : 'Add to Favourites'}
+                                </Button>
                             </div>
                         </div>
                     </div>
@@ -228,20 +258,15 @@ const CourseViewUI = ({
                         <h2 className="text-2xl font-bold tracking-tight">Chapters</h2>
                     </div>
                     <p className="text-sm text-muted-foreground">
-                        Open your current or next chapter.
+                        Open the next required chapter to keep your progress in order.
                     </p>
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
                     {course.chapters.map((chapter, idx) => {
-                        const isCompleted = completedChaptersState.includes(
-                            idx.toString(),
-                        );
+                        const isCompleted = completedChapterSet.has(idx.toString());
                         const isNext = !completed && idx === nextChapterIndex;
-                        const isCurrent =
-                            !completed && idx === currentChapterIndex;
-                        const isLocked =
-                            !completed && !isCurrent && !isNext;
+                        const isLocked = !completed && !isNext;
                         const preview = chapter.content[0]?.explain || chapter.content[0]?.topic || '';
 
                         return (
@@ -257,13 +282,11 @@ const CourseViewUI = ({
                                 } ${
                                     isNext
                                         ? 'border-cyan-500/70 bg-cyan-500/5'
-                                        : isCurrent
-                                            ? 'border-primary/60 bg-primary/5'
-                                            : isCompleted
-                                                ? 'border-green-500/70 bg-green-500/5'
-                                                : isLocked
-                                                    ? 'border-border/60 bg-muted/30'
-                                                    : 'border-border/70'
+                                        : isCompleted
+                                            ? 'border-green-500/70 bg-green-500/5'
+                                            : isLocked
+                                                ? 'border-border/60 bg-muted/30'
+                                                : 'border-border/70'
                                 }`}
                             >
                                 <div className="flex items-start justify-between gap-3">
@@ -284,10 +307,6 @@ const CourseViewUI = ({
                                     ) : isNext && !isCompleted ? (
                                         <Badge className="bg-cyan-600 text-white">
                                             Next
-                                        </Badge>
-                                    ) : isCurrent && !isCompleted ? (
-                                        <Badge className="bg-primary text-primary-foreground">
-                                            Current
                                         </Badge>
                                     ) : isCompleted ? (
                                         <Badge className="bg-green-600 text-white">
@@ -311,10 +330,12 @@ const CourseViewUI = ({
                                 <div className="mt-5 flex items-center justify-between border-t pt-3">
                                     <span className="text-xs font-medium text-muted-foreground">
                                         {isLocked
-                                            ? 'Complete the current chapter first'
+                                            ? isCompleted
+                                                ? 'Completed - continue with the next chapter'
+                                                : 'Complete the next chapter first'
                                             : isCompleted
                                                 ? 'Review chapter'
-                                                : 'Open chapter'}
+                                                : 'Open next chapter'}
                                     </span>
                                     <span
                                         className={`flex size-9 items-center justify-center rounded-full transition ${

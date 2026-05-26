@@ -1,14 +1,17 @@
+import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import { AddCourseProp } from '@/types/course';
 import {
+    ArrowLeft,
     BookOpenCheck,
     BrainCircuit,
     CheckCircle2,
     FileUp,
     Layers3,
-    Loader,
+    Loader2,
     Save,
-    Sparkle,
+    Sparkles,
+    WandSparkles,
 } from 'lucide-react';
 import Header from '../Shared/Header';
 import { Button } from '../ui/button';
@@ -39,13 +42,14 @@ const generationSteps = [
     },
     {
         title: 'Saving your course',
-        description: 'Packaging everything so you can open it as soon as it is ready.',
+        description: 'Packaging everything so you can open it when it is ready.',
         Icon: Save,
     },
 ];
 
 const CreateCourseUI = ({
     topics,
+    setTopics,
     userInput,
     setUserInput,
     generatingTopic,
@@ -56,228 +60,343 @@ const CreateCourseUI = ({
     selectedTopics,
     setSelectedTopics,
     mainWrapperRef,
+    courseGenerationProgress,
+    courseGenerationStatus,
+    courseGenerationStepIndex,
 }: AddCourseProp) => {
+    const activeStep = generatingCourse ? 2 : topics.length > 0 ? 1 : 0;
+    const progressValue = Math.min(
+        Math.max(courseGenerationProgress, generatingCourse ? 3 : 0),
+        100,
+    );
+    const allSelected = topics.length > 0 && selectedTopics.length === topics.length;
+
+    const toggleTopic = (topic: string) => {
+        if (generatingCourse) return;
+
+        setSelectedTopics((prev) =>
+            prev.includes(topic)
+                ? prev.filter((selectedTopic) => selectedTopic !== topic)
+                : [...prev, topic],
+        );
+    };
+
+    const goBackToPrompt = () => {
+        if (generatingCourse) return;
+        setTopics([]);
+        setSelectedTopics([]);
+    };
+
     return (
         <main
             ref={mainWrapperRef}
-            className="min-h-screen bg-background flex flex-col justify-between"
+            className="flex min-h-screen flex-col bg-background"
         >
-            <div>
-                <Header
-                    header="Create new course"
-                    description="What do you want to learn today?"
-                />
-                <Card className="mt-6">
-                    <CardHeader>
-                        <CardTitle>Create new course</CardTitle>
-                        <CardDescription>
-                            What course do you want to create? (eg: Learn
-                            JavaScript)
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <p>Topic</p>
-                        <Input
-                            value={userInput}
-                            onChange={(e) => setUserInput(e.target.value)}
-                            placeholder="Learn how to bake bread..."
-                            disabled={generatingCourse}
-                        />
-                        {userInput?.trim() && (
-                            <Button
-                                disabled={generatingTopic || generatingCourse}
-                                onClick={generateTopic}
-                                className={cn(
-                                    'w-full mt-8 cursor-pointer',
-                                    generatingTopic || generatingCourse
-                                        ? 'cursor-not-allowed'
-                                        : '',
-                                )}
-                            >
-                                {generatingTopic
-                                    ? 'Generating Topic...'
-                                    : 'Generate Topic'}
-                            </Button>
-                        )}
-                        {onImportLearningFile && (
-                            <Button
-                                type="button"
-                                variant="outline"
-                                onClick={onImportLearningFile}
-                                disabled={generatingCourse || generatingTopic}
-                                className="mt-3 w-full"
-                            >
-                                <FileUp className="size-4" />
-                                Import PDF, Markdown, or Text
-                            </Button>
-                        )}
-                    </CardContent>
-                </Card>
+            <Header
+                header="Create new course"
+                description="What do you want to learn today?"
+            />
 
-                {topics.length > 0 && (
-                    <>
-                        <div className="flex items-center justify-between mt-10">
-                            <p className="font-semibold">
-                                Select all topics which you want to add in this
-                                course:
-                            </p>
-                            <Button
-                                className="cursor-pointer"
-                                variant="outline"
-                                onClick={() => {
-                                    if (generatingCourse) return;
-                                    if (selectedTopics.length === topics.length) {
-                                        setSelectedTopics([]);
-                                    } else {
-                                        setSelectedTopics(topics);
-                                    }
-                                }}
-                                size="sm"
-                                disabled={generatingCourse}>
-                                {selectedTopics.length === topics.length
-                                    ? 'Deselect all'
-                                    : 'Select all'}
-                            </Button>
-                        </div>
-
-                        <div className="mt-5 flex flex-row flex-wrap gap-2">
-                            {topics.map((topic, index) => {
-                                const isSelected =
-                                    selectedTopics.includes(topic);
-
-                                return (
-                                    <button
-                                        disabled={generatingCourse}
-                                        key={index}
-                                        onClick={() => {
-                                            if (isSelected) {
-                                                setSelectedTopics((prev) =>
-                                                    prev.filter(
-                                                        (t) => t !== topic,
-                                                    ),
-                                                );
-                                            } else {
-                                                setSelectedTopics((prev) => [
-                                                    ...prev,
-                                                    topic,
-                                                ]);
-                                                if (mainWrapperRef.current) {
-                                                    mainWrapperRef.current?.scrollIntoView(
-                                                        {
-                                                            behavior: 'smooth',
-                                                            block: 'end',
-                                                        },
-                                                    );
-                                                }
-                                            }
-                                        }}
-                                        className={cn(
-                                            'border border-cyan-500 rounded-lg p-1.5 cursor-pointer disabled:cursor-not-allowed disabled:opacity-70',
-                                            isSelected
-                                                ? 'bg-blue-950 text-white'
-                                                : '',
-                                        )}
-                                    >
-                                        <p className="text-sm">{topic}</p>
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    </>
-                )}
-            </div>
-
-            {/* Sticky Generate Course button at the bottom */}
-            <div className="p-4 bg-background shadow-inner">
-                <Button
-                    className={cn(
-                        'w-full cursor-pointer',
-                        generatingCourse ? 'cursor-not-allowed' : '',
-                    )}
-                    disabled={selectedTopics.length === 0 || generatingCourse}
-                    onClick={onGenerateCourse}
+            <div className="mt-6 overflow-hidden">
+                <div
+                    className="flex transition-transform duration-500 ease-out"
+                    style={{ transform: `translateX(-${activeStep * 100}%)` }}
                 >
-                    {generatingCourse
-                        ? 'Generating Course...'
-                        : 'Generate Course'}
-                    {generatingCourse ? (
-                        <Loader className="animate-spin" />
-                    ) : (
-                        <Sparkle />
-                    )}
-                </Button>
-            </div>
+                    <section className="w-full shrink-0 px-1">
+                        <Card className="overflow-hidden">
+                            <CardHeader>
+                                <div className="flex items-start gap-3">
+                                    <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                                        <WandSparkles className="size-5" />
+                                    </div>
+                                    <div>
+                                        <CardTitle>Create new course</CardTitle>
+                                        <CardDescription>
+                                            Describe what you want to learn and
+                                            CheFu will suggest focused topics for
+                                            your course.
+                                        </CardDescription>
+                                    </div>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="space-y-2">
+                                    <p className="text-sm font-medium">Topic</p>
+                                    <Input
+                                        value={userInput}
+                                        onChange={(e) =>
+                                            setUserInput(e.target.value)
+                                        }
+                                        placeholder="Learn how to bake bread..."
+                                        disabled={
+                                            generatingTopic || generatingCourse
+                                        }
+                                    />
+                                </div>
 
-            {generatingCourse && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/70 p-4 backdrop-blur-md">
-                    <Card
-                        className="max-h-[calc(100vh-2rem)] w-full max-w-2xl overflow-y-auto border-cyan-500/30 bg-background shadow-2xl"
-                        role="dialog"
-                        aria-modal="true"
-                        aria-live="polite"
-                        aria-labelledby="course-generation-title"
-                        aria-describedby="course-generation-description"
-                    >
-                        <div className="h-1 w-full overflow-hidden bg-cyan-500/15">
-                            <div className="h-full w-1/2 animate-[pulse_1.4s_ease-in-out_infinite] rounded-full bg-cyan-400" />
-                        </div>
-                        <CardHeader>
-                            <div className="flex items-start gap-3">
-                                <div className="mt-1 flex size-10 shrink-0 items-center justify-center rounded-full bg-cyan-500/15 text-cyan-500">
-                                    <Loader className="size-5 animate-spin" />
-                                </div>
-                                <div>
-                                    <CardTitle id="course-generation-title">
-                                        Your course is being generated
-                                    </CardTitle>
-                                    <CardDescription id="course-generation-description">
-                                        We are creating a full course from{' '}
-                                        {selectedTopics.length} selected{' '}
-                                        {selectedTopics.length === 1
-                                            ? 'topic'
-                                            : 'topics'}
-                                        . Keep this tab open and we will take you
-                                        straight to the course.
-                                    </CardDescription>
-                                </div>
-                            </div>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="grid gap-3 sm:grid-cols-2">
-                                {generationSteps.map(
-                                    ({ title, description, Icon }, index) => (
-                                        <div
-                                            key={title}
-                                            className="flex min-h-24 gap-3 rounded-lg border bg-muted/30 p-3"
-                                        >
-                                            <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-background text-cyan-500">
-                                                {index === 0 ? (
-                                                    <Loader className="size-4 animate-spin" />
-                                                ) : (
-                                                    <Icon className="size-4" />
-                                                )}
-                                            </div>
-                                            <div>
-                                                <p className="font-medium leading-none">
-                                                    {title}
-                                                </p>
-                                                <p className="mt-2 text-sm text-muted-foreground">
-                                                    {description}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    ),
+                                <Button
+                                    disabled={
+                                        !userInput.trim() ||
+                                        generatingTopic ||
+                                        generatingCourse
+                                    }
+                                    onClick={generateTopic}
+                                    className={cn(
+                                        'w-full cursor-pointer',
+                                        generatingTopic || generatingCourse
+                                            ? 'cursor-not-allowed'
+                                            : '',
+                                    )}
+                                >
+                                    {generatingTopic ? (
+                                        <>
+                                            <Loader2 className="size-4 animate-spin" />
+                                            Generating topics...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Sparkles className="size-4" />
+                                            Generate Topics
+                                        </>
+                                    )}
+                                </Button>
+
+                                {onImportLearningFile && (
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={onImportLearningFile}
+                                        disabled={
+                                            generatingCourse || generatingTopic
+                                        }
+                                        className="w-full"
+                                    >
+                                        <FileUp className="size-4" />
+                                        Import PDF, Markdown, or Text
+                                    </Button>
                                 )}
+                            </CardContent>
+                        </Card>
+                    </section>
+
+                    <section className="w-full shrink-0 px-1">
+                        <Card className="overflow-hidden">
+                            <CardHeader>
+                                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                                    <div>
+                                        <CardTitle>Choose your topics</CardTitle>
+                                        <CardDescription>
+                                            Select the topics you want included,
+                                            then generate your course.
+                                        </CardDescription>
+                                    </div>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        onClick={goBackToPrompt}
+                                        disabled={generatingCourse}
+                                        className="w-fit"
+                                    >
+                                        <ArrowLeft className="size-4" />
+                                        Back
+                                    </Button>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="space-y-5">
+                                <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-muted/30 p-3">
+                                    <div>
+                                        <p className="text-sm font-medium">
+                                            {selectedTopics.length} of{' '}
+                                            {topics.length} selected
+                                        </p>
+                                        <p className="text-xs text-muted-foreground">
+                                            Pick only what you want in this
+                                            course.
+                                        </p>
+                                    </div>
+                                    <Button
+                                        className="cursor-pointer"
+                                        variant="outline"
+                                        onClick={() => {
+                                            if (generatingCourse) return;
+                                            setSelectedTopics(
+                                                allSelected ? [] : topics,
+                                            );
+                                        }}
+                                        size="sm"
+                                        disabled={generatingCourse}
+                                    >
+                                        {allSelected
+                                            ? 'Deselect all'
+                                            : 'Select all'}
+                                    </Button>
+                                </div>
+
+                                <div className="grid gap-3 sm:grid-cols-2">
+                                    {topics.map((topic, index) => {
+                                        const isSelected =
+                                            selectedTopics.includes(topic);
+
+                                        return (
+                                            <button
+                                                type="button"
+                                                disabled={generatingCourse}
+                                                key={`${topic}-${index}`}
+                                                onClick={() => toggleTopic(topic)}
+                                                className={cn(
+                                                    'flex min-h-20 items-start gap-3 rounded-lg border p-3 text-left transition disabled:cursor-not-allowed disabled:opacity-70',
+                                                    isSelected
+                                                        ? 'border-primary bg-primary/10'
+                                                        : 'bg-card hover:border-primary/50',
+                                                )}
+                                            >
+                                                <span
+                                                    className={cn(
+                                                        'mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full border',
+                                                        isSelected
+                                                            ? 'border-primary bg-primary text-primary-foreground'
+                                                            : 'border-muted-foreground/40',
+                                                    )}
+                                                >
+                                                    {isSelected && (
+                                                        <CheckCircle2 className="size-3.5" />
+                                                    )}
+                                                </span>
+                                                <span className="text-sm font-medium leading-5">
+                                                    {topic}
+                                                </span>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+
+                                <Button
+                                    className={cn(
+                                        'w-full cursor-pointer',
+                                        generatingCourse
+                                            ? 'cursor-not-allowed'
+                                            : '',
+                                    )}
+                                    disabled={
+                                        selectedTopics.length === 0 ||
+                                        generatingCourse
+                                    }
+                                    onClick={onGenerateCourse}
+                                >
+                                    {generatingCourse ? (
+                                        <>
+                                            <Loader2 className="size-4 animate-spin" />
+                                            Generating Course...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Sparkles className="size-4" />
+                                            Generate Course
+                                        </>
+                                    )}
+                                </Button>
+                            </CardContent>
+                        </Card>
+                    </section>
+
+                    <section className="w-full shrink-0 px-1">
+                        <Card
+                            className="overflow-hidden border-cyan-500/30"
+                            aria-live="polite"
+                        >
+                            <div className="h-1 bg-cyan-500/15">
+                                <div
+                                    className="h-full bg-cyan-500 transition-all duration-700"
+                                    style={{ width: `${progressValue}%` }}
+                                />
                             </div>
-                            <div className="flex items-center gap-2 rounded-lg border bg-muted/30 px-3 py-2 text-sm text-muted-foreground">
-                                <CheckCircle2 className="size-4 shrink-0 text-cyan-500" />
-                                We are saving everything automatically. This
-                                window will close when your course is ready.
-                            </div>
-                        </CardContent>
-                    </Card>
+                            <CardHeader>
+                                <div className="flex items-start gap-3">
+                                    <div className="mt-1 flex size-11 shrink-0 items-center justify-center rounded-full bg-cyan-500/15 text-cyan-500">
+                                        <Loader2 className="size-5 animate-spin" />
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                        <CardTitle>
+                                            Generating your course
+                                        </CardTitle>
+                                        <CardDescription>
+                                            {courseGenerationStatus ||
+                                                'Preparing your course...'}
+                                        </CardDescription>
+                                    </div>
+                                    <span className="shrink-0 text-2xl font-bold tabular-nums">
+                                        {Math.round(progressValue)}%
+                                    </span>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="space-y-5">
+                                <Progress
+                                    value={progressValue}
+                                    className="h-2 rounded-full"
+                                />
+
+                                <div className="grid gap-3 sm:grid-cols-2">
+                                    {generationSteps.map(
+                                        ({ title, description, Icon }, index) => {
+                                            const isDone =
+                                                index <
+                                                courseGenerationStepIndex;
+                                            const isActive =
+                                                index ===
+                                                courseGenerationStepIndex;
+
+                                            return (
+                                                <div
+                                                    key={title}
+                                                    className={cn(
+                                                        'flex min-h-24 gap-3 rounded-lg border p-3 transition',
+                                                        isActive
+                                                            ? 'border-cyan-500/50 bg-cyan-500/10'
+                                                            : isDone
+                                                                ? 'border-green-500/40 bg-green-500/10'
+                                                                : 'bg-muted/30',
+                                                    )}
+                                                >
+                                                    <div
+                                                        className={cn(
+                                                            'flex size-9 shrink-0 items-center justify-center rounded-full bg-background',
+                                                            isDone
+                                                                ? 'text-green-600'
+                                                                : 'text-cyan-500',
+                                                        )}
+                                                    >
+                                                        {isDone ? (
+                                                            <CheckCircle2 className="size-4" />
+                                                        ) : isActive ? (
+                                                            <Loader2 className="size-4 animate-spin" />
+                                                        ) : (
+                                                            <Icon className="size-4" />
+                                                        )}
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-medium leading-none">
+                                                            {title}
+                                                        </p>
+                                                        <p className="mt-2 text-sm text-muted-foreground">
+                                                            {description}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            );
+                                        },
+                                    )}
+                                </div>
+
+                                <div className="flex items-center gap-2 rounded-lg border bg-muted/30 px-3 py-2 text-sm text-muted-foreground">
+                                    <CheckCircle2 className="size-4 shrink-0 text-cyan-500" />
+                                    Keep this tab open. The course opens
+                                    automatically when generation is complete.
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </section>
                 </div>
-            )}
+            </div>
         </main>
     );
 };

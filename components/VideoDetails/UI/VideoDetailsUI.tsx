@@ -13,6 +13,32 @@ import { Timer } from 'lucide-react';
 import Image from 'next/image';
 import React from 'react';
 
+function getYouTubeEmbedUrl(video: Video) {
+    const youtubeVideoId = video.youtubeVideoId || video.videoId;
+    if (!youtubeVideoId) return video.embedURL || '';
+
+    return `https://www.youtube.com/embed/${encodeURIComponent(
+        youtubeVideoId,
+    )}`;
+}
+
+function formatVideoDate(value: Video['uploadedAt']) {
+    if (!value) return 'Recently added';
+    if (typeof value.toDate === 'function') {
+        return value.toDate().toLocaleDateString();
+    }
+
+    const date = new Date(value);
+    return Number.isNaN(date.getTime())
+        ? 'Recently added'
+        : date.toLocaleDateString();
+}
+
+function formatDuration(duration = 0) {
+    if (!duration) return 'YouTube video';
+    return `${Math.floor(duration / 60)}m ${duration % 60}s`;
+}
+
 const VideoDetailsUI = ({
     enrolled,
     video,
@@ -24,10 +50,21 @@ const VideoDetailsUI = ({
     handleEnroll: () => Promise<void>;
     enrolling: boolean;
 }) => {
+    const isYouTubeVideo = video.source === 'youtube' || Boolean(video.videoId);
+    const youtubeEmbedUrl = getYouTubeEmbedUrl(video);
+
     return (
         <div className="max-w-5xl p-4 flex flex-col gap-6">
             <div className="relative w-full aspect-video rounded-lg overflow-hidden shadow-xl">
-                {enrolled ? (
+                {enrolled && isYouTubeVideo && youtubeEmbedUrl ? (
+                    <iframe
+                        src={youtubeEmbedUrl}
+                        title={video.title}
+                        className="h-full w-full rounded-lg"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowFullScreen
+                    />
+                ) : enrolled ? (
                     <video
                         src={video.videoURL}
                         controls
@@ -73,12 +110,11 @@ const VideoDetailsUI = ({
                 <div className="flex justify-between flex-wrap gap-2 sm:gap-4 text-gray-600">
                     <div className="flex gap-4">
                         <p className="text-sm sm:text-base md:text-lg">
-                            {video.uploadedAt.toDate().toLocaleDateString()}
+                            {formatVideoDate(video.uploadedAt)}
                         </p>
                         <p className="flex items-center gap-1 text-sm sm:text-base md:text-lg">
                             <Timer className="h-4 w-4" />{' '}
-                            {Math.floor(video.duration / 60)}m{' '}
-                            {video.duration % 60}s
+                            {formatDuration(video.duration)}
                         </p>
                     </div>
                     <p className="text-sm sm:text-base md:text-lg">
@@ -92,8 +128,10 @@ const VideoDetailsUI = ({
                         <CardHeader>
                             <CardTitle>Level:</CardTitle>
                             <CardDescription>
-                                {video.level.charAt(0).toUpperCase() +
-                                    video.level.slice(1)}
+                                {video.level
+                                    ? video.level.charAt(0).toUpperCase() +
+                                      video.level.slice(1)
+                                    : 'Beginner'}
                             </CardDescription>
                         </CardHeader>
                     </Card>

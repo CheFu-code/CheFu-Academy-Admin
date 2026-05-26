@@ -11,6 +11,7 @@ import {
     TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { downloadCoursePDF_Office } from '@/helpers/downloadCourse';
+import { useFavoriteCourse } from '@/hooks/useFavoriteCourse';
 import { useAuthUser } from '@/hooks/useAuthUser';
 import { isCourseOwnerEmail } from '@/lib/courseOwnership';
 import { db } from '@/lib/firebase';
@@ -32,6 +33,7 @@ import {
     CheckCircle2,
     Download,
     FileQuestion,
+    Heart,
     Layers3,
     LibraryBig,
     LockKeyhole,
@@ -52,6 +54,10 @@ const CourseView = () => {
     const { fetchCourseById, fetchingCourseById } = CoursesQuery();
     const [course, setCourse] = useState<Course | null>(null);
     const [enrolling, setEnrolling] = useState(false);
+    const { isFavorite, favoritePending, toggleFavorite } = useFavoriteCourse(
+        course,
+        user,
+    );
 
     useEffect(() => {
         const id = params.id;
@@ -264,6 +270,22 @@ const CourseView = () => {
                                             Download course
                                         </TooltipContent>
                                     </Tooltip>
+                                    <Button
+                                        size="lg"
+                                        variant={isFavorite ? 'default' : 'secondary'}
+                                        onClick={toggleFavorite}
+                                        disabled={favoritePending}
+                                        aria-pressed={isFavorite}
+                                    >
+                                        <Heart
+                                            className={`h-4 w-4 ${
+                                                isFavorite ? 'fill-current' : ''
+                                            }`}
+                                        />
+                                        {isFavorite
+                                            ? 'In Favourites'
+                                            : 'Add to Favourites'}
+                                    </Button>
                                 </div>
                             </div>
                         </div>
