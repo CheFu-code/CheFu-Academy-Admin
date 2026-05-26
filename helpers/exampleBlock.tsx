@@ -1,11 +1,37 @@
 import { formatParagraph } from '@/utils/formatParagraph';
 import { Copy, CopyCheck } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 export default function ExampleBlock({ text }: { text: string }) {
     const [expanded, setExpanded] = useState(false);
+    const [canExpand, setCanExpand] = useState(false);
     const [copied, setCopied] = useState(false);
+    const textRef = useRef<HTMLParagraphElement>(null);
+
+    useEffect(() => {
+        setExpanded(false);
+    }, [text]);
+
+    useEffect(() => {
+        const element = textRef.current;
+        if (!element) return;
+
+        const updateCanExpand = () => {
+            if (expanded) {
+                setCanExpand(true);
+                return;
+            }
+            setCanExpand(element.scrollHeight > element.clientHeight + 1);
+        };
+
+        updateCanExpand();
+
+        const resizeObserver = new ResizeObserver(updateCanExpand);
+        resizeObserver.observe(element);
+
+        return () => resizeObserver.disconnect();
+    }, [expanded, text]);
 
     const handleCopy = async () => {
         try {
@@ -36,6 +62,7 @@ export default function ExampleBlock({ text }: { text: string }) {
                 </button>
 
                 <p
+                    ref={textRef}
                     className={`text-muted-foreground transition-all ${
                         expanded ? '' : 'line-clamp-3'
                     }`}
@@ -45,16 +72,18 @@ export default function ExampleBlock({ text }: { text: string }) {
                     </span>
                 </p>
 
-                <button
-                    onClick={() => setExpanded((v) => !v)}
-                    className="mt-1 cursor-pointer text-xs font-medium text-primary hover:underline"
-                >
-                    {expanded ? (
-                        <span className="text-yellow-500">Read less</span>
-                    ) : (
-                        <span className="text-primary">Read more</span>
-                    )}
-                </button>
+                {canExpand && (
+                    <button
+                        onClick={() => setExpanded((v) => !v)}
+                        className="mt-1 cursor-pointer text-xs font-medium text-primary hover:underline"
+                    >
+                        {expanded ? (
+                            <span className="text-yellow-500">Read less</span>
+                        ) : (
+                            <span className="text-primary">Read more</span>
+                        )}
+                    </button>
+                )}
             </div>
         </div>
     );

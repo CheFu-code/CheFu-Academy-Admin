@@ -91,7 +91,12 @@ const CourseLearning = () => {
                         data?.error ||
                         'You are not allowed to open this chapter.';
                     setAccessDenied(true);
-                    toast.warning(message);
+                    if (
+                        message !==
+                        'Chapter completed, subscribe to revisit this chapter.'
+                    ) {
+                        toast.warning(message);
+                    }
                     router.replace(`/courses/my-courses/course-view/${courseId}`);
                     return;
                 }
@@ -134,7 +139,6 @@ const CourseLearning = () => {
         if (!canAccessCourseAsLearner(course, user)) return;
         if (!isBlockedCompletedChapter) return;
 
-        toast.warning('Chapter completed, subscribe to revisit this chapter.');
         router.replace(`/courses/my-courses/course-view/${course.id}`);
     }, [
         authLoading,
@@ -224,8 +228,20 @@ const CourseLearning = () => {
         }
     };
 
+    const handlePrevious = () => {
+        if (contentIndex > 0) {
+            setContentIndex(contentIndex - 1);
+        }
+    };
+
     const handleFinish = async () => {
         if (loading) return;
+
+        if (isCompletedChapter) {
+            router.replace(`/courses/my-courses/course-view/${course.id}`);
+            return;
+        }
+
         setLoading(true);
 
         try {
@@ -485,6 +501,7 @@ const CourseLearning = () => {
                 content={content}
                 cleanCode={cleanCode}
                 handleFinish={handleFinish}
+                handlePrevious={handlePrevious}
                 handleNext={handleNext}
                 handleDownloadChapter={handleDownloadChapter}
             />

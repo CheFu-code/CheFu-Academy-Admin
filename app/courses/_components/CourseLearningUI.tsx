@@ -10,7 +10,7 @@ import ExampleBlock from '@/helpers/exampleBlock';
 import ExplainText from '@/helpers/expandText';
 import { Chapter, ChapterContentItem } from '@/types/course';
 import { formatParagraph } from '@/utils/formatParagraph';
-import { ArrowRight, Download } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Download } from 'lucide-react';
 import { RefObject } from 'react';
 import ChapterAiTutor from './ChapterAiTutor';
 
@@ -25,6 +25,7 @@ const CourseLearningUI = ({
     content,
     cleanCode,
     handleFinish,
+    handlePrevious,
     handleNext,
     handleDownloadChapter,
 }: {
@@ -38,6 +39,7 @@ const CourseLearningUI = ({
     content: ChapterContentItem;
     cleanCode: string;
     handleFinish: () => void;
+    handlePrevious: () => void;
     handleNext: () => void;
     handleDownloadChapter: () => void;
 }) => {
@@ -92,8 +94,18 @@ const CourseLearningUI = ({
                 lessonKey={`${chapter.chapterName}-${contentIndex}`}
             />
 
-            {/* Next / Finish button */}
-            <div className="mt-auto">
+            {/* Previous / Next / Finish buttons */}
+            <div className="mt-auto grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <Button
+                    variant="outline"
+                    className="cursor-pointer transition w-full"
+                    onClick={handlePrevious}
+                    disabled={loading || contentIndex === 0}
+                >
+                    <span className="flex items-center gap-2">
+                        <ArrowLeft size={16} /> Back
+                    </span>
+                </Button>
                 <Button
                     className="hover:bg-blue-700 cursor-pointer transition w-full"
                     onClick={

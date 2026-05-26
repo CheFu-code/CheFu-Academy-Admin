@@ -9,6 +9,7 @@ import {
     Clock3,
     Download,
     Layers3,
+    LockKeyhole,
     PartyPopper,
     PlayCircle,
     Sparkles,
@@ -44,6 +45,13 @@ const CourseViewUI = ({
     const nextChapterIndex = Math.min(completedChapters, Math.max(totalChapters - 1, 0));
     const nextChapter = course.chapters[nextChapterIndex];
     const completed = totalChapters > 0 && completedChapters >= totalChapters;
+    const currentChapterIndex =
+        typeof course.lastStudiedChapterIndex === 'number'
+            ? Math.min(
+                  Math.max(course.lastStudiedChapterIndex, 0),
+                  Math.max(totalChapters - 1, 0),
+              )
+            : nextChapterIndex;
 
     const goToSearch = (category: string) => {
         router.push(`/courses/search?query=${encodeURIComponent(category)}`);
@@ -220,7 +228,7 @@ const CourseViewUI = ({
                         <h2 className="text-2xl font-bold tracking-tight">Chapters</h2>
                     </div>
                     <p className="text-sm text-muted-foreground">
-                        Select a chapter to continue learning.
+                        Open your current or next chapter.
                     </p>
                 </div>
 
@@ -230,36 +238,63 @@ const CourseViewUI = ({
                             idx.toString(),
                         );
                         const isNext = !completed && idx === nextChapterIndex;
+                        const isCurrent =
+                            !completed && idx === currentChapterIndex;
+                        const isLocked =
+                            !completed && !isCurrent && !isNext;
                         const preview = chapter.content[0]?.explain || chapter.content[0]?.topic || '';
 
                         return (
                             <button
                                 key={chapter.chapterName || idx}
                                 type="button"
+                                disabled={isLocked}
                                 onClick={() => handleChapterClick(idx)}
-                                className={`group flex h-full min-h-52 flex-col rounded-xl border bg-card p-4 text-left shadow-sm transition duration-200 hover:-translate-y-1 hover:border-cyan-500/50 hover:shadow-xl ${
-                                    isCompleted
-                                        ? 'border-green-500/70 bg-green-500/5'
-                                        : isNext
-                                            ? 'border-cyan-500/70 bg-cyan-500/5'
-                                            : 'border-border/70'
+                                className={`group flex h-full min-h-52 flex-col rounded-xl border bg-card p-4 text-left shadow-sm transition duration-200 ${
+                                    isLocked
+                                        ? 'cursor-not-allowed border-border/60 opacity-60'
+                                        : 'hover:-translate-y-1 hover:border-cyan-500/50 hover:shadow-xl'
+                                } ${
+                                    isNext
+                                        ? 'border-cyan-500/70 bg-cyan-500/5'
+                                        : isCurrent
+                                            ? 'border-primary/60 bg-primary/5'
+                                            : isCompleted
+                                                ? 'border-green-500/70 bg-green-500/5'
+                                                : isLocked
+                                                    ? 'border-border/60 bg-muted/30'
+                                                    : 'border-border/70'
                                 }`}
                             >
                                 <div className="flex items-start justify-between gap-3">
-                                    <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-semibold">
+                                    <div
+                                        className={`flex size-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${
+                                            isLocked
+                                                ? 'bg-muted text-muted-foreground'
+                                                : 'bg-muted'
+                                        }`}
+                                    >
                                         {idx + 1}
                                     </div>
-                                    {isCompleted && (
+                                    {isLocked ? (
+                                        <Badge variant="secondary">
+                                            <LockKeyhole className="mr-1 h-3.5 w-3.5" />
+                                            Locked
+                                        </Badge>
+                                    ) : isNext && !isCompleted ? (
+                                        <Badge className="bg-cyan-600 text-white">
+                                            Next
+                                        </Badge>
+                                    ) : isCurrent && !isCompleted ? (
+                                        <Badge className="bg-primary text-primary-foreground">
+                                            Current
+                                        </Badge>
+                                    ) : isCompleted ? (
                                         <Badge className="bg-green-600 text-white">
                                             <CheckCircle2 className="mr-1 h-3.5 w-3.5" />
                                             Done
                                         </Badge>
-                                    )}
-                                    {isNext && !isCompleted && (
-                                        <Badge className="bg-cyan-600 text-white">
-                                            Next
-                                        </Badge>
-                                    )}
+                                    ) : null}
                                 </div>
 
                                 <div className="mt-4 flex-1">
@@ -275,10 +310,24 @@ const CourseViewUI = ({
 
                                 <div className="mt-5 flex items-center justify-between border-t pt-3">
                                     <span className="text-xs font-medium text-muted-foreground">
-                                        {isCompleted ? 'Review chapter' : 'Open chapter'}
+                                        {isLocked
+                                            ? 'Complete the current chapter first'
+                                            : isCompleted
+                                                ? 'Review chapter'
+                                                : 'Open chapter'}
                                     </span>
-                                    <span className="flex size-9 items-center justify-center rounded-full bg-cyan-500 text-white transition group-hover:translate-x-1">
-                                        <ArrowRight className="h-4 w-4" />
+                                    <span
+                                        className={`flex size-9 items-center justify-center rounded-full transition ${
+                                            isLocked
+                                                ? 'bg-muted text-muted-foreground'
+                                                : 'bg-cyan-500 text-white group-hover:translate-x-1'
+                                        }`}
+                                    >
+                                        {isLocked ? (
+                                            <LockKeyhole className="h-4 w-4" />
+                                        ) : (
+                                            <ArrowRight className="h-4 w-4" />
+                                        )}
                                     </span>
                                 </div>
                             </button>
