@@ -11,14 +11,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
     ArrowRight,
-    BookOpenCheck,
-    BrainCircuit,
-    CheckCircle2,
     KeyRound,
     Loader2,
-    LockKeyhole,
     Mail,
-    ShieldCheck,
     Sparkles,
 } from 'lucide-react';
 import Image from 'next/image';
@@ -58,23 +53,6 @@ export default function LoginForm({
     const anyPending =
         loading || emailPending || googlePending || passkeyPending || resetPending;
 
-    const highlights = [
-        {
-            icon: BrainCircuit,
-            title: 'AI-guided courses',
-            description: 'Turn ideas into structured learning paths.',
-        },
-        {
-            icon: BookOpenCheck,
-            title: 'Resume smarter',
-            description: 'Pick up where your last lesson ended.',
-        },
-        {
-            icon: CheckCircle2,
-            title: 'Practice built in',
-            description: 'Use quizzes and flashcards to prove mastery.',
-        },
-    ];
 
     return (
         <main className="fixed inset-0 z-10 overflow-y-auto bg-background">
@@ -117,26 +95,7 @@ export default function LoginForm({
                                 </p>
                             </div>
 
-                            <div className="grid max-w-xl gap-3">
-                                {highlights.map(({ icon: Icon, title, description }) => (
-                                    <div
-                                        key={title}
-                                        className="flex items-start gap-3 border-l border-cyan-500/30 bg-background/60 p-4 shadow-sm backdrop-blur dark:bg-white/5"
-                                    >
-                                        <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-cyan-500/10 text-cyan-600 dark:text-cyan-300">
-                                            <Icon className="h-5 w-5" />
-                                        </span>
-                                        <span>
-                                            <span className="block text-sm font-semibold">
-                                                {title}
-                                            </span>
-                                            <span className="mt-1 block text-sm text-muted-foreground">
-                                                {description}
-                                            </span>
-                                        </span>
-                                    </div>
-                                ))}
-                            </div>
+
                         </div>
                     </div>
 
@@ -157,11 +116,7 @@ export default function LoginForm({
                         </div>
 
                         <Card className="overflow-hidden rounded-md border-border/70 bg-card/95 shadow-2xl shadow-slate-950/10 backdrop-blur dark:shadow-black/40">
-                            <div className="h-1.5 bg-gradient-to-r from-cyan-500 via-emerald-500 to-amber-400" />
                             <CardHeader className="space-y-3">
-                                <div className="flex size-11 items-center justify-center rounded-md bg-primary/10 text-primary">
-                                    <LockKeyhole className="h-5 w-5" />
-                                </div>
                                 <div className="space-y-1.5">
                                     <CardTitle className="text-2xl">
                                         Welcome back
@@ -308,16 +263,6 @@ export default function LoginForm({
                         </Card>
 
                         <div className="grid gap-3 text-center text-xs text-muted-foreground">
-                            <div className="flex flex-wrap items-center justify-center gap-2">
-                                <Badge variant="secondary" className="rounded-md">
-                                    <ShieldCheck className="h-3.5 w-3.5" />
-                                    Secure session
-                                </Badge>
-                                <Badge variant="secondary" className="rounded-md">
-                                    <KeyRound className="h-3.5 w-3.5" />
-                                    Passkey ready
-                                </Badge>
-                            </div>
                             <p>
                                 By using our app, you agree to our{' '}
                                 <Link

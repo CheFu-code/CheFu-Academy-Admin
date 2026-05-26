@@ -19,6 +19,7 @@ import { jsPDF } from 'jspdf';
 import autoTable, { RowInput } from 'jspdf-autotable';
 import pptxgen from 'pptxgenjs';
 import QRCode from 'qrcode';
+import { toast } from 'sonner';
 
 type RGB = [number, number, number];
 
@@ -100,7 +101,18 @@ export const downloadCoursePDF_Office = async (course: Course) => {
         });
 
         if (!response.ok) {
-            throw new Error(`PDF export failed with status ${response.status}`);
+            const data = await response.json().catch(() => ({}));
+            const message =
+                data?.message ||
+                data?.error ||
+                `PDF export failed with status ${response.status}`;
+
+            if (response.status === 429) {
+                toast.error(message);
+                return;
+            }
+
+            throw new Error(message);
         }
 
         const blob = await response.blob();

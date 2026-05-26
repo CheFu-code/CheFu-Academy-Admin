@@ -8,7 +8,7 @@ const CallToActionSection = () => {
         <section className="relative left-1/2 w-screen -translate-x-1/2 overflow-hidden py-24 text-white">
             <Image
                 fill
-                src="/education-teaching.webp"
+                src="/science-engineering.png"
                 alt="Books and graduation cap"
                 className="object-cover"
                 sizes="100vw"
