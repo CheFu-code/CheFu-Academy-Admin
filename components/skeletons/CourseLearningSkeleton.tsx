@@ -1,28 +1,94 @@
-import React from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const CourseLearningSkeleton = () => {
     return (
-        <div className="min-h-screen flex flex-col p-4 max-w-3xl mx-auto space-y-6 animate-pulse">
-            {/* Header skeleton */}
-            <div className="flex justify-between items-center">
-                <div className="h-10 w-3/4 bg-gray-300 rounded-md"></div>
-                <div className="h-10 w-10 bg-gray-300 rounded-full"></div>
+        <div className="mx-auto flex min-h-[calc(100svh-7rem)] w-full max-w-6xl flex-col gap-5">
+            <section className="overflow-hidden rounded-xl border bg-card shadow-sm">
+                <div className="bg-[linear-gradient(135deg,rgba(6,182,212,0.10),rgba(16,185,129,0.06),transparent)] p-5 sm:p-6">
+                    <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+                        <div className="min-w-0 space-y-3">
+                            <Skeleton className="h-6 w-40" />
+                            <Skeleton className="h-4 w-48" />
+                            <Skeleton className="h-10 w-full max-w-xl" />
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Skeleton className="h-6 w-28" />
+                            <Skeleton className="h-10 w-10" />
+                        </div>
+                    </div>
+
+                    <div className="mt-6 space-y-2">
+                        <div className="flex items-center justify-between">
+                            <Skeleton className="h-4 w-32" />
+                            <Skeleton className="h-4 w-12" />
+                        </div>
+                        <Skeleton className="h-2 w-full rounded-full" />
+                    </div>
+                </div>
+            </section>
+
+            <section className="grid flex-1 gap-5 lg:grid-cols-[minmax(0,1fr)_300px]">
+                <article className="min-w-0 rounded-xl border bg-card p-5 shadow-sm sm:p-6">
+                    <div className="space-y-6">
+                        <div className="border-b pb-5">
+                            <Skeleton className="mb-3 h-11 w-11 rounded-lg" />
+                            <Skeleton className="h-4 w-28" />
+                            <Skeleton className="mt-3 h-7 w-3/4" />
+                        </div>
+
+                        <div className="space-y-3">
+                            <Skeleton className="h-4 w-40" />
+                            <Skeleton className="h-4 w-full" />
+                            <Skeleton className="h-4 w-11/12" />
+                            <Skeleton className="h-4 w-10/12" />
+                            <Skeleton className="h-4 w-9/12" />
+                        </div>
+
+                        <div className="space-y-3">
+                            <Skeleton className="h-4 w-32" />
+                            <Skeleton className="h-36 w-full rounded-lg" />
+                        </div>
+
+                        <div className="space-y-3">
+                            <Skeleton className="h-4 w-28" />
+                            <Skeleton className="h-24 w-full rounded-lg" />
+                        </div>
+                    </div>
+                </article>
+
+                <aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
+                    <div className="rounded-xl border bg-card p-5 shadow-sm">
+                        <div className="flex items-center gap-3">
+                            <Skeleton className="h-11 w-11 rounded-lg" />
+                            <div className="space-y-2">
+                                <Skeleton className="h-4 w-28" />
+                                <Skeleton className="h-3 w-40" />
+                            </div>
+                        </div>
+                        <div className="mt-5 space-y-3">
+                            <div className="flex items-center justify-between">
+                                <Skeleton className="h-4 w-20" />
+                                <Skeleton className="h-4 w-10" />
+                            </div>
+                            <Skeleton className="h-2 w-full rounded-full" />
+                        </div>
+                    </div>
+
+                    <div className="rounded-xl border bg-card p-5 shadow-sm">
+                        <Skeleton className="h-4 w-32" />
+                        <div className="mt-4 grid gap-3">
+                            <Skeleton className="h-8 w-full" />
+                            <Skeleton className="h-8 w-full" />
+                            <Skeleton className="h-8 w-full" />
+                        </div>
+                    </div>
+                </aside>
+            </section>
+
+            <div className="grid grid-cols-1 gap-3 rounded-xl border bg-card p-3 shadow-sm sm:grid-cols-2">
+                <Skeleton className="h-11 w-full" />
+                <Skeleton className="h-11 w-full" />
             </div>
-
-            {/* Progress skeleton */}
-            <div className="h-2 bg-gray-300 rounded-full"></div>
-            <div className="h-4 w-1/4 bg-gray-300 rounded mt-1"></div>
-
-            {/* Content skeleton */}
-            <div className="flex-1 space-y-4">
-                <div className="h-6 w-1/2 bg-gray-300 rounded"></div>
-                <div className="h-4 bg-gray-300 rounded"></div>
-                <div className="h-32 bg-gray-300 rounded"></div>
-                <div className="h-20 bg-gray-300 rounded"></div>
-            </div>
-
-            {/* Next / Finish button skeleton */}
-            <div className="mt-auto h-12 bg-gray-300 rounded-full w-full"></div>
         </div>
     );
 };
