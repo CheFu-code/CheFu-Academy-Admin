@@ -64,7 +64,7 @@ const CourseLearningUI = ({
     return (
         <div
             ref={scrollRef}
-            className="mx-auto flex min-h-[calc(100svh-7rem)] w-full max-w-6xl flex-col gap-5"
+            className="flex min-h-[calc(100svh-7rem)] w-full flex-col gap-5"
         >
             <section className="overflow-hidden rounded-xl border bg-card shadow-sm">
                 <div className="bg-[linear-gradient(135deg,rgba(6,182,212,0.12),rgba(16,185,129,0.08),transparent)] p-5 sm:p-6">
@@ -121,8 +121,8 @@ const CourseLearningUI = ({
                 </div>
             </section>
 
-            <section className="grid flex-1 gap-5 lg:grid-cols-[minmax(0,1fr)_300px]">
-                <article className="min-w-0 rounded-xl border bg-card p-5 shadow-sm sm:p-6">
+            <section className="flex flex-1">
+                <article className="min-w-0 w-full rounded-xl border bg-card p-5 shadow-sm sm:p-6">
                     <div className="space-y-6">
                         {content.topic && (
                             <header className="border-b pb-5">
