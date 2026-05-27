@@ -1,212 +1,118 @@
-import Header from '@/components/Shared/Header';
-import { Separator } from '@/components/ui/separator';
 import type { Metadata } from 'next';
 import CodeHighlighter from '../_components/CodeHighlighter';
+import { DocCallout, DocPage, DocSection } from '../_components/DocPage';
 
 export function generateMetadata(): Metadata {
     return {
         title: 'Error Handling | CheFu Academy Docs',
         description:
-            'Learn how to handle SDK errors, HTTP status codes, rate limits, and network failures.',
+            'Handle CheFu Academy SDK errors, HTTP status codes, network failures, and retryable requests.',
     };
 }
 
+const toc = [
+    { title: 'Overview', href: '#overview' },
+    { title: 'CheFuAcademyError', href: '#chefuacademyerror' },
+    { title: 'Common status codes', href: '#common-status-codes' },
+    { title: 'Handling failures', href: '#handling-failures' },
+    { title: 'Production guidance', href: '#production-guidance' },
+];
+
 const ErrorHandling = () => {
     return (
-        <div className="min-h-screen bg-background pb-20">
-            <Header
-                header="Error Handling"
-                description="Understand SDK errors, HTTP status codes, and how to handle failures gracefully."
-            />
-
-            <Separator className="my-10" />
-
-            {/* Overview */}
-            <section className="max-w-3xl space-y-4">
-                <h2 className="text-xl font-bold">Overview</h2>
-                <p className="text-muted-foreground leading-relaxed">
-                    Errors can occur due to invalid requests, authentication
-                    issues, network failures, or server-side problems. The CheFu
-                    Academy SDK provides consistent error responses to help you
-                    detect and recover from failures reliably.
+        <DocPage
+            title="Error Handling"
+            description="SDK requests throw typed errors so your app can respond cleanly to invalid input, auth failures, missing resources, and temporary platform issues."
+            eyebrow="Reliability"
+            toc={toc}
+        >
+            <DocSection id="overview" title="Overview">
+                <p>
+                    All SDK methods return promises. When a request fails, the
+                    SDK throws <code>CheFuAcademyError</code> with a user-friendly
+                    message, optional status code, and optional response details.
                 </p>
+            </DocSection>
 
-                <p className="text-muted-foreground leading-relaxed">
-                    All SDK methods throw errors when a request fails. You
-                    should always handle errors explicitly.
-                </p>
-            </section>
-
-            <Separator className="my-10" />
-
-            {/* Try Catch */}
-            <section className="max-w-3xl space-y-4">
-                <h2 className="text-xl font-bold">Basic error handling</h2>
-                <p className="text-muted-foreground">
-                    Wrap SDK calls in a{' '}
-                    <code className="font-mono">try/catch</code> block to
-                    prevent unhandled promise rejections.
-                </p>
-
+            <DocSection id="chefuacademyerror" title="CheFuAcademyError">
                 <CodeHighlighter
-                    code={`try {
-  const courses = await sdk.courses.getAll();
-} catch (error) {
-  console.error(error.message);
-}`}
-                />
-            </section>
-
-            <Separator className="my-10" />
-
-            {/* Error Structure */}
-            <section className="max-w-3xl space-y-4">
-                <h2 className="text-xl font-bold">Error object structure</h2>
-                <p className="text-muted-foreground">
-                    SDK errors follow a predictable structure.
-                </p>
-
-                <CodeHighlighter
-                    code={`{
+                    filename="error-shape.ts"
+                    code={`class CheFuAcademyError extends Error {
+  name: 'CheFuAcademyError';
   message: string;
   statusCode?: number;
-  code?: string;
+  details?: unknown;
 }`}
                 />
+            </DocSection>
 
-                <p className="text-muted-foreground">
-                    This allows you to handle errors programmatically based on
-                    status code or error type.
-                </p>
-            </section>
-
-            <Separator className="my-10" />
-
-            {/* HTTP Status Codes */}
-            <section className="max-w-3xl space-y-4">
-                <h2 className="text-xl font-bold">Common HTTP status codes</h2>
-
-                <div className="space-y-2 text-muted-foreground">
-                    <p>
-                        <strong className="text-foreground">
-                            400 Bad Request
-                        </strong>{' '}
-                        – Invalid parameters or malformed request.
-                    </p>
-                    <p>
-                        <strong className="text-foreground">
-                            401 Unauthorized
-                        </strong>{' '}
-                        – Missing or invalid API key.
-                    </p>
-                    <p>
-                        <strong className="text-foreground">
-                            403 Forbidden
-                        </strong>{' '}
-                        – API key revoked or insufficient permissions.
-                    </p>
-                    <p>
-                        <strong className="text-foreground">
-                            404 Not Found
-                        </strong>{' '}
-                        – Requested resource does not exist.
-                    </p>
-                    <p>
-                        <strong className="text-foreground">
-                            429 Too Many Requests
-                        </strong>{' '}
-                        – Rate limit exceeded.
-                    </p>
-                    <p>
-                        <strong className="text-foreground">
-                            500 Internal Server Error
-                        </strong>{' '}
-                        – Unexpected server error.
-                    </p>
+            <DocSection id="common-status-codes" title="Common status codes">
+                <div className="grid gap-3 sm:grid-cols-2">
+                    {[
+                        ['400', 'Invalid request or malformed parameters.'],
+                        ['401', 'Missing, invalid, or expired API key or user session.'],
+                        ['403', 'Revoked key or insufficient developer permissions.'],
+                        ['404', 'The course, video, or key was not found.'],
+                        ['429', 'Rate limit exceeded. Retry after waiting.'],
+                        ['500', 'Unexpected CheFu Academy server issue.'],
+                    ].map(([code, description]) => (
+                        <div
+                            key={code}
+                            className="rounded-lg border border-white/10 bg-white/[0.03] p-4"
+                        >
+                            <code className="text-lg text-sky-300">{code}</code>
+                            <p className="mt-2 text-sm leading-6 text-zinc-400">
+                                {description}
+                            </p>
+                        </div>
+                    ))}
                 </div>
-            </section>
+            </DocSection>
 
-            <Separator className="my-10" />
-
-            {/* Conditional Handling */}
-            <section className="max-w-3xl space-y-4">
-                <h2 className="text-xl font-bold">Handling errors by type</h2>
-                <p className="text-muted-foreground">
-                    Use conditional logic to respond differently based on the
-                    error status code.
+            <DocSection id="handling-failures" title="Handling failures">
+                <p>
+                    Use <code>try/catch</code> around SDK calls and branch on
+                    <code>statusCode</code> when your app needs a specific
+                    recovery path.
                 </p>
-
                 <CodeHighlighter
-                    code={`try {
-  await sdk.courses.getAll();
+                    filename="error-handling.ts"
+                    code={`import { CheFuAcademyError } from 'chefu-academy-sdk';
+
+try {
+  const courses = await sdk.courses.getAll({ limit: 12 });
+  return courses;
 } catch (error) {
-  if (error.statusCode === 401) {
-    // Invalid API key
-  } else if (error.statusCode === 429) {
-    // Rate limit exceeded
-  } else {
-    // Generic fallback
+  if (error instanceof CheFuAcademyError) {
+    if (error.statusCode === 401) {
+      throw new Error('Check your CHEFU_API_KEY environment variable.');
+    }
+
+    if (error.statusCode === 429) {
+      throw new Error('Too many requests. Retry shortly.');
+    }
+
+    throw new Error(error.message);
   }
+
+  throw error;
 }`}
                 />
-            </section>
+                <DocCallout title="Network errors may not include a status code" tone="neutral">
+                    Treat errors without <code>statusCode</code> as connectivity,
+                    DNS, timeout, or local environment problems.
+                </DocCallout>
+            </DocSection>
 
-            <Separator className="my-10" />
-
-            {/* Network Errors */}
-            <section className="max-w-3xl space-y-4">
-                <h2 className="text-xl font-bold">Network & timeout errors</h2>
-                <p className="text-muted-foreground">
-                    Network failures may occur when the client cannot reach the
-                    API servers. These errors typically do not include a status
-                    code.
-                </p>
-
-                <CodeHighlighter
-                    code={`try {
-  await sdk.courses.getAll();
-} catch (error) {
-  if (!error.statusCode) {
-    console.error('Network error:', error.message);
-  }
-}`}
-                />
-            </section>
-
-            <Separator className="my-10" />
-
-            {/* Best Practices */}
-            <section className="max-w-3xl space-y-4">
-                <h2 className="text-xl font-bold">Best practices</h2>
-
-                <ul className="list-disc pl-6 text-muted-foreground space-y-2">
-                    <li>Always wrap SDK calls in try/catch</li>
-                    <li>Handle authentication errors explicitly</li>
-                    <li>Implement retries for transient failures</li>
-                    <li>Log errors for debugging and monitoring</li>
-                    <li>Show user-friendly messages in production</li>
+            <DocSection id="production-guidance" title="Production guidance">
+                <ul className="list-disc space-y-2 pl-6">
+                    <li>Show user-friendly messages and log detailed errors privately.</li>
+                    <li>Retry only safe read operations, and use backoff for 429 or transient 5xx errors.</li>
+                    <li>Do not log full API keys, passwords, or bearer tokens.</li>
+                    <li>Fail closed when authentication or permissions are unclear.</li>
                 </ul>
-            </section>
-
-            <Separator className="my-10" />
-
-            {/* Footer */}
-            <div className="mt-12 rounded-lg border bg-muted/40 p-5 max-w-3xl">
-                <p className="text-sm text-muted-foreground">
-                    👉{' '}
-                    <span className="font-medium text-foreground">Next:</span>{' '}
-                    Learn how usage limits work and how to avoid request
-                    throttling in{' '}
-                    <a
-                        href="/docs/rate-limits"
-                        className="text-primary hover:underline"
-                    >
-                        Rate Limits & Usage
-                    </a>
-                    .
-                </p>
-            </div>
-        </div>
+            </DocSection>
+        </DocPage>
     );
 };
 

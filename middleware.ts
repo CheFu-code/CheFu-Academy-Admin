@@ -52,6 +52,7 @@ const PUBLIC_APP_ROUTES = new Set([
     '/videos/beginner',
     '/videos/advanced',
     '/videos/search',
+    '/docs',
 ]);
 
 function base64UrlToBytes(value: string) {

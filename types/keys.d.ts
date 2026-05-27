@@ -1,11 +1,15 @@
 export interface ApiKey {
     id: string;
+    publicId?: string;
+    prefix?: string;
     name: string;
     active: boolean;
     plan: string;
-    lastUsedAt?: {
-      _seconds: number;
-      _nanoseconds: number;
-    } | string | null;
-  }
-  
+    createdAt?: TimestampLike | string | null;
+    lastUsedAt?: TimestampLike | string | null;
+}
+
+type TimestampLike = {
+    _seconds: number;
+    _nanoseconds: number;
+};

@@ -1,150 +1,97 @@
-import Header from '@/components/Shared/Header';
-import { Separator } from '@/components/ui/separator';
 import type { Metadata } from 'next';
 import CodeHighlighter from '../_components/CodeHighlighter';
+import { DocCallout, DocPage, DocSection } from '../_components/DocPage';
 
 export function generateMetadata(): Metadata {
     return {
         title: 'Rate Limits | CheFu Academy Docs',
         description:
-            'Understand CheFu Academy API request limits, throttling behavior, and retry best practices.',
+            'Understand CheFu Academy API usage limits, 429 responses, caching, and retry best practices.',
     };
 }
 
+const toc = [
+    { title: 'Overview', href: '#overview' },
+    { title: 'How to reduce requests', href: '#reduce-requests' },
+    { title: 'Retry strategy', href: '#retry-strategy' },
+    { title: 'Recommended caching', href: '#recommended-caching' },
+];
+
 const RateLimits = () => {
     return (
-        <div className="min-h-screen bg-background pb-15">
-            <Header
-                header="Rate Limits & Usage"
-                description="Understand request limits, throttling behavior, and best practices to avoid exceeding your quota."
-            />
-
-            <Separator className="my-10" />
-
-            {/* Overview */}
-            <section className="max-w-3xl space-y-4">
-                <h2 className="text-xl font-bold">Overview</h2>
-                <p className="text-muted-foreground leading-relaxed">
-                    The CheFu Academy API enforces rate limits to ensure fair
-                    usage, prevent abuse, and maintain platform stability. Each
-                    API key has a maximum number of requests per minute and per
-                    day.
+        <DocPage
+            title="Rate Limits & Usage"
+            description="Build integrations that are fast, respectful of shared platform resources, and resilient when traffic spikes."
+            eyebrow="Reliability"
+            toc={toc}
+        >
+            <DocSection id="overview" title="Overview">
+                <p>
+                    CheFu Academy may throttle traffic to protect platform
+                    stability. If a client sends too many requests, the API can
+                    respond with <code>429 Too Many Requests</code>.
                 </p>
+                <DocCallout title="Limits can vary by plan and endpoint" tone="blue">
+                    Design your app to handle <code>429</code> even when you do
+                    not normally reach the limit during development.
+                </DocCallout>
+            </DocSection>
 
-                <p className="text-muted-foreground leading-relaxed">
-                    Exceeding these limits will result in{' '}
-                    <code className="font-mono">429 Too Many Requests</code>{' '}
-                    errors.
-                </p>
-            </section>
-
-            <Separator className="my-10" />
-
-            {/* Typical Limits */}
-            <section className="max-w-3xl space-y-4">
-                <h2 className="text-xl font-bold">Typical limits</h2>
-                <p className="text-muted-foreground">
-                    While limits may vary depending on account type, a standard
-                    API key has:
-                </p>
-
-                <ul className="list-disc pl-6 text-muted-foreground space-y-2">
-                    <li>60 requests per minute</li>
-                    <li>10,000 requests per day</li>
-                    <li>Concurrent requests: up to 5 per key</li>
+            <DocSection id="reduce-requests" title="How to reduce requests">
+                <ul className="list-disc space-y-2 pl-6">
+                    <li>Reuse one SDK instance instead of recreating it for every call.</li>
+                    <li>Use <code>limit</code> to request only the data you need.</li>
+                    <li>Cache categories, featured courses, and stable video lists.</li>
+                    <li>Fetch detailed course content only after a user opens a course.</li>
+                    <li>Avoid sending a search request on every keystroke without debouncing.</li>
                 </ul>
-            </section>
+            </DocSection>
 
-            <Separator className="my-10" />
-
-            {/* Detecting Limits */}
-            <section className="max-w-3xl space-y-4">
-                <h2 className="text-xl font-bold">Detecting rate limits</h2>
-                <p className="text-muted-foreground">
-                    When you exceed the limit, the SDK or API will return a{' '}
-                    <code className="font-mono">429</code> HTTP status code. The
-                    response includes information on when you can retry.
+            <DocSection id="retry-strategy" title="Retry strategy">
+                <p>
+                    Retry safe read operations with a small delay and backoff.
+                    Do not retry forever.
                 </p>
-
                 <CodeHighlighter
-                    code={`{
-  statusCode: 429,
-  message: "Rate limit exceeded",
-  retryAfter: 30 // seconds
-}`}
-                />
-            </section>
-
-            <Separator className="my-10" />
-
-            {/* Retry Strategies */}
-            <section className="max-w-3xl space-y-4">
-                <h2 className="text-xl font-bold">Retry strategies</h2>
-                <p className="text-muted-foreground">
-                    Implement retries with exponential backoff to handle
-                    transient rate-limit errors.
-                </p>
-
-                <CodeHighlighter
-                    code={`async function fetchCoursesWithRetry(sdk, retries = 3) {
+                    filename="retry.ts"
+                    code={`async function withRetry<T>(request: () => Promise<T>, retries = 2): Promise<T> {
   try {
-    return await sdk.courses.list();
+    return await request();
   } catch (error) {
-    if (error.statusCode === 429 && retries > 0) {
-      await new Promise(res => setTimeout(res, 1000 * (4 - retries)));
-      return fetchCoursesWithRetry(sdk, retries - 1);
+    const statusCode = error instanceof Error && 'statusCode' in error
+      ? Number(error.statusCode)
+      : undefined;
+
+    if ((statusCode === 429 || statusCode === 500) && retries > 0) {
+      await new Promise((resolve) => setTimeout(resolve, 800 * (3 - retries)));
+      return withRetry(request, retries - 1);
     }
+
     throw error;
   }
+}
+
+const courses = await withRetry(() => sdk.courses.getFeatured({ limit: 6 }));`}
+                />
+            </DocSection>
+
+            <DocSection id="recommended-caching" title="Recommended caching">
+                <p>
+                    For Next.js apps, keep SDK calls server-side and use the
+                    framework&apos;s caching tools around your own route handlers or
+                    Server Components.
+                </p>
+                <CodeHighlighter
+                    filename="app/api/academy/featured/route.ts"
+                    code={`export const revalidate = 300;
+
+export async function GET() {
+  const courses = await sdk.courses.getFeatured({ limit: 6 });
+  return Response.json(courses);
 }`}
                 />
-            </section>
-
-            <Separator className="my-10" />
-
-            {/* Best Practices */}
-            <section className="max-w-3xl space-y-4">
-                <h2 className="text-xl font-bold">Best practices</h2>
-
-                <ul className="list-disc pl-6 text-muted-foreground space-y-2">
-                    <li>
-                        Reuse the SDK instance instead of creating multiple
-                        instances
-                    </li>
-                    <li>Cache repeated requests when possible</li>
-                    <li>
-                        Use pagination to limit the size of data per request
-                    </li>
-                    <li>
-                        Monitor your request counts to avoid exceeding daily
-                        limits
-                    </li>
-                    <li>
-                        Handle <code className="font-mono">429</code> errors
-                        gracefully
-                    </li>
-                </ul>
-            </section>
-
-            <Separator className="my-10" />
-
-            {/* Footer */}
-            {/* <div className="mt-12 rounded-lg border bg-muted/40 p-5 max-w-3xl">
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                    👉{' '}
-                    <span className="font-medium text-foreground">Next:</span>{' '}
-                    Learn about best practices for securing your keys and
-                    preventing misuse in the{' '}
-                    <a
-                        href="/docs/security"
-                        className="text-primary hover:underline"
-                    >
-                        Security & Best Practices
-                    </a>{' '}
-                    section.
-                </p>
-            </div> */}
-        </div>
+            </DocSection>
+        </DocPage>
     );
 };
 

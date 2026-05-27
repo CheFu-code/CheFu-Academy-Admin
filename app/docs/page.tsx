@@ -1,196 +1,159 @@
-import Header from '@/components/Shared/Header';
-import { buttonVariants } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { WEBSITE_URL } from '@/constants/Data';
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import CodeHighlighter from './_components/CodeHighlighter';
+import { DocCallout, DocPage, DocSection, MethodList } from './_components/DocPage';
 
 export function generateMetadata(): Metadata {
     return {
         title: 'CheFu Academy Documentation',
         description:
-            'Learn how to integrate the CheFu Academy SDK into web, mobile, and backend applications.',
+            'Integrate CheFu Academy courses, videos, practice content, and developer API keys with the official SDK.',
     };
 }
 
+const toc = [
+    { title: 'What is CheFu Academy?', href: '#what-is-chefu-academy' },
+    { title: 'What you can build', href: '#what-you-can-build' },
+    { title: 'Quick start', href: '#quick-start' },
+    { title: 'Current SDK surface', href: '#current-sdk-surface' },
+    { title: 'Security model', href: '#security-model' },
+    { title: 'Next steps', href: '#next-steps' },
+];
+
+const methods = [
+    {
+        name: 'sdk.courses.*',
+        description:
+            'Browse, search, feature, and read course chapters, lessons, quizzes, flashcards, and Q&A.',
+    },
+    {
+        name: 'sdk.videos.*',
+        description:
+            'Fetch uploaded and YouTube-backed videos, search them, or filter by category.',
+    },
+    {
+        name: 'sdk.keys.*',
+        description:
+            'Create, list, and revoke developer API keys from authenticated SDK sessions.',
+    },
+    {
+        name: 'chefu-academy CLI',
+        description:
+            'Login, register, logout, inspect your session, and manage keys from the terminal.',
+    },
+];
+
 const APIDoc = () => {
     return (
-        <div className="min-h-screen bg-background">
-            <Header
-                header="CheFu Academy Documentation"
-                description="Everything you need to integrate CheFu Academy into your application."
-            />
-
-            <Separator className="mt-10 mb-10" />
-
-            {/* What is CheFu Academy */}
-            <div>
-                <h1 className="text-xl font-bold">What is CheFu Academy?</h1>
-                <p className="mt-5 text-muted-foreground leading-relaxed">
-                    CheFu Academy is a modern, feature-rich digital learning
-                    platform designed to deliver high-quality educational
-                    content across multiple platforms. It provides structured
-                    courses, interactive lessons, quizzes, flashcards, and
-                    real-time updates through a scalable backend.
+        <DocPage
+            title="CheFu Academy Docs"
+            description="Build with the CheFu Academy platform using the official TypeScript SDK, terminal CLI, and secured CheFu Inc API."
+            eyebrow="SDK v1.0.9"
+            toc={toc}
+        >
+            <DocSection id="what-is-chefu-academy" title="What is CheFu Academy?">
+                <p>
+                    CheFu Academy is CheFu Inc&apos;s learning platform for guided
+                    courses, learning videos, quizzes, flashcards, Q&A practice,
+                    progress tracking, and AI-assisted course generation.
                 </p>
-
-                <p className="mt-4 text-muted-foreground leading-relaxed">
-                    The platform is available on{' '}
-                    <a
-                        target="_blank"
-                        href={WEBSITE_URL}
-                        className="text-primary hover:underline"
-                    >
-                        Web
-                    </a>{' '}
-                    and{' '}
-                    <a
-                        target="_blank"
-                        href="https://play.google.com/store/apps/details?id=com.chefu.chefuacademy"
-                        className="text-primary hover:underline"
-                    >
-                        Android
-                    </a>
-                    , allowing learners to access content anytime, anywhere.
+                <p>
+                    The SDK gives developers a stable way to integrate that
+                    learning content into internal tools, apps, bots, dashboards,
+                    and custom education experiences.
                 </p>
+            </DocSection>
 
-                <p className="mt-4 text-muted-foreground leading-relaxed">
-                    CheFu Academy is built with scalability, performance, and
-                    developer experience in mind, making it suitable for
-                    startups, institutions, and independent educators.
-                </p>
-            </div>
-
-            <Separator className="mt-10 mb-10" />
-
-            {/* About the SDK */}
-            <div>
-                <h1 className="text-xl font-bold">
-                    What is the CheFu Academy SDK?
-                </h1>
-                <p className="mt-5 text-muted-foreground leading-relaxed">
-                    The CheFu Academy SDK is an official JavaScript/TypeScript
-                    software development kit that allows developers to interact
-                    programmatically with the CheFu Academy platform.
-                </p>
-
-                <p className="mt-4 text-muted-foreground leading-relaxed">
-                    With the SDK, you can:
-                </p>
-
-                <ul className="mt-4 list-disc pl-6 text-muted-foreground space-y-2">
-                    <li>Fetch and manage courses and learning content</li>
-                    <li>Access chapters, lessons, quizzes, and flashcards</li>
-                    <li>Handle authentication and API keys securely</li>
-                    <li>
-                        Integrate CheFu Academy into web, mobile, or backend
-                        applications
-                    </li>
-                    <li>
-                        Build custom learning experiences on top of the platform
-                    </li>
-                </ul>
-            </div>
-
-            <Separator className="mt-10 mb-10" />
-
-            {/* How to use the docs */}
-            <div>
-                <h1 className="text-xl font-bold">
-                    How to use the documentation
-                </h1>
-                <p className="mt-5 text-muted-foreground leading-relaxed">
-                    This documentation is structured to guide you from basic
-                    setup to advanced usage of the CheFu Academy SDK.
-                </p>
-
-                <div className="mt-6 space-y-4 text-muted-foreground leading-relaxed">
-                    <p>
-                        <span className="font-semibold text-foreground">
-                            Getting Started
-                        </span>{' '}
-                        – Learn how to install the SDK, configure your API key,
-                        and make your first request.
-                    </p>
-
-                    <p>
-                        <span className="font-semibold text-foreground">
-                            Core Concepts
-                        </span>{' '}
-                        – Understand how courses, chapters, lessons, and users
-                        are structured within the CheFu Academy ecosystem.
-                    </p>
-
-                    <p>
-                        <span className="font-semibold text-foreground">
-                            API Reference
-                        </span>{' '}
-                        – Detailed explanations of all available SDK methods,
-                        parameters, and response formats.
-                    </p>
-
-                    <p>
-                        <span className="font-semibold text-foreground">
-                            Examples & Use Cases
-                        </span>{' '}
-                        – Practical examples showing how to integrate the SDK
-                        into real-world applications.
-                    </p>
-
-                    <p>
-                        <span className="font-semibold text-foreground">
-                            Best Practices
-                        </span>{' '}
-                        – Security, performance optimization, and recommended
-                        patterns for production use.
-                    </p>
+            <DocSection id="what-you-can-build" title="What you can build">
+                <div className="grid gap-3 sm:grid-cols-2">
+                    {[
+                        'Course discovery pages powered by CheFu Academy content.',
+                        'Learning dashboards that pull chapters, lessons, and practice material.',
+                        'Video libraries that include uploaded videos and YouTube-backed lessons.',
+                        'Backend services that safely query CheFu Inc APIs with developer keys.',
+                    ].map((item) => (
+                        <div
+                            key={item}
+                            className="rounded-lg border border-white/10 bg-white/[0.03] p-4 text-sm leading-6 text-zinc-300"
+                        >
+                            {item}
+                        </div>
+                    ))}
                 </div>
-            </div>
+            </DocSection>
 
-            <Separator className="mt-10 mb-10" />
-
-            {/* Who should use it */}
-            <div>
-                <h1 className="text-xl font-bold">Who should use this SDK?</h1>
-                <p className="mt-5 text-muted-foreground leading-relaxed">
-                    The CheFu Academy SDK is ideal for:
+            <DocSection id="quick-start" title="Quick start">
+                <p>
+                    Install the package, sign in from the terminal, create a
+                    developer API key, and use that key from a server-side
+                    environment.
                 </p>
+                <CodeHighlighter
+                    language="bash"
+                    showLineNumbers={false}
+                    filename="Terminal"
+                    code={`npm install chefu-academy-sdk
+npx chefu-academy login
+npx chefu-academy keys create --name "Production API"`}
+                />
+                <CodeHighlighter
+                    filename="server.ts"
+                    code={`import CheFuAcademy from 'chefu-academy-sdk';
 
-                <ul className="mt-4 list-disc pl-6 text-muted-foreground space-y-2">
-                    <li>Frontend developers building learning platforms</li>
-                    <li>Mobile developers integrating educational content</li>
-                    <li>Backend developers creating custom APIs or services</li>
-                    <li>EdTech startups and institutions</li>
-                    <li>
-                        Independent developers experimenting with educational
-                        tools
-                    </li>
-                </ul>
-            </div>
+const sdk = new CheFuAcademy({
+  apiKey: process.env.CHEFU_API_KEY,
+});
 
-            <Separator className="mt-10 mb-10" />
+const featuredCourses = await sdk.courses.getFeatured({ limit: 6 });
+const videos = await sdk.videos.search({ query: 'javascript', limit: 8 });`}
+                />
+                <DocCallout title="Keep API keys on the server" tone="amber">
+                    API keys use the format <code>chf_publicId_secret</code>.
+                    Do not place them in client-side bundles or public
+                    repositories.
+                </DocCallout>
+            </DocSection>
 
-            {/* Final note */}
-            <div className="pb-20">
-                <h1 className="text-xl font-bold">Next steps</h1>
-                <p className="mt-5 text-muted-foreground leading-relaxed">
-                    Continue to the next section to{' '}
-                        learn how to install the SDK{' '}
-                    and make your first API call. Each section builds on the
-                    previous one, so we recommend following the documentation in
-                    order.
+            <DocSection id="current-sdk-surface" title="Current SDK surface">
+                <MethodList items={methods} />
+            </DocSection>
+
+            <DocSection id="security-model" title="Security model">
+                <p>
+                    Developer keys are created only by authenticated users with
+                    the developer role. The backend validates that keys start
+                    with <code>chf_</code>, checks the public identifier, hashes
+                    the secret portion, and rejects revoked or compromised keys.
                 </p>
-                <Link
-                    href="/docs/installation"
-                    className={buttonVariants({
-                        variant: 'outline',
-                        className: 'mt-2',
-                    })}
-                >
-                    Next
-                </Link>
-            </div>
-        </div>
+                <p>
+                    If a key is reported as leaked, CheFu Inc can revoke it and
+                    notify the owner so they can rotate credentials quickly.
+                </p>
+            </DocSection>
+
+            <DocSection id="next-steps" title="Next steps">
+                <div className="grid gap-3 sm:grid-cols-3">
+                    <Link
+                        href="/docs/installation"
+                        className="rounded-lg border border-white/10 bg-white/[0.03] p-4 text-sm text-zinc-300 transition hover:bg-white/[0.06] hover:text-white"
+                    >
+                        Install the SDK
+                    </Link>
+                    <Link
+                        href="/docs/authentication"
+                        className="rounded-lg border border-white/10 bg-white/[0.03] p-4 text-sm text-zinc-300 transition hover:bg-white/[0.06] hover:text-white"
+                    >
+                        Understand auth
+                    </Link>
+                    <Link
+                        href="/docs/requests"
+                        className="rounded-lg border border-white/10 bg-white/[0.03] p-4 text-sm text-zinc-300 transition hover:bg-white/[0.06] hover:text-white"
+                    >
+                        View SDK methods
+                    </Link>
+                </div>
+            </DocSection>
+        </DocPage>
     );
 };
 

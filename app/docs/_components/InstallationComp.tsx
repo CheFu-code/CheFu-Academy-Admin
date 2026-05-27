@@ -1,7 +1,8 @@
-import { Separator } from '@/components/ui/separator';
+import { Button } from '@/components/ui/button';
 import { ApiKey } from '@/types/keys';
 import { Dispatch, SetStateAction } from 'react';
 import CodeHighlighter from './CodeHighlighter';
+import { DocCallout, DocSection } from './DocPage';
 import TableComp from './Table';
 
 const InstallationComp = ({
@@ -16,87 +17,109 @@ const InstallationComp = ({
     revokeKey: (id: string) => Promise<void>;
 }) => {
     return (
-        <div>
-            {/* Why API Keys */}
-            <section className="space-y-4 max-w-3xl">
-                <h2 className="text-xl font-bold">Why API keys are required</h2>
-                <p className="text-muted-foreground leading-relaxed">
-                    The CheFu Academy SDK uses API keys to authenticate requests
-                    and associate them with your account. This ensures secure
-                    access, usage tracking, and abuse prevention.
+        <>
+            <DocSection id="install-package" title="Install the package">
+                <p>
+                    The SDK supports Node.js 18 and newer. Install it in the
+                    project that will call the CheFu Inc API.
                 </p>
-
-                <ul className="list-disc pl-6 text-muted-foreground space-y-2">
-                    <li>Each API key is unique to your account</li>
-                    <li>Keys can be revoked at any time</li>
-                    <li>Never expose keys in public repositories</li>
-                </ul>
-            </section>
-            <Separator className="my-10" />
-            {/* Install SDK */}
-            <section className="space-y-4 max-w-3xl">
-                <h2 className="text-xl font-bold">Install the SDK</h2>
-                <p className="text-muted-foreground">
-                    Install the official CheFu Academy SDK using npm.
-                </p>
-
                 <CodeHighlighter
+                    language="bash"
                     showLineNumbers={false}
-                    code={`npm install chefu-academy-sdk`}
+                    filename="npm"
+                    code="npm install chefu-academy-sdk"
                 />
-
                 <CodeHighlighter
+                    language="bash"
                     showLineNumbers={false}
-                    code={`yarn add chefu-academy-sdk`}
+                    filename="yarn"
+                    code="yarn add chefu-academy-sdk"
                 />
-            </section>
-            <Separator className="my-10" />
-            {/* Usage Example */}
-            <section className="space-y-4 max-w-3xl">
-                <h2 className="text-xl font-bold">Basic usage</h2>
-                <p className="text-muted-foreground">
-                    Initialize the SDK with your API key and start fetching
-                    content.
-                </p>
+            </DocSection>
 
+            <DocSection id="terminal-auth" title="Login from the terminal">
+                <p>
+                    The package includes a CLI for developer setup. Use it to
+                    login, register, inspect your current session, and logout.
+                </p>
                 <CodeHighlighter
+                    language="bash"
+                    showLineNumbers={false}
+                    filename="Terminal"
+                    code={`npx chefu-academy auth
+npx chefu-academy login
+npx chefu-academy whoami
+npx chefu-academy logout`}
+                />
+                <DocCallout title="Developer role required" tone="blue">
+                    API key creation is only available after authentication and
+                    only for users marked as developers in CheFu Inc.
+                </DocCallout>
+            </DocSection>
+
+            <DocSection id="create-api-key" title="Create an API key">
+                <p>
+                    Create a key from the CLI or from this page. A generated key
+                    is shown once, so store it in a secret manager or environment
+                    variable immediately.
+                </p>
+                <CodeHighlighter
+                    language="bash"
+                    showLineNumbers={false}
+                    filename="Terminal"
+                    code={`npx chefu-academy keys create --name "Local development"
+npx chefu-academy keys list
+npx chefu-academy keys revoke <key-id>`}
+                />
+                <div className="rounded-lg border border-white/10 bg-white/[0.03] p-5">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <h3 className="font-semibold text-white">Dashboard keys</h3>
+                            <p className="mt-1 text-sm text-zinc-400">
+                                Manage API keys connected to the signed-in web account.
+                            </p>
+                        </div>
+                        <Button
+                            type="button"
+                            size="sm"
+                            className="w-fit cursor-pointer"
+                            onClick={() => setOpen(true)}
+                        >
+                            Create API Key
+                        </Button>
+                    </div>
+                    <TableComp
+                        setOpen={setOpen}
+                        loading={loading}
+                        keys={keys}
+                        revokeKey={revokeKey}
+                    />
+                </div>
+            </DocSection>
+
+            <DocSection id="use-sdk" title="Use the SDK">
+                <p>
+                    Initialize the SDK once in server-side code and reuse the
+                    instance for courses, videos, and other content calls.
+                </p>
+                <CodeHighlighter
+                    filename="server.ts"
                     code={`import CheFuAcademy from 'chefu-academy-sdk';
 
 const sdk = new CheFuAcademy({
-    apiKey: process.env.CHEFU_API_KEY,
+  apiKey: process.env.CHEFU_API_KEY,
 });
 
-const courses = await sdk.courses.getAll();
+const courses = await sdk.courses.search({
+  query: 'react',
+  category: 'Programming',
+  limit: 10,
+});
+
 console.log(courses);`}
                 />
-            </section>
-            <Separator className="my-10" />
-            {/* API Key Management */}
-            <section className="space-y-4">
-                <h2 className="text-xl font-bold">API key management</h2>
-                <p className="text-muted-foreground max-w-3xl">
-                    Create, view, and revoke API keys below. A generated key
-                    will only be shown once — store it securely.
-                </p>
-
-                <TableComp
-                    setOpen={setOpen}
-                    loading={loading}
-                    keys={keys}
-                    revokeKey={revokeKey}
-                />
-            </section>
-
-            <p className="mt-10 text-sm text-muted-foreground">
-                Next up →{' '}
-                <a
-                    href="/docs/authentication"
-                    className="text-primary hover:underline"
-                >
-                    Authentication & Core Concepts
-                </a>
-            </p>
-        </div>
+            </DocSection>
+        </>
     );
 };
 

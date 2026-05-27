@@ -1,14 +1,20 @@
 'use client';
 
-import Header from '@/components/Shared/Header';
-import { Separator } from '@/components/ui/separator';
 import getUserToken from '@/lib/getToken';
 import { ApiKey } from '@/types/keys';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import CreateDialog from '../_components/CreateDialog';
+import { DocPage } from '../_components/DocPage';
 import InstallationComp from '../_components/InstallationComp';
 import { SDK_URL } from '@/constants/Data';
+
+const toc = [
+    { title: 'Install the package', href: '#install-package' },
+    { title: 'Login from the terminal', href: '#terminal-auth' },
+    { title: 'Create an API key', href: '#create-api-key' },
+    { title: 'Use the SDK', href: '#use-sdk' },
+];
 
 export default function Installation() {
     const [keys, setKeys] = useState<ApiKey[]>([]);
@@ -93,20 +99,20 @@ export default function Installation() {
     }
 
     return (
-        <div className="min-h-screen bg-background pb-20">
-            <Header
-                header="Installation & API Keys"
-                description="Install the SDK, generate an API key, and start making requests."
-            />
-
-            <Separator className="my-10" />
-
-            <InstallationComp
-                setOpen={setOpen}
-                loading={loading}
-                keys={keys}
-                revokeKey={revokeKey}
-            />
+        <>
+            <DocPage
+                title="Installation"
+                description="Install the SDK, authenticate from the terminal, create a developer key, and make your first CheFu Academy request."
+                eyebrow="Getting Started"
+                toc={toc}
+            >
+                <InstallationComp
+                    setOpen={setOpen}
+                    loading={loading}
+                    keys={keys}
+                    revokeKey={revokeKey}
+                />
+            </DocPage>
             <CreateDialog
                 open={open}
                 setOpen={setOpen}
@@ -117,6 +123,6 @@ export default function Installation() {
                 generatingKey={generatingKey}
                 createKey={createKey}
             />
-        </div>
+        </>
     );
 }

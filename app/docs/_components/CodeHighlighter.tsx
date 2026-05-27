@@ -10,12 +10,14 @@ interface CodeHighlighterProps {
     code: string;
     language?: string;
     showLineNumbers?: boolean;
+    filename?: string;
 }
 
 const CodeHighlighter: React.FC<CodeHighlighterProps> = ({
     code,
     language = 'javascript',
     showLineNumbers = true,
+    filename,
 }) => {
     const [copied, setCopied] = React.useState(false);
 
@@ -27,34 +29,42 @@ const CodeHighlighter: React.FC<CodeHighlighterProps> = ({
     };
 
     return (
-        <div className="relative mt-4">
+        <div className="relative mt-4 overflow-hidden rounded-lg border border-white/10 bg-[#0b0b0b]">
+            {filename && (
+                <div className="border-b border-white/10 px-4 py-2 text-xs font-medium text-zinc-400">
+                    {filename}
+                </div>
+            )}
             <SyntaxHighlighter
                 language={language}
                 style={vscDarkPlus}
                 showLineNumbers={showLineNumbers}
                 useInlineStyles={true}
                 customStyle={{
-                    borderRadius: '0.5rem',
+                    borderRadius: 0,
+                    margin: 0,
                     padding: '1rem',
                     fontSize: '0.875rem',
                     overflowX: 'auto',
-                    backgroundColor: '#1e1e1e',
+                    backgroundColor: '#0b0b0b',
                 }}
             >
                 {code}
             </SyntaxHighlighter>
 
             {!copied ? (
-                <Copy
-                    size={20}
+                <button
+                    type="button"
+                    aria-label="Copy code"
                     onClick={handleCopy}
-                    className="absolute hover:text-primary top-3 right-3 cursor-pointer text-white"
-                />
+                    className="absolute right-3 top-3 rounded-md border border-white/10 bg-black/80 p-2 text-zinc-300 transition hover:text-white"
+                >
+                    <Copy size={16} />
+                </button>
             ) : (
-                <Check
-                    size={20}
-                    className="absolute top-3 right-3 text-green-500"
-                />
+                <span className="absolute right-3 top-3 rounded-md border border-emerald-400/30 bg-emerald-500/10 p-2 text-emerald-300">
+                    <Check size={16} />
+                </span>
             )}
         </div>
     );
