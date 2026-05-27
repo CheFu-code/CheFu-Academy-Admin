@@ -8,6 +8,7 @@ import {
     LogOut,
     Settings,
     Sparkles,
+    UserRound,
 } from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -27,6 +28,7 @@ import {
     useSidebar,
 } from '@/components/ui/sidebar';
 import { useSignOut } from '@/hooks/useSignOut';
+import { chefuManageAccountUrl } from '@/lib/chefu-account';
 import { User } from '@/types/user';
 import Link from 'next/link';
 import { Button } from './ui/button';
@@ -111,6 +113,15 @@ export function NavUser({ user }: { user: User }) {
                                 <Link href="/settings/account">
                                     <BadgeCheck />
                                     Account
+                                </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                asChild
+                                className="hover:bg-primary cursor-pointer"
+                            >
+                                <Link href={chefuManageAccountUrl()}>
+                                    <UserRound />
+                                    CheFu Account
                                 </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem

@@ -5,6 +5,7 @@ import {
     Home,
     LayoutDashboardIcon,
     LogOutIcon,
+    UserRound,
 } from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -18,6 +19,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useSignOut } from '@/hooks/useSignOut';
+import { chefuManageAccountUrl } from '@/lib/chefu-account';
 import { UserDropdownProps } from '@/types/user';
 import Link from 'next/link';
 
@@ -49,16 +51,29 @@ export default function UserDropdown({ user }: UserDropdownProps) {
             </DropdownMenuTrigger>
 
             <DropdownMenuContent align="end" className="max-w-64">
-                <DropdownMenuItem asChild>
-                    <Link href="/settings/account" className="flex min-w-0 flex-col">
+                    <DropdownMenuItem asChild>
+                        <Link href="/settings/account" className="flex min-w-0 flex-col">
                         <span className="text-foreground truncate  text-sm font-medium">
                             {user?.fullname}
                         </span>
                         <span className="text-muted-foreground truncate text-xs font-normal">
                             {user?.email}
                         </span>
-                    </Link>
-                </DropdownMenuItem>
+                        </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                        <Link
+                            href={chefuManageAccountUrl()}
+                            className="flex items-center gap-2"
+                        >
+                            <UserRound
+                                size={16}
+                                className="opacity-60"
+                                aria-hidden="true"
+                            />
+                            <span>CheFu Account</span>
+                        </Link>
+                    </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
                     <DropdownMenuItem asChild>
