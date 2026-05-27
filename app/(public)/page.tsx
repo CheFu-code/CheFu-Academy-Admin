@@ -1,6 +1,5 @@
 import AboutUsUI from '@/components/pagesUI/AboutUsUI';
 import CallToActionSection from '@/components/Welcome/CallToActionSection';
-import ChatSupport from '@/components/Welcome/ChatSupport';
 import FeaturesSection from '@/components/Welcome/FeaturesSection';
 import Footer from '@/components/Welcome/Footer';
 import HeroSection from '@/components/Welcome/HeroSection';
@@ -25,7 +24,7 @@ const Home = () => {
             <TestimonialsSection />
             <Integration />
             <AboutUsUI />
-            <ChatSupport />
+            {/* <ChatSupport /> */}
             <PricingSection />
             <CallToActionSection />
             <Footer />

@@ -1,5 +1,3 @@
-import Image from 'next/image';
-import Link from 'next/link';
 import {
     ArrowRight,
     BookOpenCheck,
@@ -7,6 +5,7 @@ import {
     CheckCircle2,
     Sparkles,
 } from 'lucide-react';
+import Link from 'next/link';
 import { Badge } from '../ui/badge';
 import { buttonVariants } from '../ui/button';
 
@@ -22,14 +21,6 @@ const HeroSection = () => {
             id="hero-section"
             className="relative left-1/2 min-h-[calc(88svh-4rem)] w-screen -translate-x-1/2 overflow-hidden"
         >
-            <Image
-                fill
-                priority
-                src="/artificial-intelligence-machine-learning.jpg"
-                alt="AI assistant visualizing a learning path"
-                className="home-hero-image object-cover"
-                sizes="100vw"
-            />
             <div className="absolute inset-0 bg-black/65" />
             <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.86),rgba(0,0,0,0.58),rgba(0,0,0,0.18))]" />
 
