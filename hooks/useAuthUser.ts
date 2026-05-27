@@ -1,6 +1,7 @@
 "use client";
 
 import { auth, db } from "@/lib/firebase";
+import { getChefuSessionUser } from "@/lib/chefu-account";
 import { User } from "@/types/user";
 import { doc, getDoc } from "@firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
@@ -24,7 +25,16 @@ export function useAuthUser() {
                     } as User); // fallback
                 }
             } else {
-                setUser(null);
+                try {
+                    const sessionUser = await getChefuSessionUser();
+                    setUser({
+                        email: sessionUser.email,
+                        fullname: sessionUser.displayName || sessionUser.email.split("@")[0],
+                        roles: sessionUser.roles,
+                    } as User);
+                } catch {
+                    setUser(null);
+                }
             }
             setLoading(false);
         });

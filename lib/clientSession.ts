@@ -16,6 +16,7 @@ export async function syncSessionCookie() {
         method: 'POST',
         headers: {
             Authorization: `Bearer ${idToken}`,
+            'x-chefu-app': 'academy',
         },
         credentials: 'include',
     });

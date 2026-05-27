@@ -1,18 +1,10 @@
 import { buttonVariants } from '@/components/ui/button';
 import { ArrowRight, Download } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
 
 const CallToActionSection = () => {
     return (
         <section className="relative left-1/2 w-screen -translate-x-1/2 overflow-hidden py-24 text-white">
-            <Image
-                fill
-                src="/science-engineering.png"
-                alt="Books and graduation cap"
-                className="object-cover"
-                sizes="100vw"
-            />
             <div className="absolute inset-0 bg-black/70" />
             <div className="relative mx-auto max-w-6xl px-4 text-center sm:px-6 lg:px-8">
                 <p className="text-sm font-semibold uppercase text-cyan-200">
