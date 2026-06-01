@@ -3,6 +3,7 @@ import {
     SESSION_META_COOKIE_NAME,
     SessionMeta,
 } from '@/lib/session-constants';
+import { isAdmin } from '@/lib/access-control';
 import { NextRequest, NextResponse } from 'next/server';
 
 const AGENT_DISCOVERY_LINKS = [
@@ -161,6 +162,14 @@ function withAgentDiscoveryHeaders(response: NextResponse) {
     return response;
 }
 
+function withRequestId(request: NextRequest, response: NextResponse) {
+    response.headers.set(
+        'x-request-id',
+        request.headers.get('x-request-id') || crypto.randomUUID(),
+    );
+    return response;
+}
+
 function markdownHomeResponse() {
     return new NextResponse(HOME_MARKDOWN, {
         headers: {
@@ -182,37 +191,39 @@ export async function middleware(request: NextRequest) {
 
     if (pathname === '/') {
         if (acceptsMarkdown(request)) {
-            return markdownHomeResponse();
+            return withRequestId(request, markdownHomeResponse());
         }
 
         const response = withAgentDiscoveryHeaders(NextResponse.next());
         response.headers.set('Vary', 'Accept');
-        return response;
+        return withRequestId(request, response);
     }
 
     if (AUTH_ROUTES.includes(pathname) && isSignedIn) {
-        return NextResponse.redirect(new URL('/', request.url));
+        return withRequestId(
+            request,
+            NextResponse.redirect(new URL('/', request.url)),
+        );
     }
 
     if (!isProtectedPath(pathname)) {
-        return NextResponse.next();
+        return withRequestId(request, NextResponse.next());
     }
 
     if (!isSignedIn) {
-        return redirectToLogin(request);
+        return withRequestId(request, redirectToLogin(request));
     }
 
     if (pathname === '/admin' || pathname.startsWith('/admin/')) {
-        const isAdmin = sessionMeta?.roles.some(
-            role => role.toLowerCase() === 'admin',
-        );
-
-        if (!isAdmin) {
-            return NextResponse.redirect(new URL('/not-admin', request.url));
+        if (!isAdmin(sessionMeta?.roles)) {
+            return withRequestId(
+                request,
+                NextResponse.redirect(new URL('/not-admin', request.url)),
+            );
         }
     }
 
-    return NextResponse.next();
+    return withRequestId(request, NextResponse.next());
 }
 
 export const config = {
