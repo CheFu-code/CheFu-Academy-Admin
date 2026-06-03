@@ -1,9 +1,9 @@
 'use client';
 
 import { useAuthUser } from '@/hooks/useAuthUser';
-import { auth, db, storage } from '@/lib/firebase';
+import { getApiUrl } from '@/lib/api-url';
+import { auth, storage } from '@/lib/firebase';
 import { updateProfile } from 'firebase/auth';
-import { doc, updateDoc } from 'firebase/firestore';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
@@ -46,10 +46,7 @@ const Account = () => {
             await uploadBytes(avatarRef, file);
             const photoURL = await getDownloadURL(avatarRef);
 
-            await updateDoc(doc(db, 'users', user.email), {
-                profilePicture: photoURL,
-                updatedAt: new Date(),
-            });
+            await syncChefuProfilePicture(photoURL);
 
             if (auth.currentUser) {
                 await updateProfile(auth.currentUser, {
@@ -90,3 +87,31 @@ const Account = () => {
 };
 
 export default Account;
+
+async function syncChefuProfilePicture(photoURL: string) {
+    const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        'x-chefu-app': 'academy',
+    };
+
+    if (auth.currentUser) {
+        headers.Authorization = `Bearer ${await auth.currentUser.getIdToken(true)}`;
+    }
+
+    const response = await fetch(getApiUrl('/auth/profile'), {
+        method: 'PATCH',
+        credentials: 'include',
+        headers,
+        body: JSON.stringify({ profilePicture: photoURL }),
+    });
+
+    if (!response.ok) {
+        const data = (await response.json().catch(() => null)) as
+            | { error?: string; message?: string; requestId?: string }
+            | null;
+        const requestId = data?.requestId ? ` Request ID: ${data.requestId}` : '';
+        throw new Error(
+            `${data?.message || data?.error || 'Unable to sync profile picture.'}${requestId}`,
+        );
+    }
+}
