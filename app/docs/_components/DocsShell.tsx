@@ -120,10 +120,7 @@ export const DocsSidebar = () => {
                         <span className="flex size-10 items-center justify-center rounded-md border border-emerald-400/30 bg-emerald-500/10 text-emerald-300">
                             <ShieldCheck className="size-5" />
                         </span>
-                        <div>
-                            <p className="text-sm font-semibold text-white">Secured API</p>
-                            <p className="text-xs text-zinc-400">Keys start with chf_</p>
-                        </div>
+
                     </div>
                 </div>
 
