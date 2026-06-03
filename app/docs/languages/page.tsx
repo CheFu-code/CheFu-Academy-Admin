@@ -7,13 +7,14 @@ export function generateMetadata(): Metadata {
     return {
         title: 'SDK Languages | CheFu Academy Docs',
         description:
-            'Install the official CheFu Academy SDK clients for JavaScript, TypeScript, Go, Java, .NET, Ruby, and source-ready clients for more languages.',
+            'Install the official CheFu Academy SDK clients for JavaScript, TypeScript, Python, Go, Java, .NET, and Ruby.',
     };
 }
 
 const toc = [
     { title: 'Published packages', href: '#published-packages' },
     { title: 'JavaScript and TypeScript', href: '#javascript-typescript' },
+    { title: 'Python', href: '#python' },
     { title: 'Go', href: '#go' },
     { title: 'Java', href: '#java' },
     { title: '.NET', href: '#dotnet' },
@@ -29,6 +30,14 @@ const publishedClients = [
         version: '1.0.10',
         registry: 'npm',
         install: 'npm install chefu-academy-sdk',
+        status: 'Published',
+    },
+    {
+        language: 'Python',
+        packageName: 'chefu-academy',
+        version: '0.1.0',
+        registry: 'PyPI',
+        install: 'pip install chefu-academy',
         status: 'Published',
     },
     {
@@ -75,13 +84,6 @@ const publishedClients = [
 ];
 
 const sourceClients = [
-    {
-        language: 'Python',
-        packageName: 'chefu-academy',
-        path: 'clients/python',
-        registry: 'PyPI',
-        status: 'Source-ready; registry publish pending',
-    },
     {
         language: 'cURL',
         packageName: 'chefu-academy.sh',
@@ -156,6 +158,25 @@ const sdk = new CheFuAcademy({
 });
 
 const courses = await sdk.courses.getFeatured({ limit: 6 });`}
+                />
+            </DocSection>
+
+            <DocSection id="python" title="Python">
+                <CodeHighlighter
+                    language="bash"
+                    showLineNumbers={false}
+                    filename="Terminal"
+                    code="pip install chefu-academy"
+                />
+                <CodeHighlighter
+                    language="python"
+                    filename="main.py"
+                    code={`import os
+
+from chefu_academy import CheFuAcademy
+
+client = CheFuAcademy(api_key=os.environ["CHEFU_API_KEY"])
+courses = client.courses.list(limit=5)`}
                 />
             </DocSection>
 
@@ -243,8 +264,8 @@ courses = client.list_courses(limit: 5)`}
 
             <DocSection id="source-clients" title="Source clients">
                 <p>
-                    Python and cURL clients are maintained in the SDK repository
-                    while their dedicated registry setup is completed.
+                    The cURL helper is maintained in the SDK repository for
+                    shell scripts, CI jobs, and quick API checks.
                 </p>
                 <div className="grid gap-3 sm:grid-cols-2">
                     {sourceClients.map((client) => (
@@ -274,13 +295,9 @@ courses = client.list_courses(limit: 5)`}
                         </div>
                     ))}
                 </div>
-                <DocCallout
-                    title="Registry releases still need their own setup"
-                    tone="blue"
-                >
-                    PyPI requires trusted publisher configuration before the
-                    Python package can be published from the official CheFu
-                    account.
+                <DocCallout title="Shell usage" tone="blue">
+                    The cURL helper ships from the SDK repository and npm
+                    package instead of a language package registry.
                 </DocCallout>
             </DocSection>
 
