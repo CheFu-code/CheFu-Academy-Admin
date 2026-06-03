@@ -4,7 +4,6 @@ import {
     ExternalLink,
     KeyRound,
     Search,
-    ShieldCheck,
     TerminalSquare,
 } from 'lucide-react';
 import Image from 'next/image';
@@ -17,6 +16,7 @@ const navSections = [
         items: [
             { title: 'Overview', href: '/docs' },
             { title: 'Installation', href: '/docs/installation' },
+            { title: 'SDK Languages', href: '/docs/languages' },
             { title: 'Authentication', href: '/docs/authentication' },
             { title: 'Making Requests', href: '/docs/requests' },
         ],
@@ -39,7 +39,12 @@ export const DocsHeader = () => {
             <div className="mx-auto flex h-16 max-w-[1680px] items-center gap-4 px-4 sm:px-6">
                 <Link href="/" className="flex items-center gap-3">
                     <span className="flex size-9 items-center justify-center rounded-md border border-white/10 bg-white">
-                        <Image src="/logo.png" alt="CheFu Academy" width={26} height={26} />
+                        <Image
+                            src="/logo.png"
+                            alt="CheFu Academy"
+                            width={26}
+                            height={26}
+                        />
                     </span>
                     <span className="hidden text-lg font-semibold tracking-normal text-white sm:block">
                         CheFu Academy
@@ -112,8 +117,12 @@ export const DocsSidebar = () => {
                             <TerminalSquare className="size-5" />
                         </span>
                         <div>
-                            <p className="text-sm font-semibold text-white">CheFu SDK</p>
-                            <p className="text-xs text-zinc-400">Latest version 1.0.9</p>
+                            <p className="text-sm font-semibold text-white">
+                                CheFu SDK
+                            </p>
+                            <p className="text-xs text-zinc-400">
+                                Latest version 1.0.10
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -126,7 +135,10 @@ export const DocsSidebar = () => {
                             </p>
                             <div className="space-y-1">
                                 {section.items.map((item) => (
-                                    <DocsNavLink key={item.href} href={item.href}>
+                                    <DocsNavLink
+                                        key={item.href}
+                                        href={item.href}
+                                    >
                                         {item.title}
                                     </DocsNavLink>
                                 ))}

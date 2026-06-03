@@ -11,6 +11,7 @@ import { SDK_URL } from '@/constants/Data';
 
 const toc = [
     { title: 'Install the package', href: '#install-package' },
+    { title: 'Other SDK languages', href: '#other-sdk-languages' },
     { title: 'Login from the terminal', href: '#terminal-auth' },
     { title: 'Create an API key', href: '#create-api-key' },
     { title: 'Use the SDK', href: '#use-sdk' },
