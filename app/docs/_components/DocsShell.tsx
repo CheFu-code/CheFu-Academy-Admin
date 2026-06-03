@@ -116,12 +116,6 @@ export const DocsSidebar = () => {
                             <p className="text-xs text-zinc-400">Latest version 1.0.9</p>
                         </div>
                     </div>
-                    <div className="flex items-center gap-3 rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-3">
-                        <span className="flex size-10 items-center justify-center rounded-md border border-emerald-400/30 bg-emerald-500/10 text-emerald-300">
-                            <ShieldCheck className="size-5" />
-                        </span>
-
-                    </div>
                 </div>
 
                 <nav className="mt-8 space-y-7">
