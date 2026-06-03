@@ -7,7 +7,7 @@ export function generateMetadata(): Metadata {
     return {
         title: 'SDK Languages | CheFu Academy Docs',
         description:
-            'Install the official CheFu Academy SDK clients for JavaScript, TypeScript, Go, .NET, Ruby, and source-ready clients for more languages.',
+            'Install the official CheFu Academy SDK clients for JavaScript, TypeScript, Go, Java, .NET, Ruby, and source-ready clients for more languages.',
     };
 }
 
@@ -15,6 +15,7 @@ const toc = [
     { title: 'Published packages', href: '#published-packages' },
     { title: 'JavaScript and TypeScript', href: '#javascript-typescript' },
     { title: 'Go', href: '#go' },
+    { title: 'Java', href: '#java' },
     { title: '.NET', href: '#dotnet' },
     { title: 'Ruby', href: '#ruby' },
     { title: 'Source clients', href: '#source-clients' },
@@ -63,6 +64,14 @@ const publishedClients = [
         install: 'composer require chefu/academy',
         status: 'Published',
     },
+    {
+        language: 'Java',
+        packageName: 'com.chefuinc:chefu-academy',
+        version: '0.1.0',
+        registry: 'Maven Central',
+        install: 'com.chefuinc:chefu-academy:0.1.0',
+        status: 'Published',
+    },
 ];
 
 const sourceClients = [
@@ -71,13 +80,6 @@ const sourceClients = [
         packageName: 'chefu-academy',
         path: 'clients/python',
         registry: 'PyPI',
-        status: 'Source-ready; registry publish pending',
-    },
-    {
-        language: 'Java',
-        packageName: 'com.chefu:chefu-academy',
-        path: 'clients/java',
-        registry: 'Maven Central',
         status: 'Source-ready; registry publish pending',
     },
     {
@@ -178,6 +180,28 @@ courses, err := client.ListCourses(
                 />
             </DocSection>
 
+            <DocSection id="java" title="Java">
+                <CodeHighlighter
+                    language="xml"
+                    showLineNumbers={false}
+                    filename="pom.xml"
+                    code={`<dependency>
+  <groupId>com.chefuinc</groupId>
+  <artifactId>chefu-academy</artifactId>
+  <version>0.1.0</version>
+</dependency>`}
+                />
+                <CodeHighlighter
+                    language="java"
+                    filename="Main.java"
+                    code={`CheFuAcademyClient client = CheFuAcademyClient.withApiKey(
+    System.getenv("CHEFU_API_KEY")
+);
+
+JsonNode courses = client.listCourses(Map.of("limit", 5));`}
+                />
+            </DocSection>
+
             <DocSection id="dotnet" title=".NET">
                 <CodeHighlighter
                     language="bash"
@@ -219,9 +243,8 @@ courses = client.list_courses(limit: 5)`}
 
             <DocSection id="source-clients" title="Source clients">
                 <p>
-                    Python, Java, and cURL clients are maintained in the SDK
-                    repository while their dedicated registry setup is
-                    completed.
+                    Python and cURL clients are maintained in the SDK repository
+                    while their dedicated registry setup is completed.
                 </p>
                 <div className="grid gap-3 sm:grid-cols-2">
                     {sourceClients.map((client) => (
@@ -255,9 +278,9 @@ courses = client.list_courses(limit: 5)`}
                     title="Registry releases still need their own setup"
                     tone="blue"
                 >
-                    PyPI and Maven Central require account, namespace, or
-                    signing configuration before those packages can be published
-                    from the official CheFu accounts.
+                    PyPI requires trusted publisher configuration before the
+                    Python package can be published from the official CheFu
+                    account.
                 </DocCallout>
             </DocSection>
 
