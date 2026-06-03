@@ -2,6 +2,11 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import CodeHighlighter from '../_components/CodeHighlighter';
 import { DocCallout, DocPage, DocSection } from '../_components/DocPage';
+import LanguageExamplePicker from '../_components/LanguageExamplePicker';
+import {
+    courseRequestExamples,
+    installExamples,
+} from '../_components/languageExamples';
 
 export function generateMetadata(): Metadata {
     return {
@@ -12,6 +17,7 @@ export function generateMetadata(): Metadata {
 }
 
 const toc = [
+    { title: 'Choose your SDK', href: '#choose-your-sdk' },
     { title: 'Published packages', href: '#published-packages' },
     { title: 'JavaScript and TypeScript', href: '#javascript-typescript' },
     { title: 'Python', href: '#python' },
@@ -101,6 +107,24 @@ const Languages = () => {
             eyebrow="Official SDKs"
             toc={toc}
         >
+            <DocSection id="choose-your-sdk" title="Choose your SDK">
+                <p>
+                    Select the language you want to use first. The docs remember
+                    your choice across installation, authentication, requests,
+                    errors, and rate-limit examples.
+                </p>
+                <LanguageExamplePicker
+                    title="Install"
+                    description="All official clients connect to the same CheFu Academy API."
+                    examples={installExamples}
+                />
+                <LanguageExamplePicker
+                    title="Make a course request"
+                    description="The examples below use language-native method names while keeping the same API concepts."
+                    examples={courseRequestExamples}
+                />
+            </DocSection>
+
             <DocSection id="published-packages" title="Published packages">
                 <p>
                     These clients are available from their public package

@@ -1,6 +1,18 @@
 import type { Metadata } from 'next';
 import CodeHighlighter from '../_components/CodeHighlighter';
-import { DocCallout, DocPage, DocSection, MethodList } from '../_components/DocPage';
+import {
+    DocCallout,
+    DocPage,
+    DocSection,
+    MethodList,
+} from '../_components/DocPage';
+import LanguageExamplePicker from '../_components/LanguageExamplePicker';
+import {
+    courseRequestExamples,
+    createClientExamples,
+    keyManagementExamples,
+    videoRequestExamples,
+} from '../_components/languageExamples';
 
 export function generateMetadata(): Metadata {
     return {
@@ -20,37 +32,64 @@ const toc = [
 ];
 
 const courseMethods = [
-    { name: 'sdk.courses.getAll({ query, category, limit })', description: 'Fetch public courses with optional filtering.' },
-    { name: 'sdk.courses.search({ query, category, limit })', description: 'Search course titles, descriptions, and categories.' },
-    { name: 'sdk.courses.getFeatured({ limit })', description: 'Return featured or highly rated courses.' },
-    { name: 'sdk.courses.getCategories()', description: 'List available course categories.' },
-    { name: 'sdk.courses.getById(courseId)', description: 'Read one course by ID.' },
-    { name: 'sdk.courses.getChapters(courseId)', description: 'Return all chapters for a course.' },
-    { name: 'sdk.courses.getChapter(courseId, chapterIndex)', description: 'Return one chapter by zero-based index.' },
-    { name: 'sdk.courses.getLessons(courseId, chapterIndex)', description: 'Return lessons inside one chapter.' },
-    { name: 'sdk.courses.getQuiz(courseId)', description: 'Return quiz questions for a course.' },
-    { name: 'sdk.courses.getFlashcards(courseId)', description: 'Return flashcards for practice mode.' },
-    { name: 'sdk.courses.getQA(courseId)', description: 'Return question-and-answer practice content.' },
+    {
+        name: 'List courses',
+        description: 'Fetch public courses with optional filtering.',
+    },
+    {
+        name: 'Search courses',
+        description: 'Search course titles, descriptions, and categories.',
+    },
+    {
+        name: 'Featured courses',
+        description: 'Return featured or highly rated courses.',
+    },
+    { name: 'Categories', description: 'List available course categories.' },
+    { name: 'Course by ID', description: 'Read one course by ID.' },
+    { name: 'Chapters', description: 'Return all chapters for a course.' },
+    {
+        name: 'Chapter by index',
+        description: 'Return one chapter by zero-based index.',
+    },
+    { name: 'Lessons', description: 'Return lessons inside one chapter.' },
+    { name: 'Quiz', description: 'Return quiz questions for a course.' },
+    { name: 'Flashcards', description: 'Return flashcards for practice mode.' },
+    {
+        name: 'Q&A',
+        description: 'Return question-and-answer practice content.',
+    },
 ];
 
 const videoMethods = [
-    { name: 'sdk.videos.getAll({ query, category, limit })', description: 'Fetch uploaded and YouTube-backed videos.' },
-    { name: 'sdk.videos.getById(videoId)', description: 'Read one video by ID.' },
-    { name: 'sdk.videos.search({ query, category, limit })', description: 'Search videos by title, description, or category.' },
-    { name: 'sdk.videos.getByCategory(category)', description: 'Return videos for one category.' },
+    {
+        name: 'List videos',
+        description: 'Fetch uploaded and YouTube-backed videos.',
+    },
+    { name: 'Video by ID', description: 'Read one video by ID.' },
+    {
+        name: 'Search videos',
+        description: 'Search videos by title, description, or category.',
+    },
+    { name: 'Category videos', description: 'Return videos for one category.' },
 ];
 
 const keyMethods = [
-    { name: 'sdk.keys.create({ name })', description: 'Create a developer API key using a user auth token.' },
-    { name: 'sdk.keys.list()', description: 'List keys for the authenticated developer.' },
-    { name: 'sdk.keys.revoke(keyId)', description: 'Revoke a key by ID.' },
+    {
+        name: 'Create key',
+        description: 'Create a developer API key using a user auth token.',
+    },
+    {
+        name: 'List keys',
+        description: 'List keys for the authenticated developer.',
+    },
+    { name: 'Revoke key', description: 'Revoke a key by ID.' },
 ];
 
 const MakingRequests = () => {
     return (
         <DocPage
             title="Making Requests"
-            description="Use the SDK from server-side JavaScript or TypeScript to fetch learning content and manage developer keys."
+            description="Use the official SDK clients to fetch learning content and manage developer keys from the language your app is already built in."
             eyebrow="API Reference"
             toc={toc}
         >
@@ -59,14 +98,10 @@ const MakingRequests = () => {
                     Create one SDK instance and reuse it. The default API base
                     URL points to <code>https://api.chefuinc.com/api</code>.
                 </p>
-                <CodeHighlighter
-                    filename="server.ts"
-                    code={`import CheFuAcademy from 'chefu-academy-sdk';
-
-const sdk = new CheFuAcademy({
-  apiKey: process.env.CHEFU_API_KEY,
-  timeout: 10000,
-});`}
+                <LanguageExamplePicker
+                    title="Create the SDK client"
+                    description="This preference follows you through all docs examples."
+                    examples={createClientExamples}
                 />
             </DocSection>
 
@@ -77,17 +112,10 @@ const sdk = new CheFuAcademy({
                     available.
                 </p>
                 <MethodList items={courseMethods} />
-                <CodeHighlighter
-                    filename="courses.ts"
-                    code={`const courses = await sdk.courses.search({
-  query: 'machine learning',
-  category: 'Technology',
-  limit: 10,
-});
-
-const course = await sdk.courses.getById(courses.courses[0].id);
-const lessons = await sdk.courses.getLessons(course.id, 0);
-const quiz = await sdk.courses.getQuiz(course.id);`}
+                <LanguageExamplePicker
+                    title="Search courses and load practice content"
+                    description="Use list/search first, then fetch chapters, lessons, quizzes, flashcards, or Q&A by course ID."
+                    examples={courseRequestExamples}
                 />
             </DocSection>
 
@@ -98,16 +126,10 @@ const quiz = await sdk.courses.getQuiz(course.id);`}
                     the video ID needed to load the real YouTube player.
                 </p>
                 <MethodList items={videoMethods} />
-                <CodeHighlighter
-                    filename="videos.ts"
-                    code={`const videos = await sdk.videos.search({
-  query: 'microchips',
-  category: 'Technology & Gadgets',
-  limit: 8,
-});
-
-const video = await sdk.videos.getById(videos.videos[0].id);
-const related = await sdk.videos.getByCategory(video.category ?? 'Technology');`}
+                <LanguageExamplePicker
+                    title="Search and load videos"
+                    description="Video methods cover uploaded platform videos and YouTube-backed lessons."
+                    examples={videoRequestExamples}
                 />
             </DocSection>
 
@@ -118,6 +140,11 @@ const related = await sdk.videos.getByCategory(video.category ?? 'Technology');`
                     list, and revoke keys.
                 </p>
                 <MethodList items={keyMethods} />
+                <LanguageExamplePicker
+                    title="Create, list, and revoke keys"
+                    description="Key management requires a user auth token from login."
+                    examples={keyManagementExamples}
+                />
                 <CodeHighlighter
                     language="bash"
                     showLineNumbers={false}
@@ -129,7 +156,8 @@ npx chefu-academy keys revoke <key-id>`}
                 />
                 <DocCallout title="Raw keys are shown once" tone="amber">
                     Save the full <code>chf_</code> key immediately after
-                    creation. Later list responses show metadata, not the secret.
+                    creation. Later list responses show metadata, not the
+                    secret.
                 </DocCallout>
             </DocSection>
 
@@ -155,7 +183,10 @@ export async function GET() {
             </DocSection>
 
             <DocSection id="response-patterns" title="Response patterns">
-                <p>List methods return an object with the collection and a total.</p>
+                <p>
+                    List methods return an object with the collection and a
+                    total.
+                </p>
                 <CodeHighlighter
                     filename="List response"
                     code={`{
@@ -170,7 +201,8 @@ export async function GET() {
                 />
                 <p>
                     Single-resource methods return the requested resource or
-                    throw a <code>CheFuAcademyError</code> when the request fails.
+                    raise the SDK error type for the selected language when the
+                    request fails.
                 </p>
             </DocSection>
         </DocPage>

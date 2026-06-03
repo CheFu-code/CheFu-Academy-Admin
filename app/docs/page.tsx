@@ -1,12 +1,18 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import CodeHighlighter from './_components/CodeHighlighter';
+import LanguageExamplePicker from './_components/LanguageExamplePicker';
 import {
     DocCallout,
     DocPage,
     DocSection,
     MethodList,
 } from './_components/DocPage';
+import {
+    courseRequestExamples,
+    createClientExamples,
+    installExamples,
+} from './_components/languageExamples';
 
 export function generateMetadata(): Metadata {
     return {
@@ -28,17 +34,17 @@ const toc = [
 
 const methods = [
     {
-        name: 'sdk.courses.*',
+        name: 'Courses',
         description:
             'Browse, search, feature, and read course chapters, lessons, quizzes, flashcards, and Q&A.',
     },
     {
-        name: 'sdk.videos.*',
+        name: 'Videos',
         description:
             'Fetch uploaded and YouTube-backed videos, search them, or filter by category.',
     },
     {
-        name: 'sdk.keys.*',
+        name: 'API keys',
         description:
             'Create, list, and revoke developer API keys from authenticated SDK sessions.',
     },
@@ -94,10 +100,20 @@ const APIDoc = () => {
 
             <DocSection id="quick-start" title="Quick start">
                 <p>
-                    Install the package, sign in from the terminal, create a
-                    developer API key, and use that key from a server-side
-                    environment.
+                    Pick the language you want to build with, install the
+                    official client, create a developer API key, and use that
+                    key from server-side code or a trusted backend.
                 </p>
+                <LanguageExamplePicker
+                    title="Install the official client"
+                    description="The selected language is remembered across the docs so every example follows the same SDK."
+                    examples={installExamples}
+                />
+                <LanguageExamplePicker
+                    title="Create a client"
+                    description="Load CHEFU_API_KEY from a secret manager or server-side environment variable."
+                    examples={createClientExamples}
+                />
                 <CodeHighlighter
                     language="bash"
                     showLineNumbers={false}
@@ -106,16 +122,10 @@ const APIDoc = () => {
 npx chefu-academy login
 npx chefu-academy keys create --name "Production API"`}
                 />
-                <CodeHighlighter
-                    filename="server.ts"
-                    code={`import CheFuAcademy from 'chefu-academy-sdk';
-
-const sdk = new CheFuAcademy({
-  apiKey: process.env.CHEFU_API_KEY,
-});
-
-const featuredCourses = await sdk.courses.getFeatured({ limit: 6 });
-const videos = await sdk.videos.search({ query: 'javascript', limit: 8 });`}
+                <LanguageExamplePicker
+                    title="Make the first content request"
+                    description="The same API surface is available in every official client, with method names shaped for that language."
+                    examples={courseRequestExamples}
                 />
                 <DocCallout title="Keep API keys on the server" tone="amber">
                     API keys use the format <code>chf_publicId_secret</code>. Do
@@ -126,15 +136,16 @@ const videos = await sdk.videos.search({ query: 'javascript', limit: 8 });`}
 
             <DocSection id="official-clients" title="Official clients">
                 <p>
-                    The JavaScript and TypeScript SDK is published on npm.
-                    First-party Go, .NET, Ruby, and PHP packages are also
-                    available from their registries, with Python, Java, and cURL
-                    clients maintained in the SDK repository.
+                    CheFu Academy publishes first-party clients for the major
+                    ecosystems used by our apps and partners. The cURL helper is
+                    maintained for shell scripts and CI checks.
                 </p>
                 <div className="grid gap-3 sm:grid-cols-2">
                     {[
                         'npm install chefu-academy-sdk',
+                        'pip install chefu-academy',
                         'go get github.com/CheFu-code/chefu-academy-sdk/clients/go@v0.1.0',
+                        'com.chefuinc:chefu-academy:0.1.0',
                         'dotnet add package CheFu.Academy --version 0.1.0',
                         'gem install chefu_academy -v 0.1.0',
                         'composer require chefu/academy',

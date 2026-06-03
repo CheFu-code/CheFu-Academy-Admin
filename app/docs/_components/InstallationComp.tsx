@@ -1,10 +1,11 @@
 import { Button } from '@/components/ui/button';
 import { ApiKey } from '@/types/keys';
 import { Dispatch, SetStateAction } from 'react';
-import Link from 'next/link';
 import CodeHighlighter from './CodeHighlighter';
 import { DocCallout, DocSection } from './DocPage';
+import LanguageExamplePicker from './LanguageExamplePicker';
 import TableComp from './Table';
+import { courseRequestExamples, installExamples } from './languageExamples';
 
 const InstallationComp = ({
     setOpen,
@@ -21,52 +22,15 @@ const InstallationComp = ({
         <>
             <DocSection id="install-package" title="Install the package">
                 <p>
-                    The JavaScript and TypeScript SDK supports Node.js 18 and
-                    newer. Install it in the project that will call the CheFu
-                    Inc API.
+                    Choose the language you want to use. The same choice carries
+                    across the docs so authentication, requests, errors, and
+                    retries all show matching examples.
                 </p>
-                <CodeHighlighter
-                    language="bash"
-                    showLineNumbers={false}
-                    filename="npm"
-                    code="npm install chefu-academy-sdk"
+                <LanguageExamplePicker
+                    title="Install CheFu Academy"
+                    description="Every official client talks to the same CheFu Inc API and uses the same bearer-token security model."
+                    examples={installExamples}
                 />
-                <CodeHighlighter
-                    language="bash"
-                    showLineNumbers={false}
-                    filename="yarn"
-                    code="yarn add chefu-academy-sdk"
-                />
-            </DocSection>
-
-            <DocSection id="other-sdk-languages" title="Other SDK languages">
-                <p>
-                    CheFu Academy also publishes official clients for Go, .NET,
-                    Ruby, and PHP. Python, Java, and cURL clients are maintained
-                    in the SDK repository while their registry setup is
-                    completed.
-                </p>
-                <div className="grid gap-3 sm:grid-cols-2">
-                    {[
-                        'go get github.com/CheFu-code/chefu-academy-sdk/clients/go@v0.1.0',
-                        'dotnet add package CheFu.Academy --version 0.1.0',
-                        'gem install chefu_academy -v 0.1.0',
-                        'composer require chefu/academy',
-                    ].map((command) => (
-                        <code
-                            key={command}
-                            className="rounded-lg border border-white/10 bg-white/[0.03] p-4 text-sm leading-6 text-sky-300"
-                        >
-                            {command}
-                        </code>
-                    ))}
-                </div>
-                <Link
-                    href="/docs/languages"
-                    className="inline-flex rounded-lg border border-white/10 px-4 py-2 text-sm font-medium text-zinc-200 transition hover:bg-white/[0.04] hover:text-white"
-                >
-                    View SDK language docs
-                </Link>
             </DocSection>
 
             <DocSection id="terminal-auth" title="Login from the terminal">
@@ -137,21 +101,10 @@ npx chefu-academy keys revoke <key-id>`}
                     Initialize the SDK once in server-side code and reuse the
                     instance for courses, videos, and other content calls.
                 </p>
-                <CodeHighlighter
-                    filename="server.ts"
-                    code={`import CheFuAcademy from 'chefu-academy-sdk';
-
-const sdk = new CheFuAcademy({
-  apiKey: process.env.CHEFU_API_KEY,
-});
-
-const courses = await sdk.courses.search({
-  query: 'react',
-  category: 'Programming',
-  limit: 10,
-});
-
-console.log(courses);`}
+                <LanguageExamplePicker
+                    title="Search courses"
+                    description="Use your selected SDK to make the first real content request."
+                    examples={courseRequestExamples}
                 />
             </DocSection>
         </>

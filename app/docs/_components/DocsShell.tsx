@@ -12,13 +12,20 @@ import DocsNavLink from './DocsNavLink';
 
 const navSections = [
     {
-        title: 'Getting Started',
+        title: 'Start Here',
         items: [
             { title: 'Overview', href: '/docs' },
             { title: 'Installation', href: '/docs/installation' },
             { title: 'SDK Languages', href: '/docs/languages' },
+        ],
+    },
+    {
+        title: 'Guides',
+        items: [
             { title: 'Authentication', href: '/docs/authentication' },
             { title: 'Making Requests', href: '/docs/requests' },
+            { title: 'Error Handling', href: '/docs/error-handling' },
+            { title: 'Rate Limits', href: '/docs/rate-limits' },
         ],
     },
     {
@@ -27,8 +34,6 @@ const navSections = [
             { title: 'Courses API', href: '/docs/requests#courses-api' },
             { title: 'Videos API', href: '/docs/requests#videos-api' },
             { title: 'API Keys', href: '/docs/requests#api-keys' },
-            { title: 'Error Handling', href: '/docs/error-handling' },
-            { title: 'Rate Limits', href: '/docs/rate-limits' },
         ],
     },
 ];
@@ -111,7 +116,7 @@ export const DocsSidebar = () => {
     return (
         <aside className="hidden border-r border-white/10 lg:block">
             <div className="docs-scrollbar sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto px-5 py-8">
-                <div className="space-y-3">
+                <div className="space-y-3 border-b border-white/10 pb-6">
                     <div className="flex items-center gap-3 rounded-lg border border-sky-500/20 bg-sky-500/10 p-3">
                         <span className="flex size-10 items-center justify-center rounded-md border border-sky-400/30 bg-sky-500/10 text-sky-300">
                             <TerminalSquare className="size-5" />
@@ -125,9 +130,32 @@ export const DocsSidebar = () => {
                             </p>
                         </div>
                     </div>
+                    <div className="flex h-10 items-center gap-3 rounded-lg border border-white/10 bg-white/[0.04] px-3 text-sm text-zinc-500">
+                        <Search className="size-4" />
+                        <span className="min-w-0 flex-1 truncate">
+                            Search documentation
+                        </span>
+                        <kbd className="rounded-md border border-white/10 bg-black px-1.5 py-0.5 text-xs text-zinc-300">
+                            CtrlK
+                        </kbd>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2">
+                            <p className="font-semibold text-zinc-200">
+                                SDK 1.0.10
+                            </p>
+                            <p className="mt-1 text-zinc-500">Latest</p>
+                        </div>
+                        <div className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2">
+                            <p className="font-semibold text-zinc-200">
+                                API v1
+                            </p>
+                            <p className="mt-1 text-zinc-500">Stable</p>
+                        </div>
+                    </div>
                 </div>
 
-                <nav className="mt-8 space-y-7">
+                <nav className="mt-7 space-y-7">
                     {navSections.map((section) => (
                         <div key={section.title}>
                             <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-normal text-zinc-500">

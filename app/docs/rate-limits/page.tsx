@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import CodeHighlighter from '../_components/CodeHighlighter';
 import { DocCallout, DocPage, DocSection } from '../_components/DocPage';
+import LanguageExamplePicker from '../_components/LanguageExamplePicker';
+import { retryExamples } from '../_components/languageExamples';
 
 export function generateMetadata(): Metadata {
     return {
@@ -31,7 +33,10 @@ const RateLimits = () => {
                     stability. If a client sends too many requests, the API can
                     respond with <code>429 Too Many Requests</code>.
                 </p>
-                <DocCallout title="Limits can vary by plan and endpoint" tone="blue">
+                <DocCallout
+                    title="Limits can vary by plan and endpoint"
+                    tone="blue"
+                >
                     Design your app to handle <code>429</code> even when you do
                     not normally reach the limit during development.
                 </DocCallout>
@@ -39,11 +44,26 @@ const RateLimits = () => {
 
             <DocSection id="reduce-requests" title="How to reduce requests">
                 <ul className="list-disc space-y-2 pl-6">
-                    <li>Reuse one SDK instance instead of recreating it for every call.</li>
-                    <li>Use <code>limit</code> to request only the data you need.</li>
-                    <li>Cache categories, featured courses, and stable video lists.</li>
-                    <li>Fetch detailed course content only after a user opens a course.</li>
-                    <li>Avoid sending a search request on every keystroke without debouncing.</li>
+                    <li>
+                        Reuse one SDK instance instead of recreating it for
+                        every call.
+                    </li>
+                    <li>
+                        Use <code>limit</code> to request only the data you
+                        need.
+                    </li>
+                    <li>
+                        Cache categories, featured courses, and stable video
+                        lists.
+                    </li>
+                    <li>
+                        Fetch detailed course content only after a user opens a
+                        course.
+                    </li>
+                    <li>
+                        Avoid sending a search request on every keystroke
+                        without debouncing.
+                    </li>
                 </ul>
             </DocSection>
 
@@ -52,34 +72,18 @@ const RateLimits = () => {
                     Retry safe read operations with a small delay and backoff.
                     Do not retry forever.
                 </p>
-                <CodeHighlighter
-                    filename="retry.ts"
-                    code={`async function withRetry<T>(request: () => Promise<T>, retries = 2): Promise<T> {
-  try {
-    return await request();
-  } catch (error) {
-    const statusCode = error instanceof Error && 'statusCode' in error
-      ? Number(error.statusCode)
-      : undefined;
-
-    if ((statusCode === 429 || statusCode === 500) && retries > 0) {
-      await new Promise((resolve) => setTimeout(resolve, 800 * (3 - retries)));
-      return withRetry(request, retries - 1);
-    }
-
-    throw error;
-  }
-}
-
-const courses = await withRetry(() => sdk.courses.getFeatured({ limit: 6 }));`}
+                <LanguageExamplePicker
+                    title="Retry safe read operations"
+                    description="Retry idempotent reads such as course and video lookups. Do not retry key creation blindly."
+                    examples={retryExamples}
                 />
             </DocSection>
 
             <DocSection id="recommended-caching" title="Recommended caching">
                 <p>
                     For Next.js apps, keep SDK calls server-side and use the
-                    framework&apos;s caching tools around your own route handlers or
-                    Server Components.
+                    framework&apos;s caching tools around your own route
+                    handlers or Server Components.
                 </p>
                 <CodeHighlighter
                     filename="app/api/academy/featured/route.ts"

@@ -2,6 +2,11 @@ import { SDK_URL } from '@/constants/Data';
 import type { Metadata } from 'next';
 import CodeHighlighter from '../_components/CodeHighlighter';
 import { DocCallout, DocPage, DocSection } from '../_components/DocPage';
+import LanguageExamplePicker from '../_components/LanguageExamplePicker';
+import {
+    createClientExamples,
+    keyManagementExamples,
+} from '../_components/languageExamples';
 
 export function generateMetadata(): Metadata {
     return {
@@ -35,16 +40,18 @@ const Authentication = () => {
                 </p>
                 <div className="grid gap-3 sm:grid-cols-2">
                     <div className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
-                        <h3 className="font-semibold text-white">API key auth</h3>
+                        <h3 className="font-semibold text-white">
+                            API key auth
+                        </h3>
                         <p className="mt-2 text-sm leading-6 text-zinc-400">
-                            Used by <code>sdk.courses</code> and{' '}
-                            <code>sdk.videos</code> methods.
+                            Used by courses and videos methods in every official
+                            client.
                         </p>
                     </div>
                     <div className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
                         <h3 className="font-semibold text-white">User auth</h3>
                         <p className="mt-2 text-sm leading-6 text-zinc-400">
-                            Used by <code>sdk.keys</code> methods and CLI key
+                            Used by key management methods and CLI key
                             management commands.
                         </p>
                     </div>
@@ -53,22 +60,20 @@ const Authentication = () => {
 
             <DocSection id="developer-api-keys" title="Developer API keys">
                 <p>
-                    API keys follow the format{' '}
-                    <code>chf_publicId_secret</code>. The public identifier lets
-                    the backend find the stored hash, while the secret portion is
-                    verified without saving the raw key.
+                    API keys follow the format <code>chf_publicId_secret</code>.
+                    The public identifier lets the backend find the stored hash,
+                    while the secret portion is verified without saving the raw
+                    key.
                 </p>
-                <CodeHighlighter
-                    filename="server.ts"
-                    code={`import CheFuAcademy from 'chefu-academy-sdk';
-
-const sdk = new CheFuAcademy({
-  apiKey: process.env.CHEFU_API_KEY,
-});
-
-const courses = await sdk.courses.getAll({ limit: 12 });`}
+                <LanguageExamplePicker
+                    title="Authenticate content requests"
+                    description="Courses and videos use a developer API key in the Authorization bearer token."
+                    examples={createClientExamples}
                 />
-                <DocCallout title="Use server-side environment variables" tone="amber">
+                <DocCallout
+                    title="Use server-side environment variables"
+                    tone="amber"
+                >
                     Keep <code>CHEFU_API_KEY</code> in your server, deployment
                     secrets, or local <code>.env</code> file. Do not prefix it
                     with <code>NEXT_PUBLIC_</code> in Next.js apps.
@@ -97,6 +102,11 @@ npx chefu-academy whoami`}
 npx chefu-academy keys list
 npx chefu-academy keys revoke <key-id>`}
                 />
+                <LanguageExamplePicker
+                    title="Manage keys with a user session"
+                    description="Account-level key management uses a user auth token returned by login, not the developer API key."
+                    examples={keyManagementExamples}
+                />
             </DocSection>
 
             <DocSection id="direct-api-calls" title="Direct API calls">
@@ -118,8 +128,14 @@ const data = await response.json();`}
             <DocSection id="security-checklist" title="Security checklist">
                 <ul className="list-disc space-y-2 pl-6">
                     <li>Use different keys for development and production.</li>
-                    <li>Revoke keys immediately when a teammate leaves a project.</li>
-                    <li>Never commit keys to GitHub or paste them in public logs.</li>
+                    <li>
+                        Revoke keys immediately when a teammate leaves a
+                        project.
+                    </li>
+                    <li>
+                        Never commit keys to GitHub or paste them in public
+                        logs.
+                    </li>
                     <li>Rotate keys after suspected exposure.</li>
                     <li>Use the CLI or dashboard to list and revoke keys.</li>
                 </ul>
