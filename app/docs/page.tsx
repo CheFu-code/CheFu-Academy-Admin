@@ -127,8 +127,8 @@ const videos = await sdk.videos.search({ query: 'javascript', limit: 8 });`}
             <DocSection id="official-clients" title="Official clients">
                 <p>
                     The JavaScript and TypeScript SDK is published on npm.
-                    First-party Go, .NET, and Ruby packages are also available
-                    from their registries, with Python, Java, PHP, and cURL
+                    First-party Go, .NET, Ruby, and PHP packages are also
+                    available from their registries, with Python, Java, and cURL
                     clients maintained in the SDK repository.
                 </p>
                 <div className="grid gap-3 sm:grid-cols-2">
@@ -137,6 +137,7 @@ const videos = await sdk.videos.search({ query: 'javascript', limit: 8 });`}
                         'go get github.com/CheFu-code/chefu-academy-sdk/clients/go@v0.1.0',
                         'dotnet add package CheFu.Academy --version 0.1.0',
                         'gem install chefu_academy -v 0.1.0',
+                        'composer require chefu/academy',
                     ].map((command) => (
                         <code
                             key={command}

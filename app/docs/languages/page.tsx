@@ -55,6 +55,14 @@ const publishedClients = [
         install: 'gem install chefu_academy -v 0.1.0',
         status: 'Published',
     },
+    {
+        language: 'PHP',
+        packageName: 'chefu/academy',
+        version: '0.1.0',
+        registry: 'Packagist',
+        install: 'composer require chefu/academy',
+        status: 'Published',
+    },
 ];
 
 const sourceClients = [
@@ -70,13 +78,6 @@ const sourceClients = [
         packageName: 'com.chefu:chefu-academy',
         path: 'clients/java',
         registry: 'Maven Central',
-        status: 'Source-ready; registry publish pending',
-    },
-    {
-        language: 'PHP',
-        packageName: 'chefu/academy',
-        path: 'clients/php',
-        registry: 'Packagist',
         status: 'Source-ready; registry publish pending',
     },
     {
@@ -218,8 +219,8 @@ courses = client.list_courses(limit: 5)`}
 
             <DocSection id="source-clients" title="Source clients">
                 <p>
-                    Python, Java, PHP, and cURL clients are maintained in the
-                    SDK repository while their dedicated registry setup is
+                    Python, Java, and cURL clients are maintained in the SDK
+                    repository while their dedicated registry setup is
                     completed.
                 </p>
                 <div className="grid gap-3 sm:grid-cols-2">
@@ -254,9 +255,9 @@ courses = client.list_courses(limit: 5)`}
                     title="Registry releases still need their own setup"
                     tone="blue"
                 >
-                    PyPI, Maven Central, and Packagist require account,
-                    namespace, or repository configuration before those packages
-                    can be published from the official CheFu accounts.
+                    PyPI and Maven Central require account, namespace, or
+                    signing configuration before those packages can be published
+                    from the official CheFu accounts.
                 </DocCallout>
             </DocSection>
 

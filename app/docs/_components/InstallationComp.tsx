@@ -42,7 +42,7 @@ const InstallationComp = ({
             <DocSection id="other-sdk-languages" title="Other SDK languages">
                 <p>
                     CheFu Academy also publishes official clients for Go, .NET,
-                    and Ruby. Python, Java, PHP, and cURL clients are maintained
+                    Ruby, and PHP. Python, Java, and cURL clients are maintained
                     in the SDK repository while their registry setup is
                     completed.
                 </p>
@@ -51,6 +51,7 @@ const InstallationComp = ({
                         'go get github.com/CheFu-code/chefu-academy-sdk/clients/go@v0.1.0',
                         'dotnet add package CheFu.Academy --version 0.1.0',
                         'gem install chefu_academy -v 0.1.0',
+                        'composer require chefu/academy',
                     ].map((command) => (
                         <code
                             key={command}
