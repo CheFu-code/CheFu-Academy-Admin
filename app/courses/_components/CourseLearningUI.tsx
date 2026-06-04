@@ -1,4 +1,4 @@
-import CodeHighlighter from '@/app/docs/_components/CodeHighlighter';
+import CodeHighlighter from '@/components/Shared/CodeHighlighter';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -20,7 +20,7 @@ import {
     FileText,
     GraduationCap,
     Layers3,
-    Loader2
+    Loader2,
 } from 'lucide-react';
 import { RefObject } from 'react';
 import ChapterAiTutor from './ChapterAiTutor';
@@ -104,7 +104,9 @@ const CourseLearningUI = ({
                                         <Download className="h-4 w-4" />
                                     </Button>
                                 </TooltipTrigger>
-                                <TooltipContent>Download Chapter</TooltipContent>
+                                <TooltipContent>
+                                    Download Chapter
+                                </TooltipContent>
                             </Tooltip>
                         </div>
                     </div>
@@ -114,7 +116,9 @@ const CourseLearningUI = ({
                             <span className="text-muted-foreground">
                                 Chapter progress
                             </span>
-                            <span className="font-medium">{progressValue}%</span>
+                            <span className="font-medium">
+                                {progressValue}%
+                            </span>
                         </div>
                         <Progress value={progressValue} className="h-2" />
                     </div>
@@ -160,7 +164,9 @@ const CourseLearningUI = ({
                             </section>
                         )}
 
-                        {content.example && <ExampleBlock text={content.example} />}
+                        {content.example && (
+                            <ExampleBlock text={content.example} />
+                        )}
                     </div>
                 </article>
             </section>
