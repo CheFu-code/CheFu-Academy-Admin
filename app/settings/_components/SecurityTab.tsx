@@ -5,6 +5,8 @@ import {
     generateMfaBackupCodes,
     hashMfaBackupCodes,
 } from '@/helpers/mfaBackupCodes';
+import { useFirebaseAuthState } from '@/hooks/useFirebaseAuthState';
+import { chefuManageAccountUrl } from '@/lib/chefu-account';
 import { auth, db } from '@/lib/firebase';
 import { sendPasswordChangedAlert } from '@/lib/passwordChangedEmail';
 import { logSecurityEvent } from '@/lib/securityEvents';
@@ -55,6 +57,20 @@ const SecurityTab = () => {
     const [passkeySupport, setPasskeySupport] = useState<
         'checking' | 'supported' | 'unsupported'
     >('checking');
+    const {
+        loading: firebaseAuthLoading,
+        refresh: refreshFirebaseUser,
+        user: firebaseUser,
+    } = useFirebaseAuthState();
+
+    const getSecurityUser = () => firebaseUser ?? auth.currentUser;
+    const missingSecurityUserMessage = firebaseAuthLoading
+        ? 'Still verifying your security session. Try again in a moment.'
+        : 'This security action requires a Firebase-backed Academy sign-in. Manage your central account security in CheFu Account.';
+    const mfaUnavailableReason =
+        !firebaseAuthLoading && !firebaseUser
+            ? 'Your current session is from CheFu Account. Academy 2FA can only be enrolled for Firebase-backed Academy sign-ins.'
+            : undefined;
 
     useEffect(() => {
         let mounted = true;
@@ -75,7 +91,12 @@ const SecurityTab = () => {
     }, []);
 
     useEffect(() => {
-        const user = auth.currentUser;
+        if (firebaseAuthLoading) {
+            setMfaKnown(false);
+            return;
+        }
+
+        const user = firebaseUser;
         if (!user) {
             setMfaKnown(true);
             setTotpEnabled(false);
@@ -87,11 +108,11 @@ const SecurityTab = () => {
         );
         setTotpEnabled(enrolled);
         setMfaKnown(true);
-    }, [securityInfoVersion]);
+    }, [firebaseAuthLoading, firebaseUser, securityInfoVersion]);
 
     // Utility: check if user has password provider linked
     const userHasPasswordProvider = () => {
-        const user = auth.currentUser;
+        const user = getSecurityUser();
         return (
             user?.providerData.some((p) => p.providerId === 'password') ?? false
         );
@@ -116,8 +137,8 @@ const SecurityTab = () => {
 
     // 🔹 Delete account (supports password or Google re-auth)
     const handleDeleteAccount = async () => {
-        const user = auth.currentUser;
-        if (!user) return toast.error('No user is logged in.');
+        const user = getSecurityUser();
+        if (!user) return toast.error(missingSecurityUserMessage);
 
         setLoadingDelete(true);
         try {
@@ -164,8 +185,8 @@ const SecurityTab = () => {
 
     // 🔹 Change password (only for accounts that have password provider)
     const handleChangePassword = async () => {
-        const user = auth.currentUser;
-        if (!user) return alert('No user is logged in.');
+        const user = getSecurityUser();
+        if (!user) return toast.error(missingSecurityUserMessage);
 
         if (!userHasPasswordProvider()) {
             return alert(
@@ -201,9 +222,9 @@ const SecurityTab = () => {
     };
 
     const handleEnrollPasskey = async (reauthPassword?: string) => {
-        const user = auth.currentUser;
+        const user = getSecurityUser();
         if (!user) {
-            toast.error('No user is logged in.');
+            toast.error(missingSecurityUserMessage);
             return false;
         }
 
@@ -290,9 +311,9 @@ const SecurityTab = () => {
     };
 
     const handleCopySecuritySnapshot = async () => {
-        const user = auth.currentUser;
+        const user = getSecurityUser();
         if (!user) {
-            toast.error('No user is logged in.');
+            toast.error(missingSecurityUserMessage);
             return;
         }
 
@@ -318,15 +339,14 @@ const SecurityTab = () => {
     };
 
     const refreshSecurityInfo = async () => {
-        const user = auth.currentUser;
+        const user = getSecurityUser();
         if (!user) {
-            toast.error('No user is logged in.');
+            toast.error(missingSecurityUserMessage);
             return;
         }
 
         try {
-            await user.reload();
-            await user.getIdToken(true);
+            await refreshFirebaseUser();
             setSecurityInfoVersion(version => version + 1);
             toast.success('Security session refreshed.');
         } catch (error) {
@@ -336,9 +356,9 @@ const SecurityTab = () => {
     };
 
     const startTotpSetup = async () => {
-        const user = auth.currentUser;
+        const user = getSecurityUser();
         if (!user?.email) {
-            toast.error('No user is logged in.');
+            toast.error(missingSecurityUserMessage);
             return;
         }
 
@@ -364,7 +384,7 @@ const SecurityTab = () => {
     };
 
     const handleVerify2FA = async () => {
-        const user = auth.currentUser;
+        const user = getSecurityUser();
         if (!user?.email || !totpSecret) {
             toast.error('2FA setup is not ready.');
             return;
@@ -411,9 +431,9 @@ const SecurityTab = () => {
     };
 
     const disableTotp = async () => {
-        const user = auth.currentUser;
+        const user = getSecurityUser();
         if (!user?.email) {
-            toast.error('No user is logged in.');
+            toast.error(missingSecurityUserMessage);
             return;
         }
 
@@ -462,7 +482,7 @@ const SecurityTab = () => {
         await startTotpSetup();
     };
 
-    const currentUser = auth.currentUser;
+    const currentUser = getSecurityUser();
 
     return (
         <>
@@ -505,7 +525,16 @@ const SecurityTab = () => {
             totpEnabled={totpEnabled}
             mfaKnown={mfaKnown}
             loadingMfa={loadingMfa}
+            firebaseAuthLoading={firebaseAuthLoading}
+            mfaUnavailableReason={mfaUnavailableReason}
             handleToggleTotp={() => void handleToggleTotp()}
+            onManageCentralAccount={() => {
+                const returnTo =
+                    typeof window !== 'undefined'
+                        ? window.location.href
+                        : undefined;
+                window.location.assign(chefuManageAccountUrl(returnTo));
+            }}
             />
             <SetupModal
                 show2FAModal={show2FAModal}

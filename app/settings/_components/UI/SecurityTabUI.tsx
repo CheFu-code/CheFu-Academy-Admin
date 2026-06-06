@@ -66,7 +66,10 @@ const SecurityTabUI = ({
     totpEnabled,
     mfaKnown,
     loadingMfa,
+    firebaseAuthLoading,
+    mfaUnavailableReason,
     handleToggleTotp,
+    onManageCentralAccount,
 }: {
     openDelete: boolean;
     setOpenDelete: (value: boolean) => void;
@@ -104,7 +107,10 @@ const SecurityTabUI = ({
     totpEnabled: boolean;
     mfaKnown: boolean;
     loadingMfa: boolean;
+    firebaseAuthLoading: boolean;
+    mfaUnavailableReason?: string;
     handleToggleTotp: () => void;
+    onManageCentralAccount: () => void;
 }) => {
     const passwordStrength = [
         newPassword.length >= 12,
@@ -435,23 +441,43 @@ const SecurityTabUI = ({
                                     : 'Not enabled'}
                         </Badge>
                         <p className="text-sm text-muted-foreground">
-                            {totpEnabled
+                            {mfaUnavailableReason
+                                ? mfaUnavailableReason
+                                : totpEnabled
                                 ? 'You will need your authenticator app or a saved backup code when signing in.'
                                 : 'Enable 2FA to receive recovery backup codes for this account.'}
                         </p>
                     </div>
-                    <Button
-                        type="button"
-                        variant={totpEnabled ? 'destructive' : 'default'}
-                        onClick={handleToggleTotp}
-                        disabled={loadingMfa || !mfaKnown}
-                    >
-                        {loadingMfa
-                            ? 'Working...'
-                            : totpEnabled
-                                ? 'Disable 2FA'
-                                : 'Enable 2FA'}
-                    </Button>
+                    <div className="flex flex-col gap-2 sm:items-end">
+                        <Button
+                            type="button"
+                            variant={totpEnabled ? 'destructive' : 'default'}
+                            onClick={handleToggleTotp}
+                            disabled={
+                                loadingMfa ||
+                                !mfaKnown ||
+                                firebaseAuthLoading ||
+                                Boolean(mfaUnavailableReason)
+                            }
+                        >
+                            {loadingMfa
+                                ? 'Working...'
+                                : !mfaKnown || firebaseAuthLoading
+                                    ? 'Checking session...'
+                                    : totpEnabled
+                                        ? 'Disable 2FA'
+                                        : 'Enable 2FA'}
+                        </Button>
+                        {mfaUnavailableReason ? (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={onManageCentralAccount}
+                            >
+                                Open CheFu Account
+                            </Button>
+                        ) : null}
+                    </div>
                 </CardContent>
             </Card>
 
