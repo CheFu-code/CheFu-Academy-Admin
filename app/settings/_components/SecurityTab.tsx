@@ -533,7 +533,7 @@ const SecurityTab = () => {
                     typeof window !== 'undefined'
                         ? window.location.href
                         : undefined;
-                window.location.assign(chefuManageAccountUrl(returnTo));
+                window.location.assign(chefuManageAccountUrl(returnTo, 'security'));
             }}
             />
             <SetupModal

@@ -16,10 +16,14 @@ const ACADEMY_APP_URL =
 function accountUrl(
     path: '/login' | '/register' | '/logout' | '/account',
     returnTo: string,
+    options?: { section?: string },
 ) {
     const url = new URL(path, CHEFU_ACCOUNT_URL);
     url.searchParams.set('app', 'academy');
     url.searchParams.set('returnTo', returnTo);
+    if (path === '/account' && options?.section) {
+        url.searchParams.set('section', options.section);
+    }
     return url.toString();
 }
 
@@ -41,8 +45,11 @@ export function chefuLogoutUrl(returnTo = academyReturnTo('/')) {
     return accountUrl('/logout', returnTo);
 }
 
-export function chefuManageAccountUrl(returnTo = academyReturnTo('/settings/account')) {
-    return accountUrl('/account', returnTo);
+export function chefuManageAccountUrl(
+    returnTo = academyReturnTo('/settings/account'),
+    section?: string,
+) {
+    return accountUrl('/account', returnTo, { section });
 }
 
 export async function getChefuSessionUser() {
