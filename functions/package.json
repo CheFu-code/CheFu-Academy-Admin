@@ -20,7 +20,7 @@
         "@simplewebauthn/server": "^13.2.2",
         "cors": "^2.8.6",
         "firebase-admin": "^13.6.1",
-        "firebase-functions": "^7.0.5",
+        "firebase-functions": "^7.2.5",
         "zod": "^4.3.6"
     },
     "devDependencies": {
