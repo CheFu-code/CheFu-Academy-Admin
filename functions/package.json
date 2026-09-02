@@ -16,11 +16,11 @@
         "logs": "firebase functions:log"
     },
     "dependencies": {
-        "@google-cloud/functions-framework": "^3.4.6",
+        "@google-cloud/functions-framework": "^5.0.5",
         "@simplewebauthn/server": "^13.2.2",
         "cors": "^2.8.6",
         "firebase-admin": "^13.6.1",
-        "firebase-functions": "^7.0.5",
+        "firebase-functions": "^7.3.2",
         "zod": "^4.3.6"
     },
     "devDependencies": {
